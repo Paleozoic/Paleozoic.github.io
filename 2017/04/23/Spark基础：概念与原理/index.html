@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Paleo" />
+
+
+
+<meta name="description" content="简单介绍Spark里面的一些基础知识和原理实现。">
+<meta name="keywords" content="Spark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark基础：概念与原理">
+<meta property="og:url" content="http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/index.html">
+<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:description" content="简单介绍Spark里面的一些基础知识和原理实现。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/窄依赖管道（分区）并行计算.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖与窄依赖.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖容错恢复.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/spark-webui-accumulators.png">
+<meta property="og:updated_time" content="2017-04-23T13:23:53.204Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spark基础：概念与原理">
+<meta name="twitter:description" content="简单介绍Spark里面的一些基础知识和原理实现。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/spark/窄依赖管道（分区）并行计算.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Paleo&#39;s blog" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/resources/img/favicon.ico">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>Spark基础：概念与原理 | Paleo&#39;s blog</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script>
+        yiliaConfig.jquery_ui = [true, "//cdn.bootcss.com/jqueryui/1.10.4/jquery-ui.min.js", "//cdn.bootcss.com/jqueryui/1.10.4/css/jquery-ui.min.css"];
+    </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/resources/img/head.jpg" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Paleo</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">超然物外，天道酬勤。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="false" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hbase/">Hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/令牌桶/">令牌桶</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发控制/">并发控制</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Paleo</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/resources/img/head.jpg" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Paleo</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">超然物外，天道酬勤。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" target="_blank" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" target="_blank" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-Spark基础：概念与原理" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/04/23/Spark基础：概念与原理/" class="article-date">
+      <time datetime="2017-04-23T05:31:48.000Z" itemprop="datePublished">2017-04-23</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spark基础：概念与原理
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spark/">Spark</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>简单介绍Spark里面的一些基础知识和原理实现。<a id="more"></a></excerpt></p>
+<p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="Application"><a href="#Application" class="headerlink" title="Application"></a>Application</h1><p>指编写的Spark程序。</p>
+<h1 id="Driver"><a href="#Driver" class="headerlink" title="Driver"></a>Driver</h1><p>Spark作业的主进程，负责作业的解析，并且负责向yarn申请资源，并且调度作业的executor。<br>提交Spark Application到集群的时候，对于Spark来说，就是生成一个Driver进程来执行Spark App的main函数，并且初始化SparkContext。<br>DAGScheduler和TaskScheduler都是属于Driver的。</p>
+<ul>
+<li>Executor：执行器，里面包含了N个core，每个core包含了1个Task。</li>
+<li>DAGScheduler：负责生成Stage（DAG）和TaskSet，每个Stage就有一组TaskSet。</li>
+<li>TaskScheduler：接收DAGScheduler的TaskSet并发送给Executor。<blockquote>
+<p>疑问：为什么是有向无环图？<br>（1）有向图表示RDD可追溯，失败可以重运行。<br>（2）无环图表示RDD不可变，如果存在环，是否意味着RDD可变？</p>
+</blockquote>
+</li>
+</ul>
+<h1 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h1><p>可以认为在Spark App中，每一个Spark的Action API就是一个Job。<br>而Spark App可以有多个job，而Job可以划分成多个Stage，Stage是一组Task（即TaskSet）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Spark App ———— Job</div><div class="line">                |———— Stage</div><div class="line">                |       |————Task</div><div class="line">                |       |————Task     </div><div class="line">                |———— Stage</div><div class="line">                        |————Task</div><div class="line">                        |————Task</div></pre></td></tr></table></figure></p>
+<h1 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h1><p>Stage由Task组成，每个Stage内的Task是并行执行的，而Stage之间是串行的。<br>Stage的划分：每个Shuffle Dependency（即Wide Dependency）之前的所有RDD操作。</p>
+<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>Task有2类：ShuffleMapTask和ResultTask，类似与MapReduce的Map个Reduce。<br>Task的划分：Stage的最后1个RDD的分区数 = Task数量。<br>Task是并行的，合理设置分区可以提高资源利用率。</p>
+<blockquote>
+<p>这些概念在<a href="http://spark.apache.org/docs/latest/cluster-overview.html#glossary" target="_blank" rel="external">Spark官网介绍如下</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Application</code></td>
+<td>User program built on Spark. Consists of a driver program and executors on the cluster.</td>
+</tr>
+<tr>
+<td><code>Application jar</code></td>
+<td>A jar containing the user’s Spark application. In some cases users will want to create an “uber jar” containing their application along with its dependencies. The user’s jar should never include Hadoop or Spark libraries, however, these will be added at runtime.</td>
+</tr>
+<tr>
+<td><code>Driver program</code></td>
+<td>The process running the main() function of the application and creating the SparkContext</td>
+</tr>
+<tr>
+<td><code>Cluster manager</code></td>
+<td>An external service for acquiring resources on the cluster (e.g. standalone manager, Mesos, YARN)</td>
+</tr>
+<tr>
+<td><code>Deploy mode</code></td>
+<td>Distinguishes where the driver process runs. In “cluster” mode, the framework launches the driver inside of the cluster. In “client” mode, the submitter launches the driver outside of the cluster.</td>
+</tr>
+<tr>
+<td><code>Worker node</code></td>
+<td>Any node that can run application code in the cluster</td>
+</tr>
+<tr>
+<td><code>Executor</code></td>
+<td>A process launched for an application on a worker node, that runs tasks and keeps data in memory or disk storage across them. Each application has its own executors.</td>
+</tr>
+<tr>
+<td><code>Task</code></td>
+<td>A unit of work that will be sent to one executor</td>
+</tr>
+<tr>
+<td><code>Job</code></td>
+<td>A parallel computation consisting of multiple tasks that gets spawned in response to a Spark action (e.g. save, collect); you’ll see this term used in the driver’s logs.</td>
+</tr>
+<tr>
+<td><code>Stage</code></td>
+<td>Each job gets divided into smaller sets of tasks called stages that depend on each other (similar to the map and reduce stages in MapReduce); you’ll see this term used in the driver’s logs.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h1><p><strong>RDD是Spark并行计算的基础。</strong><br>RDD是一个只读的并行、可伸缩的分布式数据结构。<br>RDD由Partition组成。多个Partition可能被分配在不同的节点，但是1个Partition只能在一个节点（即对于一个分区来说，分区是不跨节点的）</p>
+<blockquote>
+<p>分区是一个很关键的概念，具体可参考JDK的HashMap(哈希表的每个hash位置可以理解为1个分区)以及ConcurrentHashMap（每个桶理解为1个分区）源码，<br>类似的还有kafka的topic和Redis Cluster的slot概念。分区/分片，是弹性扩展数据结构的一个手段。</p>
+</blockquote>
+<p>在Spark的RDD设计上，所有的窄依赖在分区上进行管道式的计算，以达到并行计算的目的。<br>如图：<br><img src="/resources/img/spark/窄依赖管道（分区）并行计算.png" alt="窄依赖管道（分区）并行计算"></p>
+<h2 id="宽依赖与窄依赖"><a href="#宽依赖与窄依赖" class="headerlink" title="宽依赖与窄依赖"></a>宽依赖与窄依赖</h2><p>父RDD与子RDD的依赖关系：<br>（1）宽依赖：每个父RDD的任意Partition会被子RDD的<strong>多个</strong>Partition所依赖。<a href="http://spark.apache.org/docs/latest/programming-guide.html#shuffle-operations" target="_blank" rel="external">发生了Shuffle的算子会产生Shuffle依赖</a><br>（2）窄依赖：每个父RDD的任意Partition只被子RDD的<strong>一个</strong>Partition所依赖。<br><img src="/resources/img/spark/宽依赖与窄依赖.png" alt="宽依赖与窄依赖"></p>
+<blockquote>
+<p>Spark为什么要区分宽依赖与窄依赖呢？<br>（1）窄依赖支持在同一个节点中，以pipeline（管道）的形式执行多条命令。<br>窄依赖计算是并行的、分区独立的（分区作为管道）。<br>而宽依赖在计算过程中会发生Shuffle，是跨分区的计算。<br>（2）从失败恢复的角度（容错机制）看：<br>窄依赖只需要重新计算丢失分区的父分区，而且不同节点之间可以并行计算。<br>宽依赖则需要重新计算子分区所依赖的所有父分区，并且产生冗余计算。<br>如下图：假设Partition1’丢失，则需要重新计算Partition1和Partition2，从而冗余计算了Partition2’。<br><img src="/resources/img/spark/宽依赖容错恢复.png" alt="宽依赖容错恢复"></p>
+</blockquote>
+<h2 id="宽依赖发生Shuffle的性能影响"><a href="#宽依赖发生Shuffle的性能影响" class="headerlink" title="宽依赖发生Shuffle的性能影响"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#performance-impact" target="_blank" rel="external">宽依赖发生Shuffle的性能影响</a></h2><ul>
+<li>（1）Shuffle由于产生<strong>磁盘IO/网络IO/数据的序列化与反序列化</strong>会严重影响RDD算子的性能，Spark的Map Tasks生产Shuffle的数据，Reduce Tasks读取Shuffle数据来进行聚合操作。<br>注：Map Tasks和Reduce Tasks的命名法来自MapReduce，并不直接与Spark的Map和Reduce操作有关。</li>
+<li>（2）在Spark计算内部处理过程中，部分Map Tasks的计算结果会被缓存在内存里，直到内存不足才会被清理。然后，这部分数据会根据目标分区进行排序并写入单个文件。<br>而Reduce Task会去读取相关的排序块（sorted blocks）。</li>
+<li>（3）某些Shuffle操作会消耗大量的堆内存，因为它们在tranffer数据之前或之后会通过基于内存的数据结构来处理记录。具体来说，reduceByKey和aggregateByKey在Map端上创建这些基于内存的数据结构，<br>“ByKey”操作会在reduce端生成in-memory data structures。在内存不足的时候，Spark会将这些数据表溢写到磁盘，从而导致磁盘IO的额外开销和增加的垃圾回收。</li>
+<li>（4）Shuffle操作还会在磁盘上生成大量的中间文件。从Spark 1.3开始，这些文件将被保留，直到相应的RDD不再使用并被垃圾回收。这样的作用是如果需要重新计算Shuffled RDD，则不需要重新执行Shuffle过程。<br>如果Spark App保留对这些RDD的引用或不频繁触发GC，那么垃圾收集可能会在很长一段时间之后发生。这意味着Spark作业的产生的中间文件会长时间占用大量的磁盘。<br>在配置Spark上下文时，由<code>spark.local.dir</code>配置指定临时存储目录。<br><a href="http://spark.apache.org/docs/latest/configuration.html#shuffle-behavior" target="_blank" rel="external">更多的Shuffle配置</a></li>
+</ul>
+<h2 id="RDD的持久化"><a href="#RDD的持久化" class="headerlink" title="RDD的持久化"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#rdd-persistence" target="_blank" rel="external">RDD的持久化</a></h2><table>
+<thead>
+<tr>
+<th>Storage Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MEMORY_ONLY</td>
+<td><strong>默认模式</strong>，将RDD反序列化成Java对象存储在JVM内存，如果内存不足，某些分区不会被缓存，而是每次使用都重新计算。</td>
+</tr>
+<tr>
+<td>MEMORY_AND_DISK</td>
+<td>区别于MEMORY_ONLY，内存不足会写入磁盘，每次使用都从磁盘读取。</td>
+</tr>
+<tr>
+<td>MEMORY_ONLY_SER</td>
+<td>类似于MEMORY_ONLY，但存储对象的格式不一样，是将RDD序列化为字节数组（每个分区一个字节数组）。这通常比反序列化对象更具空间效率，特别是在使用快速序列化器如KryoSerializer的情况下，但却转化成CPU密集型作业（时间换空间）。</td>
+</tr>
+<tr>
+<td>MEMORY_AND_DISK_SER</td>
+<td>类似于MEMORY_ONLY_SER，内存不足会写入磁盘，每次使用都从磁盘读取。</td>
+</tr>
+<tr>
+<td>DISK_ONLY</td>
+<td>RDD的partitions只被写入磁盘</td>
+</tr>
+<tr>
+<td>MEMORY_ONLY_2, MEMORY_AND_DISK_2, etc.</td>
+<td>和上面的设置类似，不过会复制每个分区到2个集群节点上。</td>
+</tr>
+<tr>
+<td>OFF_HEAP (experimental)</td>
+<td>类似于MEMORY_ONLY_SER，但将数据存储在<strong>堆外内存</strong>中。这需要启用堆外内存。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="RDD持久化选择"><a href="#RDD持久化选择" class="headerlink" title="RDD持久化选择"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#which-storage-level-to-choose" target="_blank" rel="external">RDD持久化选择</a></h2><ul>
+<li>如果内存足够，使用默认存储级别（MEMORY_ONLY），速度最快并充分利用了CPU（会消耗大量内存）。</li>
+<li>如果内存不足，使用MEMORY_ONLY_SER，通过消耗CPU将RDD序列化以节省空间（减少内存消耗）。</li>
+<li>不要溢出到磁盘，除非并行计算资源成本过高，或者需要过滤大量的数据。否则，重新计算分区可能与从磁盘读取分区一样快。</li>
+<li>如果要快速故障恢复，请使用<code>MEMORY_ONLY_2, MEMORY_AND_DISK_2, etc.</code>（例如，使用Spark来提供来自Web应用程序的请求）。所有RDD持久化策略通过重新计算丢失的数据来提供完整的容错能力，但复制的数据可让您继续在RDD上运行任务，而无需重新计算丢失的分区。</li>
+</ul>
+<h1 id="缓存清除"><a href="#缓存清除" class="headerlink" title="缓存清除"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#removing-data" target="_blank" rel="external">缓存清除</a></h1><p>Spark会自动监视每个节点的缓存使用情况，并以近期最少使用算法（LRU,Least Recently Used）方式丢弃旧的数据分区。 调用<code>RDD.unpersist()</code>可以手动清除缓存释放空间。</p>
+<h1 id="共享变量"><a href="#共享变量" class="headerlink" title="共享变量"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#shared-variables" target="_blank" rel="external">共享变量</a></h1><p>通常，当提交到Spark操作（例如map或reduce）的函数在远程集群节点上执行时，在函数中使用的所有变量会生成副本到每个节点上，并且远程节点上变量的更新不会传播回Driver。<br>而在提供Task间共享的read-write shared variables是低效的。 不过Spark依然提供了两种有限类型的共享变量：广播变量broadcast variables和累加器accumulators。</p>
+<h2 id="广播变量"><a href="#广播变量" class="headerlink" title="广播变量"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#broadcast-variables" target="_blank" rel="external">广播变量</a></h2><p>广播变量允许程序员在每个节点上缓存<strong>只读变量</strong>，而不是为每个Task生成变量副本。<br>使用情景举例：通过广播变量为每个节点提供很大的输入数据集（高效）。 Spark还尝试使用高效的广播算法分发广播变量，以降低通信成本。<br>Spark的Actions可以分解为一系列的Stages（Stage通过Shuffle操作划分）Spark自动广播每个Stage的Task所需的common data。采用此方式广播的数据序列化之后缓存,然后在Task运行之前执行反序列化。<br>这意味着，显式创建广播变量仅<strong>在跨多个Stage的Task需要相同数据</strong>或者<strong>需要以反序列化格式缓存数据</strong>时才有用。<br>广播变量通过调用<code>SparkContext.broadcast(v)</code>创建广播变量<code>v</code>。广播变量是围绕<code>v</code>的包装器，其值可以通过调用<code>value</code>方法来访问。代码如下：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> broadcastVar = sc.broadcast(<span class="type">Array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>))</div><div class="line">broadcastVar.value</div><div class="line"><span class="comment">//broadcastVar.value结果是：Array[Int] = Array(1, 2, 3)</span></div></pre></td></tr></table></figure></p>
+<h2 id="累加器"><a href="#累加器" class="headerlink" title="累加器"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#accumulators" target="_blank" rel="external">累加器</a></h2><p>Accumulators are variables that are only “added” to through an associative and commutative operation and can therefore be efficiently supported in parallel.<br>它们可以用于实现计数器（类似MapReduce一样）或者求和，Spark原生支持数字类型的Accumulators，当然程序员也可以实现自定义的Accumulators。<br>用户可以创建实名/匿名的accumulators，实名accumulators在web UI，修改该accumulators的stage处可以看到accumulators变量的变化。具体如图：<br><img src="/resources/img/spark/spark-webui-accumulators.png" alt="accumulators in Spark Web UI"><br>Tracking accumulators in the UI can be useful for understanding the progress of running stages.</p>
+<p>程序员可以通过调用<code>SparkContext.longAccumulator()</code>或<code>SparkContext.doubleAccumulator()</code>来分别创建Long或Double类型的数字累加器。<br>然后集群运行这的Task可以调用<code>add</code>方法添加accumulators。 不过Task不能获取accumulators的值。 只有Driver可以使用<code>value</code>方法读取accumulators的值。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> accum = sc.longAccumulator(<span class="string">"My Accumulator"</span>)</div><div class="line"><span class="comment">// accum: org.apache.spark.util.LongAccumulator = LongAccumulator(id: 0, name: Some(My Accumulator), value: 0)</span></div><div class="line">sc.parallelize(<span class="type">Array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)).foreach(x =&gt; accum.add(x))</div><div class="line">accum.value</div><div class="line"><span class="comment">//res2: Long = 10</span></div></pre></td></tr></table></figure></p>
+<p>而实现自定义的accumulators，需要继承<code>AccumulatorV2</code>。代码如下：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">VectorAccumulatorV2</span> <span class="keyword">extends</span> <span class="title">AccumulatorV2</span>[<span class="type">MyVector</span>, <span class="type">MyVector</span>] </span>&#123;</div><div class="line"></div><div class="line">  <span class="keyword">private</span> <span class="keyword">val</span> myVector: <span class="type">MyVector</span> = <span class="type">MyVector</span>.createZeroVector</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reset</span></span>(): <span class="type">Unit</span> = &#123;</div><div class="line">    myVector.reset()</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">add</span></span>(v: <span class="type">MyVector</span>): <span class="type">Unit</span> = &#123;</div><div class="line">    myVector.add(v)</div><div class="line">  &#125;</div><div class="line">  ...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Then, create an Accumulator of this type:</span></div><div class="line"><span class="keyword">val</span> myVectorAcc = <span class="keyword">new</span> <span class="type">VectorAccumulatorV2</span></div><div class="line"><span class="comment">// Then, register it into spark context:</span></div><div class="line">sc.register(myVectorAcc, <span class="string">"MyVectorAcc1"</span>)</div></pre></td></tr></table></figure></p>
+<p>注意：For accumulator updates performed inside <strong>actions only</strong>,即accumulator的更新需要Actions来触发计算。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> accum = sc.longAccumulator</div><div class="line">data.map &#123; x =&gt; accum.add(x); x &#125;</div><div class="line"><span class="comment">// Here, accum is still 0 because no actions have caused the map operation to be computed.</span></div></pre></td></tr></table></figure></p>
+<h1 id="提交任务到集群"><a href="#提交任务到集群" class="headerlink" title="提交任务到集群"></a><a href="http://spark.apache.org/docs/latest/submitting-applications.html#launching-applications-with-spark-submit" target="_blank" rel="external">提交任务到集群</a></h1><pre><code class="bash"><span class="comment"># Run application locally on 8 cores</span>
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master <span class="built_in">local</span>[8] \
+  /path/to/examples.jar \
+  100
+
+<span class="comment"># Run on a Spark standalone cluster in client deploy mode</span>
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://207.184.161.138:7077 \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  /path/to/examples.jar \
+  1000
+
+<span class="comment"># Run on a Spark standalone cluster in cluster deploy mode with supervise</span>
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://207.184.161.138:7077 \
+  --deploy-mode cluster \
+  --supervise \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  /path/to/examples.jar \
+  1000
+
+<span class="comment"># Run on a YARN cluster</span>
+<span class="built_in">export</span> HADOOP_CONF_DIR=XXX
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master yarn \
+  --deploy-mode cluster \  <span class="comment"># can be client for client mode</span>
+  --executor-memory 20G \
+  --num-executors 50 \
+  /path/to/examples.jar \
+  1000
+
+<span class="comment"># Run a Python application on a Spark standalone cluster</span>
+./bin/spark-submit \
+  --master spark://207.184.161.138:7077 \
+  examples/src/main/python/pi.py \
+  1000
+
+<span class="comment"># Run on a Mesos cluster in cluster deploy mode with supervise</span>
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master mesos://207.184.161.138:7077 \
+  --deploy-mode cluster \
+  --supervise \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  http://path/to/examples.jar \
+  1000
+</code></pre>
+<h1 id="通过Java-Scala启动Spark作业"><a href="#通过Java-Scala启动Spark作业" class="headerlink" title="通过Java/Scala启动Spark作业"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#launching-spark-jobs-from-java--scala" target="_blank" rel="external">通过Java/Scala启动Spark作业</a></h1><p>The <a href="http://spark.apache.org/docs/latest/api/java/index.html?org/apache/spark/launcher/package-summary.html" target="_blank" rel="external">org.apache.spark.launcher</a> package provides classes for launching Spark jobs as child processes using a simple Java API.</p>
+<h1 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#unit-testing" target="_blank" rel="external">单元测试</a></h1><p>Spark is friendly to unit testing with any popular unit test framework. Simply create a SparkContext in your test with the master URL set to local, run your operations, and then call SparkContext.stop() to tear it down. Make sure you stop the context within a finally block or the test framework’s tearDown method, as Spark does not support two contexts running concurrently in the same program.</p>
+<h1 id="Spark官方示例"><a href="#Spark官方示例" class="headerlink" title="Spark官方示例"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#where-to-go-from-here" target="_blank" rel="external">Spark官方示例</a></h1>
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Paleo</a></p>
+        <p><span>发布时间:</span>2017-04-23, 13:31:48</p>
+        <p><span>最后更新:</span>2017-04-23, 21:23:53</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/04/23/Spark基础：概念与原理/" title="Spark基础：概念与原理">http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/　　作者: Paleo" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2016/12/30/Hbase-ORM的实现/">
+                    Hbase ORM的实现
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/04/23/Spark_RDD_API/">
+                    Spark RDD API
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Application"><span class="toc-number">1.</span> <span class="toc-text">Application</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Driver"><span class="toc-number">2.</span> <span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Job"><span class="toc-number">3.</span> <span class="toc-text">Job</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stage"><span class="toc-number">4.</span> <span class="toc-text">Stage</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">5.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RDD"><span class="toc-number">6.</span> <span class="toc-text">RDD</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖与窄依赖"><span class="toc-number">6.1.</span> <span class="toc-text">宽依赖与窄依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖发生Shuffle的性能影响"><span class="toc-number">6.2.</span> <span class="toc-text">宽依赖发生Shuffle的性能影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD的持久化"><span class="toc-number">6.3.</span> <span class="toc-text">RDD的持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD持久化选择"><span class="toc-number">6.4.</span> <span class="toc-text">RDD持久化选择</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存清除"><span class="toc-number">7.</span> <span class="toc-text">缓存清除</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#共享变量"><span class="toc-number">8.</span> <span class="toc-text">共享变量</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#广播变量"><span class="toc-number">8.1.</span> <span class="toc-text">广播变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#累加器"><span class="toc-number">8.2.</span> <span class="toc-text">累加器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#提交任务到集群"><span class="toc-number">9.</span> <span class="toc-text">提交任务到集群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#通过Java-Scala启动Spark作业"><span class="toc-number">10.</span> <span class="toc-text">通过Java/Scala启动Spark作业</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#单元测试"><span class="toc-number">11.</span> <span class="toc-text">单元测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark官方示例"><span class="toc-number">12.</span> <span class="toc-text">Spark官方示例</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"Spark基础：概念与原理　| Paleo's blog　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+        <section id="comments">
+    <style> aside.comment-bar { margin: auto 30px; }</style>
+    <div id="disqus_thread"></div>
+    <script>
+        var disqus_config = function(){
+            this.page.url = 'http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/';
+            this.page.identifier = '2017/04/23/Spark基础：概念与原理/';
+        };
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = '//blog-maxplus1-com.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        }
+    </script>
+    
+    <script> loadComment(); </script>
+
+</section>
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2016/12/30/Hbase-ORM的实现/" title="上一篇: Hbase ORM的实现">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/04/23/Spark_RDD_API/" title="下一篇: Spark RDD API">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark_RDD_API/">Spark RDD API</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/Hbase-ORM的实现/">Hbase ORM的实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/分布式并发控制（连接池）/">分布式并发控制（连接池）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/分布式令牌桶设计实现（流控）/">分布式令牌桶设计实现（流控）</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Paleo
+            </div>
+            <div class="footer-right">
+                 <a href="http://www.maxplus1.com/" target="_blank" title="About Me">Paleo</a>'s blog  <i class="fa fa-heart animated infinite pulse"></i>
+                 <a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html" target="_blank" title="MDEditor"><img src="https://pandao.github.io/editor.md/images/logos/editormd-logo-180x180.png" height="20" width="20" style="margin-bottom:-3px;"></img></a>
+            </div>
+        </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+            
+             tags: ".article-tag a", 
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
