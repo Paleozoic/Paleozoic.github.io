@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Paleo" />
+
+
+
+<meta name="description" content="简单介绍Storm里面的一些基础知识和原理实现。">
+<meta name="keywords" content="Storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Storm基础：概念与原理">
+<meta property="og:url" content="http://blog.maxplus1.com/2017/04/27/Storm基础：概念与原理/index.html">
+<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:description" content="简单介绍Storm里面的一些基础知识和原理实现。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Topology.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Topology_Flow.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Stream_Grouping.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Worker_Executor_Task.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Worker_Executor_Task_Info.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/storm/Nimbus_Supervisor.png">
+<meta property="og:updated_time" content="2017-04-27T15:13:05.580Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Storm基础：概念与原理">
+<meta name="twitter:description" content="简单介绍Storm里面的一些基础知识和原理实现。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/storm/Topology.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Paleo&#39;s blog" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/resources/img/favicon.ico">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>Storm基础：概念与原理 | Paleo&#39;s blog</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script>
+        yiliaConfig.jquery_ui = [true, "//cdn.bootcss.com/jqueryui/1.10.4/jquery-ui.min.js", "//cdn.bootcss.com/jqueryui/1.10.4/css/jquery-ui.min.css"];
+    </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/resources/img/head.jpg" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Paleo</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">超然物外，天道酬勤。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="false" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hbase/">Hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storm/">Storm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/令牌桶/">令牌桶</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发控制/">并发控制</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Paleo</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/resources/img/head.jpg" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Paleo</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">超然物外，天道酬勤。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" target="_blank" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" target="_blank" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-Storm基础：概念与原理" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/04/27/Storm基础：概念与原理/" class="article-date">
+      <time datetime="2017-04-27T14:40:42.000Z" itemprop="datePublished">2017-04-27</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Storm基础：概念与原理
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Storm/">Storm</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>简单介绍Storm里面的一些基础知识和原理实现。<a id="more"></a></excerpt></p>
+<p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="Storm基本原理与概念"><a href="#Storm基本原理与概念" class="headerlink" title="Storm基本原理与概念"></a><a href="http：//storm.apache.org/releases/1.1.0/Concepts.html">Storm基本原理与概念</a></h1><h1 id="Component"><a href="#Component" class="headerlink" title="Component"></a>Component</h1><p>组件，Spout和Bolt都是组件，从代码上看Spout和Bolt都是实现了IComponent接口的。</p>
+<h1 id="Topology-拓扑"><a href="#Topology-拓扑" class="headerlink" title="Topology 拓扑"></a>Topology 拓扑</h1><p>Storm实时流式计算的逻辑封装便是封装在拓扑中，在分布式环境中组成拓扑的成员便是Component，即Spout和Bolt。<br>Storm和MapReduce很是相似，MR总会执行完毕，而Storm会一直在后台运行，监听数据源的输入。<br>个人认为拓扑也应是一个有向无环图（DAG）。<br>拓扑图：<br><img src="/resources/img/storm/Topology.png" alt="Topology"><br><img src="/resources/img/storm/Topology_Flow.png" alt="Topology_Flow"></p>
+<h1 id="Stream-数据流"><a href="#Stream-数据流" class="headerlink" title="Stream 数据流"></a>Stream 数据流</h1><p>数据流Stream是Storm数据流动的一个抽象概念。<br>数据流是一个无界Tuple序列，Stream是分布式、并行地被处理和创建的。<br>数据流在创建元组Tuple的时候，通过定义Schema来声明的。在<code>declareOutputFields</code>使用<code>declare.declareStream</code>方法定义Stream。<br>定义Schema主要是确定streamId，如果不声明streamId，那么数据流默认的streamId是<code>default</code>。<br>streamId的作用是：在定义拓扑的时候，分组策略可以通过指定streamId来限定Storm算子只处理来自指定数据流的数据。且每个Bolt只支持订阅1个Stream。</p>
+<ul>
+<li>Component(Spout/Bolt)可以发射多个数据流stream，通过多次调用<code>declareStream</code>声明多个<code>streamId</code>。</li>
+</ul>
+<h1 id="Spout"><a href="#Spout" class="headerlink" title="Spout"></a>Spout</h1><ul>
+<li>Spout通常负责从外部读取数据，并处理成Tuple分发到拓扑中。</li>
+<li>Spout可以是可靠的，也可以是不可靠的：<ul>
+<li>可靠Spout：如果Tuple处理Tuple失败，Spout可以重新处理；</li>
+<li>不可靠Spout：Spout一旦emit了元组，便不管该元组是否能被成功处理。</li>
+</ul>
+</li>
+<li>Spout中的主要方法是：<ul>
+<li><code>nextTuple</code>：<code>nextTuple</code>负责向拓扑发射元组，如果没有元组，则需要直接返回，有时为了避免消耗过度的CPU资源，没有元组时可能<code>sleep</code>较短时间，比如1ms。<br>需要特别注意，<code>nextTuple</code>是绝对不能是一个阻塞方法，因为Storm会调用同一个线程的所有spout的实现，如果阻塞了某个Spout线程，会影响Spout的并行处理速度。</li>
+<li><code>ack</code>和<code>fail</code>：在<strong>可靠Spout</strong>中，当emit Tuple失败或者成功时，会调用他们来告诉storm处理结果。下游Component处理上游Component emit 过来的Tuple，调用<code>OutputCollector.ack(input)</code>或者<code>OutputCollector.fail(input)</code></li>
+<li><code>nextTuple</code>、<code>ack</code>和<code>fail</code>会在同一个线程被调用。PS：听说JStorm已经是异步调用<code>ack</code>和<code>fail</code>了。</li>
+</ul>
+</li>
+</ul>
+<h1 id="Bolt"><a href="#Bolt" class="headerlink" title="Bolt"></a>Bolt</h1><p>几乎所有的Storm计算都是通过Bolt来完成的，包括：filtering过滤, functions函数, aggregations聚合, joins连接, talking to databases操作数据库等等。</p>
+<ul>
+<li>通过使用提供的TopologyContext或通过跟踪OutputCollector中的emit方法的输出（返回发送元组的任务ID），消费者的任务ID。</li>
+<li>Bolt中的主要方法是：<ul>
+<li><code>execute</code>：<code>execute</code>负责接收上游组件发射来的Tuple，然后将输入的Tuple转换成新的Tuple发射出去。调用方法：<code>OutputCollector.emit(newTuple)</code>。 <code>OutputCollector</code>是线程安全的，所以在 <code>execute</code>中可以使用多线程来异步处理Tuple来进行emit操作。<code>BasicBoltExecutor implements IRichBolt</code>使用装饰者模式（他们共同的接口是<code>IComponent</code>），对于实现了<code>IBasicBolt</code>的bolt会自动执行ack操作。</li>
+</ul>
+</li>
+</ul>
+<h1 id="Stream-grouping-流分组策略"><a href="#Stream-grouping-流分组策略" class="headerlink" title="Stream grouping 流分组策略"></a>Stream grouping 流分组策略</h1><p>下游Bolt通过调用相关的Grouping方法来订阅上游Component的输出数据(Tuple)来作为自己的输入。</p>
+<ul>
+<li>Shuffle grouping(随机分组)：元组随机分布在Bolt的Tasks中，每个Bolt都能得到一样数量的Tuples。</li>
+<li>Fields grouping(域分组)：上游数据流由Fileds进行分区，下游Bolt通过订阅上游Component指定的Fileds获取数据，每个Bolt只能接收它订阅了的Fields。</li>
+<li>Partial grouping(部分关键字分组)：和Fields grouping类似，在数据倾斜的情况下，能更好地实现负载均衡。<a href="https：//melmeric.files.wordpress.com/2014/11/the-power-of-both-choices-practical-load-balancing-for-distributed-stream-processing-engines.pdf">原理见此处</a></li>
+<li>All grouping(完全分组)：广播分组，每个Tuple都会emit到每一个Bolt中去</li>
+<li>Global grouping(全局分组)：全部Tuple都会emit到一个Bolt的一个Task中去</li>
+<li>None grouping(非分组)：不关心数据流是否被分组，目前相当于Shuffle grouping，不过Storm会把使用None grouping的这个bolt放到它订阅的Spout/Bolt所在的同一个线程里面去执行（如果可能的话）。</li>
+<li><p>Direct grouping(直接分组)：上游Component指定下游Bolt的Task来接收Tuple。Direct grouping只能用于<code>direct streams</code>，通过调用<code>emitDirect</code>将Tuples发射到<code>direct streams</code>，并指定taskId。</p>
+<blockquote>
+<p>一个上游Bolt（生产者）如何获得下游Bolt（消费者）的taskIds呢？<br><br>通过<code>TopologyContext</code>或者追踪<code>OutputCollector.emit</code>方法，Tuple发射成功后，会返回Tuples发送到的taskIds。</p>
+</blockquote>
+</li>
+<li><p>Local or shuffle grouping(本地或随机分组)：如果目标Bolt在同一个worker进程（指和生产者在同一个进程）有一个或多个Tasks，Tuples会被优先随机分发到进程内的Tasks（Local grouping）。否则边是shuffle grouping。</p>
+</li>
+<li>CustomStreamGrouping：通过实现<code>CustomStreamGrouping</code>接口来自定义分组策略。</li>
+</ul>
+<p>数据流分组图：<br><img src="/resources/img/storm/Stream_Grouping.png" alt="Stream_Grouping"></p>
+<h1 id="Partial-grouping-部分关键字分组"><a href="#Partial-grouping-部分关键字分组" class="headerlink" title="Partial grouping(部分关键字分组)"></a>Partial grouping(部分关键字分组)</h1><ul>
+<li>processing elemen(PE)：流处理应用程序组成DAG，DAG顶点就叫PE（算子）</li>
+<li>streams：DAG的边和运算符表示流</li>
+<li>processing element instance (PEI)：为了可伸缩，streams会被分区为sub-streams，就会交由PEI进行并行处理</li>
+<li>key splitting：<a href="http：//dl.acm.org/citation.cfm?id=2825263">power of two choices(PoTC)</a>当key做Hash或者其他分区方法进行分区，每个key可以被2个PEI处理（在Storm里应该就是2个Bolt），这个过程就叫key splitting。在Storm里面，会根据2个Bolt的负载进行均衡。</li>
+<li>Local Load Estimation：那如何进行负载的判断？好吧，看论文和源码去吧~</li>
+</ul>
+<h1 id="可靠性"><a href="#可靠性" class="headerlink" title="可靠性"></a>可靠性</h1><p>Storm保证每个Spout Tuple会被完全处理。Storm通过追踪由每个Spout元组触发的<strong>元组树</strong>，并确定元组树何时完全完成。</p>
+<blockquote>
+<p>元组树：第一个元组从Spout发出，之后在拓扑中流转分裂变形成更多的元组，这些元组构成了一棵树。第一个Spout Tuple便是树的根节点。</p>
+</blockquote>
+<p>每个拓扑都有一个”message timeout（消息超时）”，如果Storm在超时时间内无法检测到Tuple是否已经被完全处理则会认为处理失败，<br>并且稍后的时间释放该元组（这儿的稍后是啥时候？如果此段时间存在大量Timeout Message会不会造成OOM？会不会在内存满时触发清除超时元组？）。<br>元组树的“边”在被创建（Anchoring）和元组被处理完成（ack/fail）的时候，通过<code>OutputCollector</code>来通知Storm。<br><code>Anchoring</code>通过<code>OutputCollector.emit</code>完成，<br><code>ack/fail</code>通过<code>OutputCollector.ack/OutputCollector.fail</code>或<code>BasicOutputCollector.emit</code>(底层调用了<code>OutputCollector.ack(input)</code>)完成。<br>详见此处：<a href="http://storm.apache.org/releases/1.1.0/Guaranteeing-message-processing.html" target="_blank" rel="external">Guaranteeing Message Processing</a></p>
+<h1 id="如何去除可靠性"><a href="#如何去除可靠性" class="headerlink" title="如何去除可靠性"></a>如何去除可靠性</h1><ul>
+<li>Spout发射Tuples的时候不带上messageId，因为Storm的ack机制是通过msgId进行追踪的。</li>
+<li>设置<code>Config.TOPOLOGY_ACKERS</code>为0（即<code>Config.setNumAckers(0)</code>），这样子Spout会在发射一个Tuple后自己立刻调用<code>ack</code>方法。</li>
+<li>使用<code>Unanchor</code>方式发射元组：比如使用<code>OutputCollector.emit</code>发射元组，而<code>BasicOutPutCollector.emit</code>则是<code>anchor</code>的方式。<blockquote>
+<p><code>BasicOutPutCollector.emit</code>底层会自动构建Tuple，并通过调用<code>OutputCollector.emit</code>发射元组，所以是<code>anchor</code>的方式。<br>而直接调用<code>OutputCollector.emit</code>，底层不会构建Tuple，所以是<code>Unanchor</code>方式。<br>他们最底层的方法接口都是：<code>IOutputCollector.emit(String streamId,Collection&lt;Tuple&gt; anchors,List&lt;Object&gt; tuple)</code></p>
+</blockquote>
+</li>
+</ul>
+<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>每个Task对应的是一个线程，数据流分组决定了上游Tasks的元组如何流动到下游Tasks中。</p>
+<h1 id="Worker"><a href="#Worker" class="headerlink" title="Worker"></a>Worker</h1><p>指的是Worker进程，在这个JVM进程中，执行了一组Spout/Bolt的Tasks，每个Worker只能对应一个拓扑。</p>
+<h1 id="Executor"><a href="#Executor" class="headerlink" title="Executor"></a>Executor</h1><p>每个Worker进程中运行了一个或多个Executor线程。每个Executor可以执行一个或多个Task（不过一般设置为1Executor:1Task），<br>每个Executor只对应一个Component(Spout/Bolt)</p>
+<p>PS：以上三者可以通过下图来描述：<br><img src="/resources/img/storm/Worker_Executor_Task.png" alt="Worker_Executor_Task"><br><img src="/resources/img/storm/Worker_Executor_Task_Info.png" alt="Worker_Executor_Task_Info"></p>
+<h1 id="parallelismHint-并行度"><a href="#parallelismHint-并行度" class="headerlink" title="parallelismHint(并行度)"></a>parallelismHint(并行度)</h1><ul>
+<li>Worker并行度：<code>Config.TOPOLOGY_WORKERS</code>，通过<code>Config.setNumWorkers</code>设定，表示Storm在集群中会启动多少个Worker进程来处理此拓扑。</li>
+<li>Component并行度：在调用<code>TopologyBuilder.setSpout</code>和<code>TopologyBuilder.setBolt</code>的时候，可传入并行度参数，并行度参数确定了一个Component(Spout/Bolt)的初始 executor （线程）数量。</li>
+<li><p>Task并行度：</p>
+<ul>
+<li><code>Config.TOPOLOGY_MEX_TASK_PARALLELISM</code>，通过<code>Config.setMaxTaskParaellelism</code>设定，表示一个Component在拓扑中的最大并行任务（此参数常用来限制在本地模式中的最大线程数）。</li>
+<li>通过<code>TopologyBuilder.setSpout.setNumTasks</code>和<code>TopologyBuilder.setBolt.setNumTasks</code>可以设置一个Component的Executor中运行的Task数量</li>
+</ul>
+</li>
+<li><p>这里列举的都是通过代码配置参数，<a href="http://storm.apache.org/releases/current/Configuration.html" target="_blank" rel="external">配置优先级</a>：defaults.yaml &lt; storm.yaml &lt; topology-specific configuration &lt; internal component-specific configuration &lt; external component-specific configuration</p>
+</li>
+</ul>
+<h1 id="Nimbus"><a href="#Nimbus" class="headerlink" title="Nimbus"></a>Nimbus</h1><p>Storm也是Master-Slave模式，和Spark，HDFS，HBase等Hadoop组件的设计是一样的。且整个Storm Cluster是无状态的，所有状态都维护在zookeeper中。<br>Nimbus便是Storm在Master节点的守护进程，Storm Client将拓扑提交到Nimbus，Nimbus将拓扑相关代码分发到负责Slave节点（工作节点），Slave节点的Supervisor守护进程会生成Worker执行Spout/Bolt的Task。<br>Nimbus还会监控Slave的状态。因为Supervisor的状态会记录在zookeeper，Nimbus通过zk得知Supervisor是否健康。<br>如果Supervisor挂了，Nimbus会将它的Task分配给其他节点。</p>
+<h1 id="Supervisor"><a href="#Supervisor" class="headerlink" title="Supervisor"></a>Supervisor</h1><p>Supervisor是Storm在Slave节点（工作节点）的守护进程，负责监听Slave节点上由Master分配的Task，并启动合适数量的Worker。<br>Supervisor也会监控Worker进程的状态，如果Worker挂了，Supervisor会重新启动新的工作进程（Worker Process）。</p>
+<p>Nimbus、Supervisor与zookeeper关系如图：<br><img src="/resources/img/storm/Nimbus_Supervisor.png" alt="Nimbus_Supervisor"></p>
+<h1 id="Nimbus-HA-Since-Storm-1-x"><a href="#Nimbus-HA-Since-Storm-1-x" class="headerlink" title="Nimbus HA (Since Storm 1.x)"></a>Nimbus HA (Since Storm 1.x)</h1><h1 id="Tuple-元组"><a href="#Tuple-元组" class="headerlink" title="Tuple 元组"></a>Tuple 元组</h1><p>元组默认支持integers, longs, shorts, bytes, strings, doubles, floats, booleans, and byte arrays.<br>用户可以通过实现自己的序列化器使得Tuple可以支持自定义对象类型。</p>
+<h1 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h1><p>通过<code>OutputFieldsDeclarer.declare</code>来定义<code>Fields</code>，<code>new Values(col1,col2)</code>与<code>new Fields(field1,field2)</code>顺序对应。</p>
+<h1 id="BasicBoltExecutor与BaseBasicBolt"><a href="#BasicBoltExecutor与BaseBasicBolt" class="headerlink" title="BasicBoltExecutor与BaseBasicBolt"></a>BasicBoltExecutor与BaseBasicBolt</h1><p>自动调用<code>ack</code>，一开始以为是模板方法。后来看了<code>BasicBoltExecutor</code>发现是装饰者，这儿有点意思。<br>对于可靠的消息处理，若希望自动ack，理应继承<code>BaseBasicBolt</code>而不是<code>BasicRichBolt</code>。</p>
+<h1 id="Storm与MapReduce"><a href="#Storm与MapReduce" class="headerlink" title="Storm与MapReduce"></a>Storm与MapReduce</h1><p>我写Spark的时候，MR类思想总感觉可以对应上Storm，遂搜寻有下表：<a href="http://www.aboutyun.com/thread-7394-1-1.html" target="_blank" rel="external">来源</a></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MapReduce</th>
+<th>Storm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统角色</td>
+<td>JobTracker</td>
+<td>Nimbus</td>
+</tr>
+<tr>
+<td>系统角色</td>
+<td>TaskTracker</td>
+<td>Supervisor</td>
+</tr>
+<tr>
+<td>系统角色</td>
+<td>Child</td>
+<td>Worker</td>
+</tr>
+<tr>
+<td>应用名称</td>
+<td>Job</td>
+<td>Topology</td>
+</tr>
+<tr>
+<td>组件接口</td>
+<td>Mapper/Reducer</td>
+<td>Spout/Bolt</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/04/27/Storm基础：概念与原理/">Storm基础：概念与原理</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Paleo</a></p>
+        <p><span>发布时间:</span>2017-04-27, 22:40:42</p>
+        <p><span>最后更新:</span>2017-04-27, 23:13:05</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/04/27/Storm基础：概念与原理/" title="Storm基础：概念与原理">http://blog.maxplus1.com/2017/04/27/Storm基础：概念与原理/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://blog.maxplus1.com/2017/04/27/Storm基础：概念与原理/　　作者: Paleo" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2017/04/23/Spark_RDD_API/">
+                    Spark RDD API
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/04/27/Python脚本：遍历文件夹/">
+                    Python脚本：遍历文件夹
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Storm基本原理与概念"><span class="toc-number">1.</span> <span class="toc-text">Storm基本原理与概念</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Component"><span class="toc-number">2.</span> <span class="toc-text">Component</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Topology-拓扑"><span class="toc-number">3.</span> <span class="toc-text">Topology 拓扑</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stream-数据流"><span class="toc-number">4.</span> <span class="toc-text">Stream 数据流</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spout"><span class="toc-number">5.</span> <span class="toc-text">Spout</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Bolt"><span class="toc-number">6.</span> <span class="toc-text">Bolt</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stream-grouping-流分组策略"><span class="toc-number">7.</span> <span class="toc-text">Stream grouping 流分组策略</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Partial-grouping-部分关键字分组"><span class="toc-number">8.</span> <span class="toc-text">Partial grouping(部分关键字分组)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#可靠性"><span class="toc-number">9.</span> <span class="toc-text">可靠性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#如何去除可靠性"><span class="toc-number">10.</span> <span class="toc-text">如何去除可靠性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">11.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Worker"><span class="toc-number">12.</span> <span class="toc-text">Worker</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Executor"><span class="toc-number">13.</span> <span class="toc-text">Executor</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#parallelismHint-并行度"><span class="toc-number">14.</span> <span class="toc-text">parallelismHint(并行度)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Nimbus"><span class="toc-number">15.</span> <span class="toc-text">Nimbus</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Supervisor"><span class="toc-number">16.</span> <span class="toc-text">Supervisor</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Nimbus-HA-Since-Storm-1-x"><span class="toc-number">17.</span> <span class="toc-text">Nimbus HA (Since Storm 1.x)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Tuple-元组"><span class="toc-number">18.</span> <span class="toc-text">Tuple 元组</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Field"><span class="toc-number">19.</span> <span class="toc-text">Field</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BasicBoltExecutor与BaseBasicBolt"><span class="toc-number">20.</span> <span class="toc-text">BasicBoltExecutor与BaseBasicBolt</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Storm与MapReduce"><span class="toc-number">21.</span> <span class="toc-text">Storm与MapReduce</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"Storm基础：概念与原理　| Paleo's blog　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+        <section id="comments">
+    <style> aside.comment-bar { margin: auto 30px; }</style>
+    <div id="disqus_thread"></div>
+    <script>
+        var disqus_config = function(){
+            this.page.url = 'http://blog.maxplus1.com/2017/04/27/Storm基础：概念与原理/';
+            this.page.identifier = '2017/04/27/Storm基础：概念与原理/';
+        };
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = '//blog-maxplus1-com.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        }
+    </script>
+    
+    <script> loadComment(); </script>
+
+</section>
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2017/04/23/Spark_RDD_API/" title="上一篇: Spark RDD API">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/04/27/Python脚本：遍历文件夹/" title="下一篇: Python脚本：遍历文件夹">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Python脚本：遍历文件夹/">Python脚本：遍历文件夹</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm基础：概念与原理/">Storm基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark_RDD_API/">Spark RDD API</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/Hbase-ORM的实现/">Hbase ORM的实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/分布式并发控制（连接池）/">分布式并发控制（连接池）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/分布式令牌桶设计实现（流控）/">分布式令牌桶设计实现（流控）</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Paleo
+            </div>
+            <div class="footer-right">
+                 <a href="http://www.maxplus1.com/" target="_blank" title="About Me">Paleo</a>'s blog  <i class="fa fa-heart animated infinite pulse"></i>
+                 <a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html" target="_blank" title="MDEditor"><img src="https://pandao.github.io/editor.md/images/logos/editormd-logo-180x180.png" height="20" width="20" style="margin-bottom:-3px;"></img></a>
+            </div>
+        </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+            
+             tags: ".article-tag a", 
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
