@@ -22,15 +22,16 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="简单介绍Spark里面的一些基础知识和原理实现。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/Spark_Cluster.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/窄依赖管道（分区）并行计算.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖与窄依赖.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖容错恢复.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/spark-webui-accumulators.png">
-<meta property="og:updated_time" content="2017-04-23T13:23:53.204Z">
+<meta property="og:updated_time" content="2017-04-27T15:52:25.562Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spark基础：概念与原理">
 <meta name="twitter:description" content="简单介绍Spark里面的一些基础知识和原理实现。">
-<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/spark/窄依赖管道（分区）并行计算.png">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/spark/Spark_Cluster.png">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -186,7 +187,7 @@
                 
                 <section class="switch-part switch-part2">
                     <div class="widget tagcloud" id="js-tagcloud">
-                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hbase/">Hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storm/">Storm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/令牌桶/">令牌桶</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发控制/">并发控制</a></li></ul>
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HDFS/">HDFS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hbase/">Hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hello-World/">Hello World</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storm/">Storm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/令牌桶/">令牌桶</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发控制/">并发控制</a></li></ul>
                     </div>
                 </section>
                 
@@ -289,6 +290,15 @@
           
         <p><excerpt in="" index="" |="" 首页摘要=""><br>简单介绍Spark里面的一些基础知识和原理实现。<a id="more"></a></excerpt></p>
 <p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="总体架构"><a href="#总体架构" class="headerlink" title="总体架构"></a><a href="http://spark.apache.org/docs/latest/cluster-overview.html#components" target="_blank" rel="external">总体架构</a></h1><p>Spark集群总体架构图如下：<br><img src="/resources/img/spark/Spark_Cluster.png" alt="SparkCluster总体架构"></p>
+<ul>
+<li>Cluster Manager(集群管理器)：<ul>
+<li><a href="http://spark.apache.org/docs/latest/spark-standalone.html" target="_blank" rel="external">Standalone</a> – Spark自己的集群管理器</li>
+<li><a href="http://spark.apache.org/docs/latest/running-on-mesos.html" target="_blank" rel="external">Apache Mesos</a> – 基于Mesos</li>
+<li><a href="http://spark.apache.org/docs/latest/running-on-yarn.html" target="_blank" rel="external">Hadoop YARN</a> – 基于Yarn<br>这些集群管理器可以在应用间分配资源。SparkContext与Cluster Manager一旦连接，Spark需要在集群上的线程池子节点，也就是那些执行计算和存储应用数据的工作进程。然后，它将把你的应用代码（以JAR或者Python定义的文件并传送到SparkContext）发送到线程池。最后，SparkContext发送任务让线程池运行。</li>
+</ul>
+</li>
+</ul>
 <h1 id="Application"><a href="#Application" class="headerlink" title="Application"></a>Application</h1><p>指编写的Spark程序。</p>
 <h1 id="Driver"><a href="#Driver" class="headerlink" title="Driver"></a>Driver</h1><p>Spark作业的主进程，负责作业的解析，并且负责向yarn申请资源，并且调度作业的executor。<br>提交Spark Application到集群的时候，对于Spark来说，就是生成一个Driver进程来执行Spark App的main函数，并且初始化SparkContext。<br>DAGScheduler和TaskScheduler都是属于Driver的。</p>
 <ul>
@@ -489,7 +499,7 @@
         <p><span>本文标题:</span><a href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Paleo</a></p>
         <p><span>发布时间:</span>2017-04-23, 13:31:48</p>
-        <p><span>最后更新:</span>2017-04-23, 21:23:53</p>
+        <p><span>最后更新:</span>2017-04-27, 23:52:25</p>
         <p>
             <span>原始链接:</span><a class="post-url" href="/2017/04/23/Spark基础：概念与原理/" title="Spark基础：概念与原理">http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/</a>
             <span class="copy-path" data-clipboard-text="原文: http://blog.maxplus1.com/2017/04/23/Spark基础：概念与原理/　　作者: Paleo" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
@@ -525,7 +535,7 @@
     <div id="toc" class="toc-article">
         <strong class="toc-title">文章目录</strong>
         
-            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Application"><span class="toc-number">1.</span> <span class="toc-text">Application</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Driver"><span class="toc-number">2.</span> <span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Job"><span class="toc-number">3.</span> <span class="toc-text">Job</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stage"><span class="toc-number">4.</span> <span class="toc-text">Stage</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">5.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RDD"><span class="toc-number">6.</span> <span class="toc-text">RDD</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖与窄依赖"><span class="toc-number">6.1.</span> <span class="toc-text">宽依赖与窄依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖发生Shuffle的性能影响"><span class="toc-number">6.2.</span> <span class="toc-text">宽依赖发生Shuffle的性能影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD的持久化"><span class="toc-number">6.3.</span> <span class="toc-text">RDD的持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD持久化选择"><span class="toc-number">6.4.</span> <span class="toc-text">RDD持久化选择</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存清除"><span class="toc-number">7.</span> <span class="toc-text">缓存清除</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#共享变量"><span class="toc-number">8.</span> <span class="toc-text">共享变量</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#广播变量"><span class="toc-number">8.1.</span> <span class="toc-text">广播变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#累加器"><span class="toc-number">8.2.</span> <span class="toc-text">累加器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#提交任务到集群"><span class="toc-number">9.</span> <span class="toc-text">提交任务到集群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#通过Java-Scala启动Spark作业"><span class="toc-number">10.</span> <span class="toc-text">通过Java/Scala启动Spark作业</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#单元测试"><span class="toc-number">11.</span> <span class="toc-text">单元测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark官方示例"><span class="toc-number">12.</span> <span class="toc-text">Spark官方示例</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#总体架构"><span class="toc-number">1.</span> <span class="toc-text">总体架构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Application"><span class="toc-number">2.</span> <span class="toc-text">Application</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Driver"><span class="toc-number">3.</span> <span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Job"><span class="toc-number">4.</span> <span class="toc-text">Job</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stage"><span class="toc-number">5.</span> <span class="toc-text">Stage</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">6.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RDD"><span class="toc-number">7.</span> <span class="toc-text">RDD</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖与窄依赖"><span class="toc-number">7.1.</span> <span class="toc-text">宽依赖与窄依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#宽依赖发生Shuffle的性能影响"><span class="toc-number">7.2.</span> <span class="toc-text">宽依赖发生Shuffle的性能影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD的持久化"><span class="toc-number">7.3.</span> <span class="toc-text">RDD的持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDD持久化选择"><span class="toc-number">7.4.</span> <span class="toc-text">RDD持久化选择</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存清除"><span class="toc-number">8.</span> <span class="toc-text">缓存清除</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#共享变量"><span class="toc-number">9.</span> <span class="toc-text">共享变量</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#广播变量"><span class="toc-number">9.1.</span> <span class="toc-text">广播变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#累加器"><span class="toc-number">9.2.</span> <span class="toc-text">累加器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#提交任务到集群"><span class="toc-number">10.</span> <span class="toc-text">提交任务到集群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#通过Java-Scala启动Spark作业"><span class="toc-number">11.</span> <span class="toc-text">通过Java/Scala启动Spark作业</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#单元测试"><span class="toc-number">12.</span> <span class="toc-text">单元测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark官方示例"><span class="toc-number">13.</span> <span class="toc-text">Spark官方示例</span></a></li></ol>
         
     </div>
     <style>
@@ -617,7 +627,7 @@
         
     </div>
 
-    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm之启动脚本解析/">Storm之启动脚本解析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Python脚本：遍历文件夹/">Python脚本：遍历文件夹</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm基础：概念与原理/">Storm基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark_RDD_API/">Spark RDD API</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/Hbase-ORM的实现/">Hbase ORM的实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/分布式并发控制（连接池）/">分布式并发控制（连接池）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/分布式令牌桶设计实现（流控）/">分布式令牌桶设计实现（流控）</a></li></ul>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/03/HDFS基础：概念与原理/">HDFS基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Spark作业资源分配/">Spark作业资源分配</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm拓扑资源分配/">Storm拓扑资源分配</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm之启动脚本解析/">Storm之启动脚本解析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Python脚本：遍历文件夹/">Python脚本：遍历文件夹</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm基础：概念与原理/">Storm基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark_RDD_API/">Spark RDD API</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/Hbase-ORM的实现/">Hbase ORM的实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/分布式并发控制（连接池）/">分布式并发控制（连接池）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/分布式令牌桶设计实现（流控）/">分布式令牌桶设计实现（流控）</a></li><li class="post-list-item"><a class="post-list-link" href="/1970/01/01/Hello_World/">Hello,World!</a></li></ul>
 
 
 
@@ -625,6 +635,7 @@
     <script>
         
     </script>
+
 </div>
       <footer id="footer">
     <div class="outer">
@@ -660,6 +671,7 @@
             }
         })
     </script>
+
 
 
 

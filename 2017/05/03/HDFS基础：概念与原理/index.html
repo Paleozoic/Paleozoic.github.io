@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Paleo" />
+
+
+
+<meta name="description" content="简单介绍HDFS里面的一些基础知识和原理实现。">
+<meta name="keywords" content="HDFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS基础：概念与原理">
+<meta property="og:url" content="http://blog.maxplus1.com/2017/05/03/HDFS基础：概念与原理/index.html">
+<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:description" content="简单介绍HDFS里面的一些基础知识和原理实现。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/federation-background.gif">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/federation.gif">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/viewfs_TypicalMountTable.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/HDFS高可靠性.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/checkpoint.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/read.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/write.png">
+<meta property="og:updated_time" content="2017-05-04T14:18:35.384Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HDFS基础：概念与原理">
+<meta name="twitter:description" content="简单介绍HDFS里面的一些基础知识和原理实现。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/hdfs/federation-background.gif">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Paleo&#39;s blog" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/resources/img/favicon.ico">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>HDFS基础：概念与原理 | Paleo&#39;s blog</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script>
+        yiliaConfig.jquery_ui = [true, "//cdn.bootcss.com/jqueryui/1.10.4/jquery-ui.min.js", "//cdn.bootcss.com/jqueryui/1.10.4/css/jquery-ui.min.css"];
+    </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/resources/img/head.jpg" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Paleo</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">超然物外，天道酬勤。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="false" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HDFS/">HDFS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hbase/">Hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hello-World/">Hello World</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storm/">Storm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/令牌桶/">令牌桶</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发控制/">并发控制</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Paleo</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/resources/img/head.jpg" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Paleo</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">超然物外，天道酬勤。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:qxloong@foxmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/Paleozoic" title="GitHub"></a>
+                            
+                                <a class="fa Coding" target="_blank" href="https://coding.net/u/paleozoic" title="Coding"></a>
+                            
+                                <a class="fa RSS" target="_blank" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-HDFS基础：概念与原理" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/05/03/HDFS基础：概念与原理/" class="article-date">
+      <time datetime="2017-05-02T16:11:32.000Z" itemprop="datePublished">2017-05-03</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HDFS基础：概念与原理
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HDFS/">HDFS</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>简单介绍HDFS里面的一些基础知识和原理实现。<a id="more"></a></excerpt></p>
+<p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="HDFS特点"><a href="#HDFS特点" class="headerlink" title="HDFS特点"></a>HDFS特点</h1><ul>
+<li>支持：<ul>
+<li>处理超大文件(Very large files)：处理几百MB、TB甚至PB级别的数据。</li>
+<li>流式地访问数据(Streaming data access)：HDFS设计模式基于“一次写入，多次读取”(write-once, read-many-times)。数据集由数据源生成或复制至HDFS，然后被用于分析。一般来说，这种数据分析应该基于整个数据集。所以对于HDFS来说，设计上应该考虑读取整个数据集的性能而不是读取其中一条数据的性能。</li>
+<li>商用硬件(Commodity hardware)：可以运行于廉价的商用硬件集群上。</li>
+</ul>
+</li>
+<li>不支持：<ul>
+<li>低延迟数据访问(Low-latency data access)：HDFS不适用于低延迟的数据访问，比如数百ms的响应时间。HDFS强调的是吞吐量，如果需要实时的数据访问，基于HDFS的HBase才是合适的技术。</li>
+<li>海量小文件(Lots of small files)：HDFS会将文件系统的元数据加载到NameNode的内存。NameNode的内存限制了文件存储的数量。每个文件的元数据大约占用150 bytes空间。<br>PS：在HDFS 2.x，已经支持NameNode分片扩展(NameNode Federation)，类似于Redis Cluster。</li>
+<li>多用户写入，文件任意修改(Multiple writers, arbitrary file modifications)：在HDFS文件只能被一个用户写入，并且只能是文件末尾追加。不支持多用户写入以及通过偏移量修改文件任意位置。</li>
+</ul>
+</li>
+</ul>
+<h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="block块"><a href="#block块" class="headerlink" title="block块"></a>block块</h2><p>block是HDFS存储（读写）文件的最小单位（类似于windows文件系统NFS的簇，或Linux文件系统的块）。<br>block的默认大小在Hadoop 1.x是64M，在Hadoop 2.x是128M。<br>HDFS将文件分割存储在各个block中，而block则分布在各个DataNode中。<br>HDFS默认是3个副本。<br>HDFS中文件大小如果小于block，并不会占用整个block的空间。<br>HDFS将集群当做一个整体，每个DataNode划分了很多的block（类比Windows将磁盘看做一个整体，在磁盘上划分了很多的簇），数据便存储在这些block里面。<br>注意：NFS的簇是Windows操作系统的逻辑概念，HDFS的块是Hadoop应用的逻辑概念。<br>二者所属层次不同，NFS是操作系统提供支持，HDFS是应用提供支持。不过二者硬件底层都是磁盘提供物理存储支持。</p>
+<blockquote>
+<p>为什么HDFS的block单位如此大？</p>
+<ul>
+<li>文件被切分时，块的数量少，HDFS访问定位（相当于“磁盘寻道”）、聚合（从各个block读取数据）都会较快。</li>
+<li>bolck的大小设置由磁盘的传输速率决定。假设磁盘寻道时间是10ms，传输速度是100 MB/s。让寻道时间为传输时间的1%，那么传输时间是1s。<br>所以块大小应为：传输速率<em>传输时间，即100MB/s</em>1s = 100M</li>
+</ul>
+</blockquote>
+<h2 id="NameNode"><a href="#NameNode" class="headerlink" title="NameNode"></a>NameNode</h2><p>HDFS是典型的Master-Slave(Worker)模式，NameNode便是Master。<br>NameNode管理这文件系统的命名空间，维护整个文件系统的文件目录树以及这些文件的索引目录（概括来说是维护HDFS的元数据）。<br>NameNode的元数据包括：</p>
+<ul>
+<li>文件存储路径</li>
+<li>NameNode描述</li>
+<li>副本数量</li>
+<li>数据块数量</li>
+<li>数据块存储的物理位置（主机名）</li>
+<li>CRC校验判断文件块是否损坏</li>
+</ul>
+<p>HDFS元数据数据以2种形式持久化在本地磁盘中：</p>
+<ul>
+<li>文件系统镜像(FileSystem Image)：整个文件系统的元数据快照。</li>
+<li>编辑日志(Edit Log)：NameNode启动后，client对文件系统的改动日志。</li>
+</ul>
+<h2 id="NameNode扩展-NameNode-Federation"><a href="#NameNode扩展-NameNode-Federation" class="headerlink" title="NameNode扩展(NameNode Federation)"></a>NameNode扩展(NameNode Federation)</h2><p>NameNode受限与内存，那么【分片】就很有必要了。<br><strong>单NameNode架构：</strong><br><img src="/resources/img/hdfs/federation-background.gif" alt="HA"></p>
+<ul>
+<li>Namespace：有且只有一个Namespace/NameNode</li>
+<li>Block Storage Service：<ul>
+<li>Block Management：<ul>
+<li>通过处理注册和心跳维护DataNodes状态</li>
+<li>处理block reports和维护block位置</li>
+<li>支持block的增删改查</li>
+<li>管理副本放置、块复制以及删除多余副本</li>
+</ul>
+</li>
+<li>Storage：DataNodes提供把blocks存储在本地磁盘并给予读写权限的功能。</li>
+</ul>
+</li>
+</ul>
+<p><strong>NameNode Federation架构：</strong><br><img src="/resources/img/hdfs/federation.gif" alt="HA"></p>
+<ul>
+<li>Namespace Volume：Namespace和它的Block Pool合称为Namespace Volume<ul>
+<li>Namespace：Namespace由一个或多个NameNode组成</li>
+<li>Block Pool：每个NameNode都有一个pool，每个pool都维护这一些列属于该NameNode的blocks。一个Namespace下的所有pool组成Block Pool。Block Pool维护了整个Namespace的blocks信息。</li>
+</ul>
+</li>
+<li>ClusterID：用来标识集群中的所有节点。在格式化NameNode的时候，需要指定ClusterID，否则会自动生成。ClusterID会被用于将其他NameNode格式化进集群。</li>
+<li><a href="http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/ViewFs.html" target="_blank" rel="external">ViewFs</a>：用于管理HDFS的Namespaces（或者说Namespace Volumes）。</li>
+</ul>
+<blockquote>
+<p>NameNode Federation是如何进行分片横向扩展的？是否类似于Redis Cluster的Hash分片？<br>显然，由于划分了Namespace，通过Hash(filePath)的方式来分片，那么具有同样业务IO特性的文件有可能跨Namespace，性能降低。<br>HDFS使用的方法是ViewFs,类似于Unix/Linux系统的<strong>client-side mount table</strong>。指定Namespace的Pathname Pattern（将Pathname Pattern挂载在某个Namespace），然后将具有相同Pathname Pattern的文件将会定位到指定的Namespace。<br>下图表示将/data、/project、/user、/tmp 一共4个路径挂载到4个不同的命名空间。<br><img src="/resources/img/hdfs/viewfs_TypicalMountTable.png" alt="ViewFs:client-side mount table"></p>
+</blockquote>
+<h2 id="DataNode"><a href="#DataNode" class="headerlink" title="DataNode"></a>DataNode</h2><p>DataNode是具体读写任务的执行节点：存储文件块，被客户端和NameNode调用。同时通过心跳周期性地向NameNode报告文件块的信息。</p>
+<h2 id="SecondaryNameNode"><a href="#SecondaryNameNode" class="headerlink" title="SecondaryNameNode"></a>SecondaryNameNode</h2><p>负责定期合并edit logs到系统文件镜像(namespace image or called FileSystem Image)，以减少edit log的空间。<br>SecondaryNameNode进行checkpoint备份的数据必然是滞后于NameNode的，如果NameNode完全挂掉，包括磁盘（即丢掉了最新的edit logs）。那么还是会丢掉一部分数据。<br>Hadoop 2.x通过JournalNodes实现了热备。<br>PS：SecondaryNameNode并不能实现高可用，NameNode依然是单点的。NameNode故障重启加载元数据（冷启动）也要消耗大量时间。</p>
+<h1 id="HDFS副本策略（机架感知rack-aware）"><a href="#HDFS副本策略（机架感知rack-aware）" class="headerlink" title="HDFS副本策略（机架感知rack-aware）"></a>HDFS副本策略（机架感知rack-aware）</h1><ul>
+<li>第一个副本在本地机器</li>
+<li>第二个副本在远端机架</li>
+<li>第三个副本在本地机架的不同节点</li>
+<li>其他副本随机放置</li>
+</ul>
+<h1 id="HDFS就近读取策略"><a href="#HDFS就近读取策略" class="headerlink" title="HDFS就近读取策略"></a>HDFS就近读取策略</h1><p>HDFS会就近读取文件的副本，而所谓的远近由拓扑距离定义。<br>同节点，距离为0；同一机架不同节点，距离为2；<br>相同数据中心不同机架，距离为4；<br>不同数据中心，距离为6.</p>
+<h1 id="HDFS的安全模式"><a href="#HDFS的安全模式" class="headerlink" title="HDFS的安全模式"></a>HDFS的安全模式</h1><p>NameNode启动后会进入安全模式。<br>处于安全模式的NameNode不会进行数据块的“写”操作，只能进行“读”操作。<br>NameNode从所有的DataNode接收心跳信号和块状态报告，状态报告包括了某个DataNode所有的block的信息。<br>每个block都有一个指定的最小副本数，当NameNode确认某个block的副本数量达到最小副本数时，则认为该block是副本安全的。<br>NameNode确认一定百分比（可配置）的block是副本安全后，NameNode会退出安全模式。<br>之后，NameNode对于副本数量不足的block会补充合适的副本。</p>
+<h1 id="HDFS-High-Availability"><a href="#HDFS-High-Availability" class="headerlink" title="HDFS High Availability"></a>HDFS High Availability</h1><blockquote>
+<p>JournalNodes<br>一组用于NameNode Active和NameNode Standby通信的进程。通过JournalNodes实现HA，也就实现了HDFS的高可用。<br>注意JournalNodes必须大于3，且最好是奇数，因为NameNode Active的editlog必须写入超过一半的JournalNodes才算写入成功（分布式一致性算法）。</p>
+</blockquote>
+<p>高可用满足：</p>
+<ul>
+<li>edit logs共享，NameNode Standby可以读取NameNode Active全部的edit logs，之后与NameNode Active保持edit logs同步。</li>
+<li>DataNodes必须向NameNode Standby和NameNode Active同时发送block reports，因为block的映射信息存储于NameNode的内存而不是磁盘。</li>
+<li>客户端操作HDFS时，故障切换NameNode对于用户透明。</li>
+<li>SecondaryNameNode的checkpoint工作由NameNode Standby取代，NameNode Standby会周期性地checkpoint NameNode Active的namespace。<br><img src="/resources/img/hdfs/HDFS高可靠性.png" alt="HA"></li>
+</ul>
+<h1 id="Block-Caching"><a href="#Block-Caching" class="headerlink" title="Block Caching"></a>Block Caching</h1><p>通常DataNode从磁盘读取block，但对于频繁访问的文件块，可以显式缓存在DataNode的<strong>堆外内存</strong>中。<br>默认一个block只缓存在1个DataNode的内存中，不过这个参数可以基于文件进行配置。<br>比如，需要将一个小表用于join操作，那么用户可以指定NameNode缓存指定的文件（并且指定缓存过期时间），NameNode就会生成一个cache加入到cache pool（落在物理上就是DataNode将block写入堆外内存）。cache pool用于管理缓存的权限和资源使用。</p>
+<h1 id="HDFS的checkpoint"><a href="#HDFS的checkpoint" class="headerlink" title="HDFS的checkpoint"></a>HDFS的checkpoint</h1><p>checkpoint指的是SecondaryNameNode合并edit log的过程。</p>
+<ul>
+<li>1.SecondaryNameNode请求回滚NameNode正在写入的editlogs，并将new editlogs写到一个新文件中去（图中edits_inprogress_20）。NameNode更新它所有的seen_txid文件。<blockquote>
+<p>seen<em>txid是存放transactionId的文件，format之后是0，它代表的是NameNode里面的edits</em>*文件的尾数，NameNode重启的时候，会按照seen_txid的数字， 顺序从头跑edits_0000001~到seen_txid的数字</p>
+</blockquote>
+</li>
+<li>2.SecondaryNameNode通过HTTP GET请求获取最新的fsimage and edits files（图中fsimage_0和dits_1-19）。</li>
+<li>3.SecondaryNameNode加载fsimage至内存，合并editlog。得到一个新的fsimage file（图中fsimage_19.ckpt）。</li>
+<li>4.SecondaryNameNode通过HTTP PUT将新的fsimage传输到NameNode，保存为一个临时.ckpt文件。</li>
+<li>5.NameNode重命名临时.ckpt文件使其生效。<br>checkpoint的最终结果是：NameNode得到一个最新的fsimage和一个较小的新的editlog文件（checkpoint过程客户端对HDFS的写操作日志）<br><img src="/resources/img/hdfs/checkpoint.png" alt="checkpoint"></li>
+</ul>
+<h1 id="HDFS读流程"><a href="#HDFS读流程" class="headerlink" title="HDFS读流程"></a>HDFS读流程</h1><ul>
+<li>1.Client调用FileSystem.open(filePath)</li>
+<li>2.DistributedFileSystem用RPC去NameNode获取文件块的位置</li>
+<li>3.open方法返回得到FSDataInputStream，用于流式读取</li>
+<li>4.Client调用FSDataInputStream.read读取拓扑距离最近的DataNode</li>
+<li>5.直至FSDataInputStream读取到文件最后的一个block</li>
+<li>6.读取完毕，关闭输入流</li>
+</ul>
+<p><img src="/resources/img/hdfs/read.png" alt="HDFS读流程"></p>
+<h1 id="HDFS写流程"><a href="#HDFS写流程" class="headerlink" title="HDFS写流程"></a>HDFS写流程</h1><ul>
+<li>1.Client调用FileSystem.create(filePath)</li>
+<li>2.DistributedFileSystem通过RPC在NameNode创建一个新的空文件（即没有blocks的文件）</li>
+<li>3.create方法返回得到FSDataOutputStream，用于流式写入。FSDataOutputStream会将Client写入的数据分割成packets，组成一个<code>data queue</code>。<code>data queue</code>被<code>DataStreamer</code>消费，<br>并请求NameNode通过副本策略选择合适的节点来存放数据副本。这些节点组成一个管道pipeline（图中展示的是3个副本的写入操作）。</li>
+<li>4.<code>DataStreamer</code>将packets写入第一个节点，第一个节点将数据复制到第二个节点，依次类推。</li>
+<li>5.<code>DFSOutputStream</code>还维护了一个<code>ack queue</code>，<code>ack queue</code>里面存放的是未被ack的packets。1个packet被所有节点ack后，就会从<code>ack queue</code>里面移除。</li>
+<li>6.写入完毕，关闭输出流。<br><img src="/resources/img/hdfs/write.png" alt="HDFS写流程"></li>
+</ul>
+<blockquote>
+<p>TODO:关于HDFS读写流程就图只能简单解读，如果需要更加深入的了解，可以通过HDFS原生的Client结合HDFS源码来细细研读。<br>还可以结合SpringHadoop研究一下优秀的代码封装(TextFileReader和TextFileWriter)。<br>HDFS相关jar是：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.data<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-data-hadoop-store<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.4.0.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></div></pre></td></tr></table></figure></p>
+</blockquote>
+<h1 id="HDFS命令"><a href="#HDFS命令" class="headerlink" title="HDFS命令"></a><a href="http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HDFSCommands.html" target="_blank" rel="external">HDFS命令</a></h1><ul>
+<li>User Commands</li>
+<li>Administration Commands</li>
+<li>Debug Commands</li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/05/03/HDFS基础：概念与原理/">HDFS基础：概念与原理</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Paleo</a></p>
+        <p><span>发布时间:</span>2017-05-03, 00:11:32</p>
+        <p><span>最后更新:</span>2017-05-04, 22:18:35</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/05/03/HDFS基础：概念与原理/" title="HDFS基础：概念与原理">http://blog.maxplus1.com/2017/05/03/HDFS基础：概念与原理/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://blog.maxplus1.com/2017/05/03/HDFS基础：概念与原理/　　作者: Paleo" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2017/04/27/Spark作业资源分配/">
+                    Spark作业资源分配
+                </a>
+            </div>
+        
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS特点"><span class="toc-number">1.</span> <span class="toc-text">HDFS特点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基本概念"><span class="toc-number">2.</span> <span class="toc-text">基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#block块"><span class="toc-number">2.1.</span> <span class="toc-text">block块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NameNode"><span class="toc-number">2.2.</span> <span class="toc-text">NameNode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NameNode扩展-NameNode-Federation"><span class="toc-number">2.3.</span> <span class="toc-text">NameNode扩展(NameNode Federation)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DataNode"><span class="toc-number">2.4.</span> <span class="toc-text">DataNode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SecondaryNameNode"><span class="toc-number">2.5.</span> <span class="toc-text">SecondaryNameNode</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS副本策略（机架感知rack-aware）"><span class="toc-number">3.</span> <span class="toc-text">HDFS副本策略（机架感知rack-aware）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS就近读取策略"><span class="toc-number">4.</span> <span class="toc-text">HDFS就近读取策略</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS的安全模式"><span class="toc-number">5.</span> <span class="toc-text">HDFS的安全模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS-High-Availability"><span class="toc-number">6.</span> <span class="toc-text">HDFS High Availability</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Block-Caching"><span class="toc-number">7.</span> <span class="toc-text">Block Caching</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS的checkpoint"><span class="toc-number">8.</span> <span class="toc-text">HDFS的checkpoint</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS读流程"><span class="toc-number">9.</span> <span class="toc-text">HDFS读流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS写流程"><span class="toc-number">10.</span> <span class="toc-text">HDFS写流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HDFS命令"><span class="toc-number">11.</span> <span class="toc-text">HDFS命令</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"HDFS基础：概念与原理　| Paleo's blog　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+        <section id="comments">
+    <style> aside.comment-bar { margin: auto 30px; }</style>
+    <div id="disqus_thread"></div>
+    <script>
+        var disqus_config = function(){
+            this.page.url = 'http://blog.maxplus1.com/2017/05/03/HDFS基础：概念与原理/';
+            this.page.identifier = '2017/05/03/HDFS基础：概念与原理/';
+        };
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = '//blog-maxplus1-com.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        }
+    </script>
+    
+    <script> loadComment(); </script>
+
+</section>
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2017/04/27/Spark作业资源分配/" title="上一篇: Spark作业资源分配">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/03/HDFS基础：概念与原理/">HDFS基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Spark作业资源分配/">Spark作业资源分配</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm拓扑资源分配/">Storm拓扑资源分配</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm之启动脚本解析/">Storm之启动脚本解析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Python脚本：遍历文件夹/">Python脚本：遍历文件夹</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/27/Storm基础：概念与原理/">Storm基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark_RDD_API/">Spark RDD API</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/23/Spark基础：概念与原理/">Spark基础：概念与原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/Hbase-ORM的实现/">Hbase ORM的实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/分布式并发控制（连接池）/">分布式并发控制（连接池）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/分布式令牌桶设计实现（流控）/">分布式令牌桶设计实现（流控）</a></li><li class="post-list-item"><a class="post-list-link" href="/1970/01/01/Hello_World/">Hello,World!</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Paleo
+            </div>
+            <div class="footer-right">
+                 <a href="http://www.maxplus1.com/" target="_blank" title="About Me">Paleo</a>'s blog  <i class="fa fa-heart animated infinite pulse"></i>
+                 <a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html" target="_blank" title="MDEditor"><img src="https://pandao.github.io/editor.md/images/logos/editormd-logo-180x180.png" height="20" width="20" style="margin-bottom:-3px;"></img></a>
+            </div>
+        </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+            
+             tags: ".article-tag a", 
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
