@@ -1,6 +1,7 @@
 ---
 title: Storm基础：概念与原理
 date: 2017-04-27 22:40:42
+categories: [Hadoop,Storm]
 tags: [Storm]
 ---
 <Excerpt in index | 首页摘要>
@@ -136,7 +137,7 @@ Nimbus、Supervisor与zookeeper关系如图：
 # BasicBoltExecutor与BaseBasicBolt
 自动调用`ack`，一开始以为是模板方法。后来看了`BasicBoltExecutor`发现是装饰者，这儿有点意思。
 对于可靠的消息处理，若希望自动ack，理应继承`BaseBasicBolt`而不是`BasicRichBolt`。
-
+`BasicBoltExecutor`对于Tuple会自动ack，并且ack失败会自动调用fail方法重发。
 
 # Storm与MapReduce
 我写Spark的时候，MR类思想总感觉可以对应上Storm，遂搜寻有下表：[来源](http://www.aboutyun.com/thread-7394-1-1.html)
@@ -148,3 +149,19 @@ Nimbus、Supervisor与zookeeper关系如图：
 |系统角色|Child|Worker|
 |应用名称|Job|Topology|
 |组件接口|Mapper/Reducer|Spout/Bolt|
+
+# Storm消息保证等级
+对于消息在集群中传递，比如Kafka，JMS等消息机制，都会有类似的保证机制等级。
+- At Most Once: 最多一次，消息只发送一次，消息不重复、可丢失。即Tuple不进行Track。
+- At Least Once: 至少一次，消息至少发送一次，消息不丢失、可重复。即Tuple被Track，失败了会进行重发，直至成功，所以可能会造成重复计算。
+- Exactly Once: 恰好一次，消息只发送一次，消息不重复、不丢失。提供TridentAPI，实现事务Tuple。
+
+# Bolt的线程安全问题
+No, they do not need to be thread-safe. Each task has their own instance of the bolt or spout object they're executing,
+and for any given task Storm calls all spout/bolt methods on a single thread.
+[Storm主程nathanmarz回答](https://groups.google.com/forum/#!topic/storm-user/IS8PijLjU8c )
+既然如此，这里便有一个疑问：
+Storm的Bolt的最小任务执行单元是Task，并且是Task是多实例的？
+那么对于一些共享的资源，比如连接池，只能在在Task间共享？而不能在每个Executor甚至每个Worker共享？如果是这样子，岂不是作用域很小而导致资源浪费？
+**有人如果看到这个，希望可以解惑。**
+看到`org.apache.storm.jdbc.bolt.AbstractJdbcBolt(JdbcInsertBolt)`的源码，他的`ConnectionProvider(HikariCPConnectionProvider)`提供了连接池。也不过是Bolt上的一个实例域而已。

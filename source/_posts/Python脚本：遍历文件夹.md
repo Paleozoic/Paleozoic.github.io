@@ -1,6 +1,7 @@
 ---
 title: Python脚本：遍历文件夹
 date: 2017-04-27 23:16:35
+categories: [Python]
 tags: [Python]
 ---
 <Excerpt in index | 首页摘要>

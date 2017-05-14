@@ -1,6 +1,7 @@
 ---
 title: Hello,World!
 date: 1970-01-01 00:00:00
+categories: [Hello World]
 tags: [Hello World]
 ---
 <Excerpt in index | 首页摘要>

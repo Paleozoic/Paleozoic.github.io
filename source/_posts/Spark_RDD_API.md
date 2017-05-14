@@ -1,14 +1,20 @@
 ---
 title: Spark RDD API
 date: 2017-04-23 15:29:30
+categories: [Hadoop,Spark]
 tags: [Spark]
 ---
 <Excerpt in index | 首页摘要>
 介绍Spark RDD API的含义与使用。<!-- more -->
 <The rest of contents | 余下全文>
 [Spark官方网站的描述](http://spark.apache.org/docs/latest/programming-guide.html#transformations)
-# 常用接口
-## Spark主要类
+# 写在前面
+Spark基于RDD的编程，个人理解是和SQL、存储过程编程是一样的，**面向数据集编程**。
+RDD就像数据库里面的一个个表，SQL的计算便是RDD的API。比如where对应filter什么的。
+所以在编写Spark程序的时候，倒不需要死记RDD的API，而是想象如果用SQL如何实现，然后再来查询相关的API，或者使用SparkSQL。
+写得多了，便是唯手熟尔。
+
+# Spark主要类
 - SparkContext：是Spark对外接口，负责向调用该类的scala应用提供Spark的各种功能，如连接Spark集群、创建RDD等。
 - SparkConf：Spark应用配置类，如配置应用名称，执行模式，executor内存等。
 - RDD（Resilient Distributed Dataset）：用于Spark应用程序中定义RDD的类，该类提供数据集的操作方法，如map，filter。

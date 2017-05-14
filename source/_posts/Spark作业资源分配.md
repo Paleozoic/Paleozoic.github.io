@@ -1,6 +1,7 @@
 ---
 title: Spark作业资源分配
 date: 2017-04-27 23:32:37
+categories: [Hadoop,Spark]
 tags: [Spark]
 ---
 <Excerpt in index | 首页摘要>

@@ -1,6 +1,7 @@
 ---
 title: Zookeeper基础
 date: 2017-05-06 20:19:22
+categories: [Hadoop,Zookeeper]
 tags: [Zookeeper]
 ---
 <Excerpt in index | 首页摘要>
@@ -33,6 +34,8 @@ Zookeeper是一个分布式协调服务器，基于paxos实现了Zab一致性算
 我没有看过dubbo源码，但是根据配置文件，可以大致推出以下结论：
 - dubbo:reference：消费者将会监听zookeeper下关于reference下的znode，消费者获得他所有reference的服务注册在zk的信息，维护成一个表。以此实现客户端的负载均衡。
 - dubbo:service：生产者将service注册到指定znode
+- registry：指定了注册中心的地址，服务注册和发现的address
+- dubbo:protocol：指定了RPC的传输和序列化协议
 ```xml
 <!-- 提供方应用信息，用于计算依赖关系 -->
 <dubbo:application name="hello-world-app"  />

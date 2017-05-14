@@ -1,6 +1,7 @@
 ---
 title: Spark基础：概念与原理
 date: 2017-04-23 13:31:48
+categories: [Hadoop,Spark]
 tags: [Spark]
 ---
 <Excerpt in index | 首页摘要>
@@ -14,7 +15,7 @@ Spark集群总体架构图如下：
   * [Apache Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html) – 基于Mesos
   * [Hadoop YARN](http://spark.apache.org/docs/latest/running-on-yarn.html) – 基于Yarn
   这些集群管理器可以在应用间分配资源。SparkContext与Cluster Manager一旦连接，Spark需要在集群上的线程池子节点，也就是那些执行计算和存储应用数据的工作进程。然后，它将把你的应用代码（以JAR或者Python定义的文件并传送到SparkContext）发送到线程池。最后，SparkContext发送任务让线程池运行。
-  
+
 # Application
 指编写的Spark程序。
 # Driver
@@ -45,7 +46,7 @@ Stage由Task组成，每个Stage内的Task是并行执行的，而Stage之间是
 Stage的划分：每个Shuffle Dependency（即Wide Dependency）之前的所有RDD操作。
 
 # Task
-Task有2类：ShuffleMapTask和ResultTask，类似与MapReduce的Map个Reduce。
+Task有2类：ShuffleMapTask和ResultTask，类似与MapReduce的Map和Reduce。
 Task的划分：Stage的最后1个RDD的分区数 = Task数量。
 Task是并行的，合理设置分区可以提高资源利用率。
 

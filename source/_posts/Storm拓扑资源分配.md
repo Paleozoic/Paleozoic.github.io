@@ -1,6 +1,7 @@
 ---
 title: Storm拓扑资源分配
 date: 2017-04-27 23:32:05
+categories: [Hadoop,Storm]
 tags: [Storm]
 ---
 <Excerpt in index | 首页摘要>

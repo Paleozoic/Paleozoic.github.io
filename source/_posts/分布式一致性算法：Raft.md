@@ -1,6 +1,7 @@
 ---
 title: 分布式一致性算法：Raft
 date: 2017-05-06 23:53:11
+categories: [分布式]
 tags: [分布式一致性算法,Raft]
 ---
 <Excerpt in index | 首页摘要>

@@ -1,6 +1,7 @@
 ---
 title: Storm之启动脚本解析
 date: 2017-04-27 23:24:16
+categories: [Hadoop,Storm]
 tags: [Bash,Python,Storm]
 ---
 <Excerpt in index | 首页摘要>
