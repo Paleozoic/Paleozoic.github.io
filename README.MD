@@ -14,6 +14,8 @@ npm install
 npm install hexo-deployer-git --save
 # 安装本地搜索插件
 npm install hexo-generator-search --save
+# 其他
+npm install hexo-util --save
 ```
 - 删除其他非必要文件（github上已有的文件），只保留node_modules。
 - github SSH 授信
