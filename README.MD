@@ -2,10 +2,11 @@
 - 安装node
 - 执行以下命令
 ```bash
-# 安装hexo
-npm install hexo-cli g
 # 创建一个文件夹，hexo_blog，当做博客项目的目录
 cd hexo_blog
+# 安装hexo
+npm install hexo -g
+npm install hexo-cli g
 hexo init
 # 安装hexo依赖
 npm install
