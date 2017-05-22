@@ -10,6 +10,8 @@ tags: [Storm]
 
 【介绍G1 GC的】http://blog.csdn.net/renfufei/article/details/41897113
 
+http://workman666.iteye.com/blog/2348863
+
 http://www.flyne.org/article/204
 http://www.flyne.org/article/190/2
 http://www.flyne.org/article/222
