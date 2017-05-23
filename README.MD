@@ -2,10 +2,11 @@
 - 安装node
 - 执行以下命令
 ```bash
-# 安装hexo
-npm install hexo-cli g
 # 创建一个文件夹，hexo_blog，当做博客项目的目录
 cd hexo_blog
+# 安装hexo
+npm install hexo -g
+npm install hexo-cli g
 hexo init
 # 安装hexo依赖
 npm install
@@ -13,6 +14,8 @@ npm install
 npm install hexo-deployer-git --save
 # 安装本地搜索插件
 npm install hexo-generator-search --save
+# 其他
+npm install hexo-util --save
 ```
 - 删除其他非必要文件（github上已有的文件），只保留node_modules。
 - github SSH 授信
@@ -25,6 +28,12 @@ ssh-add
 # 找到id_rsa.pub，文本打开复制内容至github的ssh key
 ssh -T git@github.com # 根据提示验证
 ```
+- 下载源文件
+```bash
+ git clone -b source https://github.com/Paleozoic/Paleozoic.github.io.git
+ ```
+ - 下载完毕将源文件复制和.git文件夹复制至hexo_blog文件夹。
+ 
 # hexo使用
 - 建议使用命令创建文章：`hexo n "文章名字"`
 - hexo新建文章目录：`hexo_blog\source\_posts`
