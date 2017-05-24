@@ -5,7 +5,7 @@ categories: [JVM,资料集]
 tags: [类加载器]
 ---
 <Excerpt in index | 首页摘要>
-JVM类加载器与自定义类加载器<!-- more -->
+JVM类加载器与自定义类加载器的目的。<!-- more -->
 <The rest of contents | 余下全文>
 # JVM类加载器
 ## 什么是类的加载
@@ -43,7 +43,7 @@ JVM规范推荐使用双亲委托的类加载机制，即使是重写类加载�
 - 两个类来自同一个Class文件
 - 两个类是由同一个虚拟机加载
 - 两个类是由同一个类加载器加载
-[双亲委派加载机制](/resources/img/jvm/双亲委派加载机制.png)
+![双亲委派加载机制](/resources/img/jvm/双亲委派加载机制.png)
 
 # Tomcat的类加载器
 - 为什么Tomcat需要重写类加载器？
@@ -52,11 +52,9 @@ JVM规范推荐使用双亲委托的类加载机制，即使是重写类加载�
 
 
 # Spring Boot的类加载器
+- 为什么Spring Boot需要重写类加载器？
+> Spring Boot的FatJar的打包方式打破了Java加载jar包的约定，所以需要重写类加载器去加载class文件以及类库。（详细可以观察Spring Boot工程打包后的目录结构）
 
 # 引用
 [JVM（8）：JVM知识点总览-高级Java工程师面试必备](http://www.importnew.com/23792.html)
 [JVM类加载机制详解（二）类加载器与双亲委派模型](http://blog.csdn.net/zhangliangzi/article/details/51338291)
-[]()
-[]()
-[]()
-[]()
