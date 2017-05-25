@@ -1,7 +1,7 @@
 ---
 title: HBase基础：概念与原理
 date: 2017-05-04 22:40:13
-categories: [Hadoop]
+categories: [Hadoop,HBase]
 tags: [HBase]
 ---
 <Excerpt in index | 首页摘要>

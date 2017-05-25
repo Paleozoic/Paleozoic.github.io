@@ -1,7 +1,7 @@
 ---
 title: HDFS基础：概念与原理
 date: 2017-05-03 00:11:32
-categories: [Hadoop]
+categories: [Hadoop,HBase]
 tags: [HDFS]
 ---
 <Excerpt in index | 首页摘要>

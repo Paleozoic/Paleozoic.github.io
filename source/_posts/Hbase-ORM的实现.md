@@ -1,7 +1,7 @@
 ---
 title: Hbase ORM的实现
 date: 2016-12-30 00:36:22
-categories: [Hadoop]
+categories: [Hadoop,HBase]
 tags: [HBase]
 ---
 <Excerpt in index | 首页摘要>

@@ -14,45 +14,61 @@ RPC基础，通过Dubbo的设计学习RPC框架的基本组成。<!-- more -->
 - Provider向注册中心注册服务(pub)
 - Consumer订阅注册中心消息(sub)
 - Provider向注册中心注册服务时会被注册中心推送至Consumer
-- Consumer通过注册中心获取到服务的注册信息，比如调用地址等。Consumer通过调用地址列表做负载均衡（客户端负载均衡），然后调用Provider
+- Consumer通过注册中心获取到服务的注册信息，比如调用地址等。Consumer通过调用地址列表做负载均衡（客户端负载均衡），然后调用Provider。数据之间需要序列化后通过网络传输
 - 监控
+
+# 注册中心（服务注册与发现）
+
+# 序列化协议
+|协议|优点|缺点|数据格式|可读性|
+|--|--|--|--|--|
+|Kyro|||||
+|Avro|||||
+|Xstream|||||
+|Hessian|||||
+|Jackson|||||
+|JDK|||||
+
+# 网络传输
+|框架|JDK底层|传输协议|连接方式|优点|缺点|
+|--|--|--|--|--|--|
+|Netty|NIO|||||
+|Mina|NIO|||||
+|Grizzly|NIO|||||
+|Twisted||||||
+|REST类||||||
+
+# 负载均衡
+## 服务端负载均衡(nginx/zuul)
+由网关统一管理应用请求的分发，好处是服务请求入口统一管理，方便做限流、权限控制等；缺点是所有负载均衡的分发压力（CPU和IO）全部归于网关。
+## 客户端负载均衡(dubbo loadbalance/ribbon)
+有客户端从配置中心获取服务实例列表，然后客户端根据服务列表做负载均衡的处理。好处是负载均衡的分发压力分摊给客户端，缺点是不方便做请求的统一管理。
+## 负载均衡策略
+一般来说，负载均衡的算法有3大类：轮询、哈希以及随机。
+
+# 监控
 
 # Dubbo支持协议(序列化以及网络传输)
 ![dubbo-protocol](/resources/img/rpc/dubbo-protocol.jpg)
 dubbo将对象序列化，包括header(codec)（序列化编码方式，可选）和body(serialization)（对象序列化后的内容，二进制或者字符串）。
 Client通过网络传输，将序列化内容发送给服务端。
-## dubbo协议
-[dubbo协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-dubbo%3A%2F%2F)
-## rmi协议
-[rmi协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-rmi%3A%2F%2F)
-## hessian协议
-[hessian协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-hessian%3A%2F%2F)
-## http协议
-[http协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-http%3A%2F%2F)
-## webservice协议
-[webservice协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-webservice%3A%2F%2F)
-## thrift协议
-[thrift协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-thrift%3A%2F%2F)
-## memcached协议
-[memcached协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-memcached%3A%2F%2F)
-## redis协议
-[redis协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-redis%3A%2F%2F)
 
-# 注册中心（服务注册与发现）(zookeeper)
-
-# 负载均衡
-## 服务端负载均衡(nginx/zuul)
-
-## 客户端负载均衡(dubbo loadbalance/ribbon)
-
-
-# 监控
+|协议|访问地址|
+|--|--|
+|dubbo协议|[dubbo协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-dubbo%3A%2F%2F)|
+|rmi协议|[rmi协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-rmi%3A%2F%2F)|
+|hessian协议|[hessian协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-hessian%3A%2F%2F)|
+|http协议|[http协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-http%3A%2F%2F)|
+|webservice协议|[webservice协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-webservice%3A%2F%2F)|
+|thrift协议|[thrift协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-thrift%3A%2F%2F)|
+|memcached协议|[memcached协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-memcached%3A%2F%2F)|
+|redis协议|[redis协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-redis%3A%2F%2F)|
 
 # Dubbo服务集群容错
 ## Failover 失败转移
 失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.FailoverClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.FailoverClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailoverClusterInvoker.java)
 ```java
 /**
  * @param invocation Invocation. (API, Prototype, NonThreadSafe) 此对象保存了方法名、参数类型、参数值、Attachment以及当前上下文的Invoker
@@ -109,7 +125,7 @@ public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, L
 ## Failfast 快速失败
 快速失败，只发起一次调用，失败立即报错，通常用于非幂等性的写操作。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailfastClusterInvoker.java)
 ```java
 public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     checkInvokers(invokers, invocation);
@@ -128,7 +144,7 @@ public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBal
 ## Failsafe 失败安全
 失败安全，出现异常时，直接忽略，通常用于写入审计日志等操作。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailfastClusterInvoker.java)
 ```java
 public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     try {
@@ -145,7 +161,7 @@ public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBal
 ## Failback 失败自动恢复
 失败自动恢复，后台记录失败请求，定时重发，通常用于消息通知操作。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.FailbackClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.FailbackClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailbackClusterInvoker.java)
 ```java
 protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     try {
@@ -183,7 +199,7 @@ private void addFailed(Invocation invocation, AbstractClusterInvoker<?> router) 
 ## Forking 并行调用
 并行调用，只要一个成功即返回，全部异常则返回最后一个异常。通常用于实时性要求较高的操作，但需要浪费更多服务资源。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.ForkingClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.ForkingClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/ForkingClusterInvoker.java)
 ```java
 public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     checkInvokers(invokers, invocation);
@@ -237,7 +253,7 @@ public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, L
 轮询所有提供者实例，只返回最后一个提供者实例的结果。任意一个实例抛出异常则整个RPC过程异常。
 通常用于通知所有提供者更新缓存或日志等本地资源信息。
 以下是源码，只保留关键部分。
-`com.alibaba.dubbo.rpc.cluster.support.BroadcastClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.BroadcastClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/BroadcastClusterInvoker.java)
 ```java
 public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     checkInvokers(invokers, invocation);
@@ -265,7 +281,7 @@ public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, L
 ## Mergeable 合并调用
 调用多个实例，并调用合并器Merger合并所有的返回结果
 这个代码比较长，略。
-`com.alibaba.dubbo.rpc.cluster.support.MergeableClusterInvoker`
+[`com.alibaba.dubbo.rpc.cluster.support.MergeableClusterInvoker`](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/MergeableClusterInvoker.java)
 
 
 # Dubbo负载均衡算法
@@ -403,7 +419,7 @@ protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation
 - virtualInvokers：每个哈希槽对应的Invoker
 - replicaNumber：理解为哈希槽的数量，由hash.nodes指定，默认值是160
 - identityHashCode：哈希码，根据invokers生成
-- argumentIndex：参数索引数组，int[]类型。由hash.arguments指定，默认值是0。会根据该参数来确定选择那些输入参数作为key生成的依据。
+- argumentIndex：参数索引数组，int[]类型。由hash.arguments指定，默认值是0。会根据该参数来确定选择那些输入参数作为key生成的依据。然后MD5之后做Hash。
 **综上，可以认为，同一个方法的调用中，如果参数的哈希值相同则会调用同一个实例。**
 [源码解析](http://blog.csdn.net/revivedsun/article/details/71022871)
 ```java
