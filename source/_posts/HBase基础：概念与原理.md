@@ -63,6 +63,8 @@ HBase Client通过RPC方式和HMaster、HRegionServer通信；一个HRegionServe
  * 存放整个 HBase集群的元数据以及集群的状态信息。
  * 实现HMaster主从节点的failover。(主从故障自动切换)
 
+## HRegionServer(RegionServer)
+
 ## HRegion(即Region)
 HBase使用RowKey将表水平切割成多个HRegion，从HMaster的角度，每个HRegion都纪录了它的StartKey和EndKey（第一个HRegion的StartKey为空，最后一个HRegion的EndKey为空），由于RowKey是排序的，因而Client可以通过HMaster快速的定位每个RowKey在哪个HRegion中（BloomFilter）。HRegion由HMaster分配到相应的HRegionServer中，然后由HRegionServer负责HRegion的启动和管理，和Client的通信，负责数据的读(使用HDFS)。每个HRegionServer可以同时管理1000个左右的HRegion（这个数字怎么来的？没有从代码中看到限制，难道是出于经验？超过1000个会引起性能问题？来回答这个问题：感觉这个1000的数字是从BigTable的论文中来的（5 Implementation节）：Each tablet server manages a set of tablets(typically we have somewhere between ten to a thousand tablets per tablet server)）。
 - RegionServers负载Region
@@ -94,12 +96,88 @@ ZooKeeper为HBase集群提供协调服务，它管理着HMaster和HRegionServer�
 ![zookeeper](/resources/img/hbase/zookeeper.png)
 
 ## How The Components Work Together
+RegionServers和Active HMaster通过Zookeeper的session相互联系。Zookeeper通过心跳维持临时ZNode(Ephemeral Node)的活动session。
+![How The Components Work Together](/resources/img/hbase/How The Components Work Together.png)
+每个RegionServer都会创建一个临时ZNode，HMaster监视这些ZNodes来发现可用的RegionServer，同时也监控这些ZNode来判断RegionServer的健康状态。
+HMasters也会竞争创建Ephemeral Node。Zookeeper选择第一个创建的HMaster作为Active HMaster。
+Active HMaster会发送心跳给Zookeeper，而Inactive HMaster(非活动HMaster)会随时监听Active HMaster的故障。
+
+如果Active HMaster或者Region Server无法发送心跳，则Zookeeper维护的session就会过期，相应的Ephemeral Node也会被删除。Znode被删除会通知订阅者Active HMaster/Inactive HMaster。
+Region Server故障：Active HMaster会尝试去恢复Region Server；
+Active HMaster故障：Inactive HMaster会尝试成为Active HMaster。
 
 # Minor Compaction/Major Compaction
 
-# HBase读流程
+# HBase第一次读/写流程
+HBase有一个特别的元数据表**.META.**。META Table存储了HBase集群的所有Regions的位置。
+而Zookeeper则保存了META Table的位置。
+所以HBase第一次读流程如下：
+- Client通过Zookeeper获取META Table的Region Servers
+- Client查询META Table，根据rowkey定位到相应的Region Server
+- Client从Region Server读取到/写入数据
+而对于之后的读操作，Client会通过缓存定位META Table，和先前缓存的rowkey。
+随着时间推移，Client不需要再查询META Table，除非由于Region移动导致缓存无法命中。此时便会重新查询并更新缓存。
+![HBaseFirstReadOrWrite](/resources/img/hbase/HBaseFirstReadOrWrite.png)
 
-# HBase写流程
+# HBase META Table(.META.)
+- META Table是一个HBase的表，存储了HBase集群的Regions元数据
+- META Table类似与B-Tree（B-Tree又叫平衡多路查找树，常用于数据库索引）
+- META Table结构如下：
+  * Key:region start key，region id
+  * Values:RegionServer
+![HBaseMetaTable](/resources/img/hbase/HBaseMetaTable.png)
+
+# Region Server的组件
+RegionServer运行在HDFS的DataNode上。包含以下组件：
+- WAL：Write Ahead Log(HLog)也是分布式文件系统的一个文件，每个RegionServer共享一个HLog。类似与MySQL的binlog，用于存储HBase的数据变更操作记录。用于HBase故障时的数据恢复。
+- BlockCache：读缓存。HBase在内存中存储了频繁读取的数据，缓存淘汰算法是 Least Recently Used,LRU.
+- MemStore：写缓存，用于缓存那些写入了WAL但是还没写入磁盘的数据。
+> HBase Table横向切分为Region，纵向切分为列族。HBase是列式数据库，所以列族是已一个HStore存储在HDFS上。
+还有一点，假设列族存在数据倾斜，每个列族包含的数据量差异巨大。当Region根据rowkey横向分裂，造成列族数据不均匀分布。
+**这就要求我们在设计HBase的表时，具有相同IO特性的列应该归于同一个列族，避免由于跨列族访问而导致的跨物理存储访问数据。**
+HStore包含1个MemStore和多个StoreFile(HFile)。
+HBase每个列族的每个Region的每个Store包含一个MemStore和多个StoreFile(HFile)，详细可看架构图。
+具体我总结出一个HBase Table的物理存储和抽象映射图，具体如下：
+![HBaseTable](/resources/img/hbase/HBaseTable.png)
+
+- HFiles：基于HDFS，在磁盘上存储了有序的KeyValues。
+![HBaseRegionServer](/resources/img/hbase/HBaseRegionServer.png)
+
+# HBase MemStore
+![HBaseMemStore](/resources/img/hbase/HBaseMemStore.png)
+
+
+# HBase读写流程
+图中读流程，缺少BlockCache的描述。
+![HBaseReadWrite](/resources/img/hbase/HBaseReadWrite.png)
+## rowkey检索流程
+- 访问Zookeeper定位META Table的Region位置
+- 访问META Table定位rowkey对应的Region位置
+- PS:之后会通过缓存提高定位效率。
+## 写流程
+- 检索rowkey
+- Client的Put请求，首先写WAL：
+  * Edits会被追加在WAL的末尾（写入磁盘）
+  * 当HBase故障时，WAL用于恢复未持久化的数据
+![HBaseWriteStep1](/resources/img/hbase/HBaseWriteStep1.png)  
+
+- Client写入WAL后，会写入MemStore，之后直接告诉客户端写入成功（这样保证了高效的写性能）
+![HBaseWriteStep2](/resources/img/hbase/HBaseWriteStep2.png)
+
+## 读流程
+- 检索rowkey
+- 读BlockCache
+- 读MemStore
+- 读HFile
+- PS：在任意地方读到都返回结果，这里通过ReadPoint、WriteNumber实现读写一致性的事务。
+
+# HBase Region Flush
+MemStore存储达到阈值，那么位于MemStore的有序数据集就会写入一个新的HFile。这个过程称之为Flush。
+每个列族会有多个HFiles，HFile基于HDFS，存放着HBase的实际数据。
+这里引出一个问题：HBase的列族数量为什么不应过多？
+MapR解析：There is one MemStore per CF; (和上面的There is one MemStore per column family per region.岂不是矛盾，或者表达的是one of the MemStore of CF？)when one is full, they all flush. It also saves the last written sequence number so the system knows what was persisted so far.
+意思就是1个MemStore的flush会触发其**所在Region内（等价于所在Table）**的所有MemStore的flush，所以列族越多，就会有越多的flush，频繁的IO便会影响性能。
+![HBaseRegionFlush](/resources/img/hbase/HBaseRegionFlush.png)
 
 # [HBase的ACID](http://hbase.apache.org/acid-semantics.html)
 ACID是指原子性(Atomicity)，一致性(Consistency)，隔离性(Isolation)和持久性(Durability)
@@ -140,10 +218,17 @@ Region update更新锁(updatesLock)，在internalFlushCache时加写锁，导致
 Region close保护锁(lock)，在Region close或者split操作的时(加写锁)，阻塞对region的其他操作(加读锁)，比如compact、flush、scan和其他写操作。
 
 ## StoreFile锁
-flush过程包括，
-    a 、prepare(基于memstore做snapshot)
-    b、flushcache(基于snapshot生成临时文件)
-    c、commit(确认flush操作完成，rename临时文件为正式文件名称，清除mem中的snapshot)
+flush过程包括:(其实和HDFS的NameNode的edit log的flush流程是非常相似的，就是swap的思路)
+- 触发时机：某个Region内的一个MemStore达到阈值，触发整个Region内的所有MemStore的flush操作。
+- prepare(基于MemStore做snapshot)
+> 遍历Region的所有MemStore，将MemStore的数据保存为snapshot，然后新建一个MemStore.NEW，新的写入操作会将数据写入MemStore.NEW。
+flush时，读请求会先从MemStore和MemStore.NEW读取操作，缓存位命中，才会去访问HFile。
+就在生成快照的时候，会上updateLock，阻塞写请求。
+
+- flushcache(基于snapshot生成临时文件)
+> 遍历所有snapshot，将snapshot持久化为临时文件。这里涉及到磁盘IO，耗时操作。
+
+- commit(确认flush操作完成，rename临时文件为正式文件名称，清除mem中的snapshot)
 其中在flush过程的commit阶段，compact过程的completeCompaction阶段(rename临时compact文件名、清理旧的文件)，close store(关闭store)，bulkLoadHFile，会阻塞对store的写操作。
 
 # 协处理器Coprocessor
@@ -165,4 +250,5 @@ flush过程包括，
 [Hbase原理、基本概念、基本架构](http://blog.csdn.net/woshiwanxin102213/article/details/17584043)
 [Apache HBase Internals: Locking and Multiversion Concurrency Control](https://blogs.apache.org/hbase/entry/apache_hbase_internals_locking_and)
 [总结一下HBase各种级别的锁以及对读写的阻塞](http://blog.csdn.net/yangbutao/article/details/12950083)
-[]()
+[Configuring HBase Memstore: What You Should Know](https://sematext.com/blog/2012/07/16/hbase-memstore-what-you-should-know/)
+[HBase – Memstore Flush深度解析](http://hbasefly.com/2016/03/23/hbase-memstore-flush/)
