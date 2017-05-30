@@ -1,0 +1,1322 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="RPC,Dubbo," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/resources/img/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="RPC基础，通过Dubbo的设计学习RPC框架的基本组成。">
+<meta name="keywords" content="RPC,Dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过Dubbo学习RPC">
+<meta property="og:url" content="http://blog.maxplus1.com/2017/05/09/通过Dubbo学习RPC/index.html">
+<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:description" content="RPC基础，通过Dubbo的设计学习RPC框架的基本组成。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/dubbo依赖关系.jpg">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/dubbo-protocol.jpg">
+<meta property="og:updated_time" content="2017-05-25T14:11:54.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通过Dubbo学习RPC">
+<meta name="twitter:description" content="RPC基础，通过Dubbo的设计学习RPC框架的基本组成。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/rpc/dubbo依赖关系.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.maxplus1.com/2017/05/09/通过Dubbo学习RPC/"/>
+
+
+
+
+
+  <title>通过Dubbo学习RPC | Paleo's blog</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Paleo's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">超然物外，天道酬勤。</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://blog.maxplus1.com/2017/05/09/通过Dubbo学习RPC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Paleo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/resources/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Paleo's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">通过Dubbo学习RPC</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-09T23:00:17+08:00">
+                2017-05-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RPC/" itemprop="url" rel="index">
+                    <span itemprop="name">RPC</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RPC/Dubbo/" itemprop="url" rel="index">
+                    <span itemprop="name">Dubbo</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>RPC基础，通过Dubbo的设计学习RPC框架的基本组成。<a id="more"></a></excerpt></p>
+<the rest="" of="" contents="" |="" 余下全文="">
+
+<h1 id="Dubbo依赖关系"><a href="#Dubbo依赖关系" class="headerlink" title="Dubbo依赖关系"></a>Dubbo依赖关系</h1><p><img src="/resources/img/rpc/dubbo依赖关系.jpg" alt="Dubbo依赖关系"><br>由dubbo可以看到一个基本的RPC框架设计和依赖。</p>
+<ul>
+<li>Provider向注册中心注册服务(pub)</li>
+<li>Consumer订阅注册中心消息(sub)</li>
+<li>Provider向注册中心注册服务时会被注册中心推送至Consumer</li>
+<li>Consumer通过注册中心获取到服务的注册信息，比如调用地址等。Consumer通过调用地址列表做负载均衡（客户端负载均衡），然后调用Provider。数据之间需要序列化后通过网络传输</li>
+<li>监控</li>
+</ul>
+<h1 id="注册中心（服务注册与发现）"><a href="#注册中心（服务注册与发现）" class="headerlink" title="注册中心（服务注册与发现）"></a>注册中心（服务注册与发现）</h1><h1 id="序列化协议"><a href="#序列化协议" class="headerlink" title="序列化协议"></a>序列化协议</h1><table>
+<thead>
+<tr>
+<th>协议</th>
+<th>优点</th>
+<th>缺点</th>
+<th>数据格式</th>
+<th>可读性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kyro</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Avro</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Xstream</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Hessian</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Jackson</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>JDK</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="网络传输"><a href="#网络传输" class="headerlink" title="网络传输"></a>网络传输</h1><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>JDK底层</th>
+<th>传输协议</th>
+<th>连接方式</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Netty</td>
+<td>NIO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Mina</td>
+<td>NIO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Grizzly</td>
+<td>NIO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Twisted</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>REST类</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h1><h2 id="服务端负载均衡-nginx-zuul"><a href="#服务端负载均衡-nginx-zuul" class="headerlink" title="服务端负载均衡(nginx/zuul)"></a>服务端负载均衡(nginx/zuul)</h2><p>由网关统一管理应用请求的分发，好处是服务请求入口统一管理，方便做限流、权限控制等；缺点是所有负载均衡的分发压力（CPU和IO）全部归于网关。</p>
+<h2 id="客户端负载均衡-dubbo-loadbalance-ribbon"><a href="#客户端负载均衡-dubbo-loadbalance-ribbon" class="headerlink" title="客户端负载均衡(dubbo loadbalance/ribbon)"></a>客户端负载均衡(dubbo loadbalance/ribbon)</h2><p>有客户端从配置中心获取服务实例列表，然后客户端根据服务列表做负载均衡的处理。好处是负载均衡的分发压力分摊给客户端，缺点是不方便做请求的统一管理。</p>
+<h2 id="负载均衡策略"><a href="#负载均衡策略" class="headerlink" title="负载均衡策略"></a>负载均衡策略</h2><p>一般来说，负载均衡的算法有3大类：轮询、哈希以及随机。</p>
+<h1 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h1><h1 id="Dubbo支持协议-序列化以及网络传输"><a href="#Dubbo支持协议-序列化以及网络传输" class="headerlink" title="Dubbo支持协议(序列化以及网络传输)"></a>Dubbo支持协议(序列化以及网络传输)</h1><p><img src="/resources/img/rpc/dubbo-protocol.jpg" alt="dubbo-protocol"><br>dubbo将对象序列化，包括header(codec)（序列化编码方式，可选）和body(serialization)（对象序列化后的内容，二进制或者字符串）。<br>Client通过网络传输，将序列化内容发送给服务端。</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>访问地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dubbo协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-dubbo%3A%2F%2F" target="_blank" rel="external">dubbo协议</a></td>
+</tr>
+<tr>
+<td>rmi协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-rmi%3A%2F%2F" target="_blank" rel="external">rmi协议</a></td>
+</tr>
+<tr>
+<td>hessian协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-hessian%3A%2F%2F" target="_blank" rel="external">hessian协议</a></td>
+</tr>
+<tr>
+<td>http协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-http%3A%2F%2F" target="_blank" rel="external">http协议</a></td>
+</tr>
+<tr>
+<td>webservice协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-webservice%3A%2F%2F" target="_blank" rel="external">webservice协议</a></td>
+</tr>
+<tr>
+<td>thrift协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-thrift%3A%2F%2F" target="_blank" rel="external">thrift协议</a></td>
+</tr>
+<tr>
+<td>memcached协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-memcached%3A%2F%2F" target="_blank" rel="external">memcached协议</a></td>
+</tr>
+<tr>
+<td>redis协议</td>
+<td><a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-redis%3A%2F%2F" target="_blank" rel="external">redis协议</a></td>
+</tr>
+</tbody>
+</table>
+<h1 id="Dubbo服务集群容错"><a href="#Dubbo服务集群容错" class="headerlink" title="Dubbo服务集群容错"></a>Dubbo服务集群容错</h1><h2 id="Failover-失败转移"><a href="#Failover-失败转移" class="headerlink" title="Failover 失败转移"></a>Failover 失败转移</h2><p>失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailoverClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.FailoverClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * <span class="doctag">@param</span> invocation Invocation. (API, Prototype, NonThreadSafe) 此对象保存了方法名、参数类型、参数值、Attachment以及当前上下文的Invoker</div><div class="line"> * <span class="doctag">@param</span> invokers Invoker. (API/SPI, Prototype, ThreadSafe) 当前上下文的Invoker。Invoker用于执行Invocation。此处的List&lt;Invoker&lt;T&gt;&gt; invokers是注册中心获取到的所有实例</div><div class="line"> * <span class="doctag">@param</span> loadbalance 负载均衡器，提供select方法选择客户端调用的实例</div><div class="line"> * <span class="doctag">@return</span></div><div class="line"> * <span class="doctag">@throws</span> RpcException</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Result <span class="title">doInvoke</span><span class="params">(Invocation invocation, <span class="keyword">final</span> List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    	List&lt;Invoker&lt;T&gt;&gt; copyinvokers = invokers;</div><div class="line">    	checkInvokers(copyinvokers, invocation); <span class="comment">//此方法用于检查invokers的大小是否为0，为0抛出异常</span></div><div class="line">        <span class="comment">// 通过方法名、RETRIES_KEY、DEFAULT_RETRIES获取重试次数</span></div><div class="line">        <span class="keyword">int</span> len = getUrl().getMethodParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + <span class="number">1</span>;</div><div class="line">        <span class="keyword">if</span> (len &lt;= <span class="number">0</span>) &#123; <span class="comment">//如果配置了负数，那是不行的。至少也得重试1次。</span></div><div class="line">            len = <span class="number">1</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// retry loop.</span></div><div class="line">        RpcException le = <span class="keyword">null</span>; <span class="comment">// last exception.</span></div><div class="line">        List&lt;Invoker&lt;T&gt;&gt; invoked = <span class="keyword">new</span> ArrayList&lt;Invoker&lt;T&gt;&gt;(copyinvokers.size()); <span class="comment">// invoked invokers. 存储已经执行过的Invoker</span></div><div class="line">        Set&lt;String&gt; providers = <span class="keyword">new</span> HashSet&lt;String&gt;(len); <span class="comment">// 存储提供者，其实就是提供者的实例地址，URL</span></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</div><div class="line">        	<span class="comment">//重试时，进行重新选择，避免重试时invoker列表已发生变化.</span></div><div class="line">        	<span class="comment">//注意：如果列表发生了变化，那么invoked判断会失效，因为invoker实例已经改变</span></div><div class="line">        	<span class="keyword">if</span> (i &gt; <span class="number">0</span>) &#123;</div><div class="line">        		checkWhetherDestroyed(); <span class="comment">//检查AbstractClusterInvoker的destroyed是否为true</span></div><div class="line">        		copyinvokers = list(invocation); <span class="comment">//根据invocation拿到它自己的提供者列表</span></div><div class="line">        		<span class="comment">//重新检查一下</span></div><div class="line">        		checkInvokers(copyinvokers, invocation); <span class="comment">//检查一下提供者是否存在</span></div><div class="line">        	&#125;</div><div class="line">            Invoker&lt;T&gt; invoker = select(loadbalance, invocation, copyinvokers, invoked); <span class="comment">//通过负载均衡器选择实例</span></div><div class="line">            invoked.add(invoker);</div><div class="line">            RpcContext.getContext().setInvokers((List)invoked); <span class="comment">//更新上下文已经被执行过的实例</span></div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Result result = invoker.invoke(invocation);</div><div class="line">                <span class="keyword">if</span> (le != <span class="keyword">null</span> &amp;&amp; logger.isWarnEnabled()) &#123;</div><div class="line">                    <span class="comment">// le是上次调用失败保留的异常信息</span></div><div class="line">                &#125;</div><div class="line">                <span class="keyword">return</span> result;</div><div class="line">            &#125; <span class="keyword">catch</span> (RpcException e) &#123;</div><div class="line">                <span class="keyword">if</span> (e.isBiz()) &#123; <span class="comment">// biz exception.</span></div><div class="line">                    <span class="keyword">throw</span> e;</div><div class="line">                &#125;</div><div class="line">                le = e;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">                le = <span class="keyword">new</span> RpcException(e.getMessage(), e);</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                providers.add(invoker.getUrl().getAddress());</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(...);</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Failfast-快速失败"><a href="#Failfast-快速失败" class="headerlink" title="Failfast 快速失败"></a>Failfast 快速失败</h2><p>快速失败，只发起一次调用，失败立即报错，通常用于非幂等性的写操作。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailfastClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Result <span class="title">doInvoke</span><span class="params">(Invocation invocation, List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    checkInvokers(invokers, invocation);</div><div class="line">    Invoker&lt;T&gt; invoker = select(loadbalance, invocation, invokers, <span class="keyword">null</span>);</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="keyword">return</span> invoker.invoke(invocation);</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> RpcException &amp;&amp; ((RpcException)e).isBiz()) &#123; <span class="comment">// biz exception.</span></div><div class="line">            <span class="keyword">throw</span> (RpcException) e;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(...); <span class="comment">//调用失败，直接抛出RpcException</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Failsafe-失败安全"><a href="#Failsafe-失败安全" class="headerlink" title="Failsafe 失败安全"></a>Failsafe 失败安全</h2><p>失败安全，出现异常时，直接忽略，通常用于写入审计日志等操作。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailfastClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.FailfastClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Result <span class="title">doInvoke</span><span class="params">(Invocation invocation, List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        checkInvokers(invokers, invocation);</div><div class="line">        Invoker&lt;T&gt; invoker = select(loadbalance, invocation, invokers, <span class="keyword">null</span>);</div><div class="line">        <span class="keyword">return</span> invoker.invoke(invocation);</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">        logger.error(<span class="string">"Failsafe ignore exception: "</span> + e.getMessage(), e);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RpcResult(); <span class="comment">// ignore</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Failback-失败自动恢复"><a href="#Failback-失败自动恢复" class="headerlink" title="Failback 失败自动恢复"></a>Failback 失败自动恢复</h2><p>失败自动恢复，后台记录失败请求，定时重发，通常用于消息通知操作。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/FailbackClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.FailbackClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> Result <span class="title">doInvoke</span><span class="params">(Invocation invocation, List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        checkInvokers(invokers, invocation);</div><div class="line">        Invoker&lt;T&gt; invoker = select(loadbalance, invocation, invokers, <span class="keyword">null</span>);</div><div class="line">        <span class="keyword">return</span> invoker.invoke(invocation);</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">        addFailed(invocation, <span class="keyword">this</span>); <span class="comment">//调用失败，后台线程定时重发调用</span></div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RpcResult(); <span class="comment">// ignore</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addFailed</span><span class="params">(Invocation invocation, AbstractClusterInvoker&lt;?&gt; router)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (retryFuture == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (retryFuture == <span class="keyword">null</span>) &#123;</div><div class="line">                retryFuture = scheduledExecutorService.scheduleWithFixedDelay(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                        <span class="comment">// 收集统计信息</span></div><div class="line">                        <span class="keyword">try</span> &#123;</div><div class="line">                            retryFailed();</div><div class="line">                        &#125; <span class="keyword">catch</span> (Throwable t) &#123; <span class="comment">// 防御性容错</span></div><div class="line">                            logger.error(<span class="string">"Unexpected error occur at collect statistic"</span>, t);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;, RETRY_FAILED_PERIOD, RETRY_FAILED_PERIOD, TimeUnit.MILLISECONDS);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    failed.put(invocation, router);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Forking-并行调用"><a href="#Forking-并行调用" class="headerlink" title="Forking 并行调用"></a>Forking 并行调用</h2><p>并行调用，只要一个成功即返回，全部异常则返回最后一个异常。通常用于实时性要求较高的操作，但需要浪费更多服务资源。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/ForkingClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.ForkingClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Result <span class="title">doInvoke</span><span class="params">(<span class="keyword">final</span> Invocation invocation, List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    checkInvokers(invokers, invocation);</div><div class="line">    <span class="keyword">final</span> List&lt;Invoker&lt;T&gt;&gt; selected;</div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);</div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);</div><div class="line">    <span class="keyword">if</span> (forks &lt;= <span class="number">0</span> || forks &gt;= invokers.size()) &#123; <span class="comment">//如果配置的并行调用数量小于0或者大于最大提供者实例数量，则设置为最大提供者实例数量</span></div><div class="line">        selected = invokers;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        selected = <span class="keyword">new</span> ArrayList&lt;Invoker&lt;T&gt;&gt;();</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; forks; i++) &#123; <span class="comment">//轮询forks次</span></div><div class="line">            <span class="comment">//在invoker列表(排除selected)后,如果没有选够,则存在重复循环问题.见select实现.</span></div><div class="line">            Invoker&lt;T&gt; invoker = select(loadbalance, invocation, invokers, selected);</div><div class="line">            <span class="keyword">if</span>(!selected.contains(invoker))&#123;<span class="comment">//防止重复添加invoker，因为负载均衡器可能选择到相同的实例。如果选择到相同的实例，会导致并行数量减少</span></div><div class="line">                selected.add(invoker);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    RpcContext.getContext().setInvokers((List)selected);</div><div class="line">    <span class="keyword">final</span> AtomicInteger count = <span class="keyword">new</span> AtomicInteger(); <span class="comment">// 异常数量计数器</span></div><div class="line">    <span class="keyword">final</span> BlockingQueue&lt;Object&gt; ref = <span class="keyword">new</span> LinkedBlockingQueue&lt;Object&gt;(); <span class="comment">//用来存储提供者返回的结果或者是调用后抛出的异常</span></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> Invoker&lt;T&gt; invoker : selected) &#123;</div><div class="line">        executor.execute(<span class="keyword">new</span> Runnable() &#123; <span class="comment">//Executors.newCachedThreadPool线程池调度线程，异步调用提供者</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    Result result = invoker.invoke(invocation);</div><div class="line">                    ref.offer(result); <span class="comment">//</span></div><div class="line">                &#125; <span class="keyword">catch</span>(Throwable e) &#123;</div><div class="line">                    <span class="keyword">int</span> value = count.incrementAndGet();</div><div class="line">                    <span class="keyword">if</span> (value &gt;= selected.size()) &#123;<span class="comment">//如果异常次数已经等于提供者数量，证明所有提供者调用失败，将异常放入队列</span></div><div class="line">                        ref.offer(e);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS); <span class="comment">//阻塞获取BlockingQueue的结果（可能是正确结果或者异常）</span></div><div class="line">        <span class="keyword">if</span> (ret <span class="keyword">instanceof</span> Throwable) &#123;</div><div class="line">            Throwable e = (Throwable) ret;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(e <span class="keyword">instanceof</span> RpcException ? ((RpcException)e).getCode() : <span class="number">0</span>, <span class="string">"Failed to forking invoke provider "</span> + selected + <span class="string">", but no luck to perform the invocation. Last error is: "</span> + e.getMessage(), e.getCause() != <span class="keyword">null</span> ? e.getCause() : e);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> (Result) ret;</div><div class="line">    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(<span class="string">"Failed to forking invoke provider "</span> + selected + <span class="string">", but no luck to perform the invocation. Last error is: "</span> + e.getMessage(), e);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Broadcast-广播调用"><a href="#Broadcast-广播调用" class="headerlink" title="Broadcast 广播调用"></a>Broadcast 广播调用</h2><p>轮询所有提供者实例，只返回最后一个提供者实例的结果。任意一个实例抛出异常则整个RPC过程异常。<br>通常用于通知所有提供者更新缓存或日志等本地资源信息。<br>以下是源码，只保留关键部分。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/BroadcastClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.BroadcastClusterInvoker</code></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Result <span class="title">doInvoke</span><span class="params">(<span class="keyword">final</span> Invocation invocation, List&lt;Invoker&lt;T&gt;&gt; invokers, LoadBalance loadbalance)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">    checkInvokers(invokers, invocation);</div><div class="line">    RpcContext.getContext().setInvokers((List)invokers);</div><div class="line">    RpcException exception = <span class="keyword">null</span>;</div><div class="line">    Result result = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">for</span> (Invoker&lt;T&gt; invoker: invokers) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            result = invoker.invoke(invocation);</div><div class="line">        &#125; <span class="keyword">catch</span> (RpcException e) &#123;</div><div class="line">            exception = e;</div><div class="line">            logger.warn(e.getMessage(), e);</div><div class="line">        &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">            exception = <span class="keyword">new</span> RpcException(e.getMessage(), e);</div><div class="line">            logger.warn(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (exception != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">throw</span> exception;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Mergeable-合并调用"><a href="#Mergeable-合并调用" class="headerlink" title="Mergeable 合并调用"></a>Mergeable 合并调用</h2><p>调用多个实例，并调用合并器Merger合并所有的返回结果<br>这个代码比较长，略。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/support/MergeableClusterInvoker.java" target="_blank" rel="external"><code>com.alibaba.dubbo.rpc.cluster.support.MergeableClusterInvoker</code></a></p>
+<h1 id="Dubbo负载均衡算法"><a href="#Dubbo负载均衡算法" class="headerlink" title="Dubbo负载均衡算法"></a>Dubbo负载均衡算法</h1><h2 id="Random-LoadBalance-随机均衡算法"><a href="#Random-LoadBalance-随机均衡算法" class="headerlink" title="Random LoadBalance(随机均衡算法)"></a>Random LoadBalance(随机均衡算法)</h2><p>根据权重进行实例的随机选择，即每个实例的随机选中的概率是根据权重的决定的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doSelect</span><span class="params">(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</span> </span>&#123;</div><div class="line">  <span class="keyword">int</span> length = invokers.size(); <span class="comment">// 总个数</span></div><div class="line">  <span class="keyword">int</span> totalWeight = <span class="number">0</span>; <span class="comment">// 总权重</span></div><div class="line">  <span class="keyword">boolean</span> sameWeight = <span class="keyword">true</span>; <span class="comment">// 权重是否都一样</span></div><div class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">      <span class="keyword">int</span> weight = getWeight(invokers.get(i), invocation);</div><div class="line">      totalWeight += weight; <span class="comment">// 累计总权重</span></div><div class="line">      <span class="keyword">if</span> (sameWeight &amp;&amp; i &gt; <span class="number">0</span></div><div class="line">              &amp;&amp; weight != getWeight(invokers.get(i - <span class="number">1</span>), invocation)) &#123;</div><div class="line">          sameWeight = <span class="keyword">false</span>; <span class="comment">// 计算所有权重是否一样</span></div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span> (totalWeight &gt; <span class="number">0</span> &amp;&amp; ! sameWeight) &#123;</div><div class="line">      <span class="comment">// 如果权重不相同且权重大于0则按总权重数随机</span></div><div class="line">      <span class="keyword">int</span> offset = random.nextInt(totalWeight);</div><div class="line">      <span class="comment">// 并确定随机值落在哪个片断上</span></div><div class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">          offset -= getWeight(invokers.get(i), invocation);</div><div class="line">          <span class="keyword">if</span> (offset &lt; <span class="number">0</span>) &#123;</div><div class="line">              <span class="keyword">return</span> invokers.get(i);</div><div class="line">          &#125;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">// 如果权重相同或权重为0则均等随机</span></div><div class="line">  <span class="keyword">return</span> invokers.get(random.nextInt(length));</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="RoundRobin-LoadBalance-权重轮循均衡算法"><a href="#RoundRobin-LoadBalance-权重轮循均衡算法" class="headerlink" title="RoundRobin LoadBalance(权重轮循均衡算法)"></a>RoundRobin LoadBalance(权重轮循均衡算法)</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doSelect</span><span class="params">(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</span> </span>&#123;</div><div class="line">	String key = invokers.get(<span class="number">0</span>).getUrl().getServiceKey() + <span class="string">"."</span> + invocation.getMethodName();</div><div class="line">	<span class="keyword">int</span> length = invokers.size(); <span class="comment">// 总个数</span></div><div class="line">	<span class="keyword">int</span> maxWeight = <span class="number">0</span>; <span class="comment">// 最大权重</span></div><div class="line">	<span class="keyword">int</span> minWeight = Integer.MAX_VALUE; <span class="comment">// 最小权重</span></div><div class="line">	<span class="keyword">final</span> LinkedHashMap&lt;Invoker&lt;T&gt;, IntegerWrapper&gt; invokerToWeightMap = <span class="keyword">new</span> LinkedHashMap&lt;Invoker&lt;T&gt;, IntegerWrapper&gt;();</div><div class="line">	<span class="keyword">int</span> weightSum = <span class="number">0</span>;</div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">		<span class="keyword">int</span> weight = getWeight(invokers.get(i), invocation);</div><div class="line">		maxWeight = Math.max(maxWeight, weight); <span class="comment">// 累计最大权重</span></div><div class="line">		minWeight = Math.min(minWeight, weight); <span class="comment">// 累计最小权重</span></div><div class="line">		<span class="keyword">if</span> (weight &gt; <span class="number">0</span>) &#123;</div><div class="line">			invokerToWeightMap.put(invokers.get(i), <span class="keyword">new</span> IntegerWrapper(weight));</div><div class="line">			weightSum += weight;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	AtomicPositiveInteger sequence = sequences.get(key);</div><div class="line">	<span class="keyword">if</span> (sequence == <span class="keyword">null</span>) &#123;</div><div class="line">		sequences.putIfAbsent(key, <span class="keyword">new</span> AtomicPositiveInteger());</div><div class="line">		sequence = sequences.get(key);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">int</span> currentSequence = sequence.getAndIncrement();</div><div class="line">	<span class="keyword">if</span> (maxWeight &gt; <span class="number">0</span> &amp;&amp; minWeight &lt; maxWeight) &#123; <span class="comment">// 权重不一样</span></div><div class="line">		<span class="keyword">int</span> mod = currentSequence % weightSum;</div><div class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxWeight; i++) &#123;</div><div class="line">			<span class="keyword">for</span> (Map.Entry&lt;Invoker&lt;T&gt;, IntegerWrapper&gt; each : invokerToWeightMap.entrySet()) &#123;</div><div class="line">				<span class="keyword">final</span> Invoker&lt;T&gt; k = each.getKey();</div><div class="line">				<span class="keyword">final</span> IntegerWrapper v = each.getValue();</div><div class="line">				<span class="keyword">if</span> (mod == <span class="number">0</span> &amp;&amp; v.getValue() &gt; <span class="number">0</span>) &#123;</div><div class="line">					<span class="keyword">return</span> k;</div><div class="line">				&#125;</div><div class="line">				<span class="keyword">if</span> (v.getValue() &gt; <span class="number">0</span>) &#123;</div><div class="line">					v.decrement();</div><div class="line">					mod--;</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// 取模轮循</span></div><div class="line">	<span class="keyword">return</span> invokers.get(currentSequence % length);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="LeastAction-LoadBalance-最少活跃调用数均衡算法"><a href="#LeastAction-LoadBalance-最少活跃调用数均衡算法" class="headerlink" title="LeastAction LoadBalance(最少活跃调用数均衡算法)"></a>LeastAction LoadBalance(最少活跃调用数均衡算法)</h2><p>如果一个实例被调用的次数较少，则会优先调用该实例。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doSelect</span><span class="params">(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> length = invokers.size(); <span class="comment">// 总个数</span></div><div class="line">    <span class="keyword">int</span> leastActive = -<span class="number">1</span>; <span class="comment">// 最小的活跃数</span></div><div class="line">    <span class="keyword">int</span> leastCount = <span class="number">0</span>; <span class="comment">// 相同最小活跃数的个数</span></div><div class="line">    <span class="keyword">int</span>[] leastIndexs = <span class="keyword">new</span> <span class="keyword">int</span>[length]; <span class="comment">// 相同最小活跃数的下标</span></div><div class="line">    <span class="keyword">int</span> totalWeight = <span class="number">0</span>; <span class="comment">// 总权重</span></div><div class="line">    <span class="keyword">int</span> firstWeight = <span class="number">0</span>; <span class="comment">// 第一个权重，用于于计算是否相同</span></div><div class="line">    <span class="keyword">boolean</span> sameWeight = <span class="keyword">true</span>; <span class="comment">// 是否所有权重相同</span></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">    	Invoker&lt;T&gt; invoker = invokers.get(i);</div><div class="line">        <span class="keyword">int</span> active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive(); <span class="comment">// 活跃数</span></div><div class="line">        <span class="keyword">int</span> weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT); <span class="comment">// 权重</span></div><div class="line">        <span class="keyword">if</span> (leastActive == -<span class="number">1</span> || active &lt; leastActive) &#123; <span class="comment">// 发现更小的活跃数，重新开始</span></div><div class="line">            leastActive = active; <span class="comment">// 记录最小活跃数</span></div><div class="line">            leastCount = <span class="number">1</span>; <span class="comment">// 重新统计相同最小活跃数的个数</span></div><div class="line">            leastIndexs[<span class="number">0</span>] = i; <span class="comment">// 重新记录最小活跃数下标</span></div><div class="line">            totalWeight = weight; <span class="comment">// 重新累计总权重</span></div><div class="line">            firstWeight = weight; <span class="comment">// 记录第一个权重</span></div><div class="line">            sameWeight = <span class="keyword">true</span>; <span class="comment">// 还原权重相同标识</span></div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (active == leastActive) &#123; <span class="comment">// 累计相同最小的活跃数</span></div><div class="line">            leastIndexs[leastCount ++] = i; <span class="comment">// 累计相同最小活跃数下标</span></div><div class="line">            totalWeight += weight; <span class="comment">// 累计总权重</span></div><div class="line">            <span class="comment">// 判断所有权重是否一样</span></div><div class="line">            <span class="keyword">if</span> (sameWeight &amp;&amp; i &gt; <span class="number">0</span></div><div class="line">                    &amp;&amp; weight != firstWeight) &#123;</div><div class="line">                sameWeight = <span class="keyword">false</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// assert(leastCount &gt; 0)</span></div><div class="line">    <span class="keyword">if</span> (leastCount == <span class="number">1</span>) &#123;</div><div class="line">        <span class="comment">// 如果只有一个最小则直接返回</span></div><div class="line">        <span class="keyword">return</span> invokers.get(leastIndexs[<span class="number">0</span>]);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (! sameWeight &amp;&amp; totalWeight &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="comment">// 如果权重不相同且权重大于0则按总权重数随机</span></div><div class="line">        <span class="keyword">int</span> offsetWeight = random.nextInt(totalWeight);</div><div class="line">        <span class="comment">// 并确定随机值落在哪个片断上</span></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; leastCount; i++) &#123;</div><div class="line">            <span class="keyword">int</span> leastIndex = leastIndexs[i];</div><div class="line">            offsetWeight -= getWeight(invokers.get(leastIndex), invocation);</div><div class="line">            <span class="keyword">if</span> (offsetWeight &lt;= <span class="number">0</span>)</div><div class="line">                <span class="keyword">return</span> invokers.get(leastIndex);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 如果权重相同或权重为0则均等随机</span></div><div class="line">    <span class="keyword">return</span> invokers.get(leastIndexs[random.nextInt(leastCount)]);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="ConsistentHash-LoadBalance-一致性Hash均衡算法"><a href="#ConsistentHash-LoadBalance-一致性Hash均衡算法" class="headerlink" title="ConsistentHash LoadBalance(一致性Hash均衡算法)"></a>ConsistentHash LoadBalance(一致性Hash均衡算法)</h2><p>根据一致性哈希算法，<br>一致性哈希选择器依赖的参数是：</p>
+<ul>
+<li>virtualInvokers：每个哈希槽对应的Invoker</li>
+<li>replicaNumber：理解为哈希槽的数量，由hash.nodes指定，默认值是160</li>
+<li>identityHashCode：哈希码，根据invokers生成</li>
+<li>argumentIndex：参数索引数组，int[]类型。由hash.arguments指定，默认值是0。会根据该参数来确定选择那些输入参数作为key生成的依据。然后MD5之后做Hash。<br><strong>综上，可以认为，同一个方法的调用中，如果参数的哈希值相同则会调用同一个实例。</strong><br><a href="http://blog.csdn.net/revivedsun/article/details/71022871" target="_blank" rel="external">源码解析</a><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doSelect</span><span class="params">(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</span> </span>&#123;</div><div class="line">    String key = invokers.get(<span class="number">0</span>).getUrl().getServiceKey() + <span class="string">"."</span> + invocation.getMethodName();</div><div class="line">    <span class="keyword">int</span> identityHashCode = System.identityHashCode(invokers);</div><div class="line">    ConsistentHashSelector&lt;T&gt; selector = (ConsistentHashSelector&lt;T&gt;) selectors.get(key);</div><div class="line">    <span class="keyword">if</span> (selector == <span class="keyword">null</span> || selector.getIdentityHashCode() != identityHashCode) &#123;</div><div class="line">        selectors.put(key, <span class="keyword">new</span> ConsistentHashSelector&lt;T&gt;(invokers, invocation.getMethodName(), identityHashCode));</div><div class="line">        selector = (ConsistentHashSelector&lt;T&gt;) selectors.get(key); <span class="comment">//ConsistentHashSelector 一致性哈希选择器</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> selector.select(invocation);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://dubbo.io/Developer+Guide-zh.htm" target="_blank" rel="external">Dubbo开发者指南</a><br><a href="http://shiyanjun.cn/archives/325.html" target="_blank" rel="external">Dubbo架构设计详解</a></p>
+</the>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/RPC/" rel="tag"># RPC</a>
+          
+            <a href="/tags/Dubbo/" rel="tag"># Dubbo</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/14/Storm_API/" rel="next" title="Storm API">
+                <i class="fa fa-chevron-left"></i> Storm API
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/09/Redis Cluster与一致性哈希/" rel="prev" title="Redis Cluster与一致性哈希">
+                Redis Cluster与一致性哈希 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8yODU3Mi81MTQz"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/resources/img/head.jpg"
+               alt="Paleo" />
+          <p class="site-author-name" itemprop="name">Paleo</p>
+           
+              <p class="site-description motion-element" itemprop="description">超然物外，天道酬勤。</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">34</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/Paleozoic" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://coding.net/u/paleozoic" target="_blank" title="Coding">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Coding
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:qxloong@foxmail.com" target="_blank" title="Email">
+                  
+                    <i class="fa fa-fw fa-commenting"></i>
+                  
+                  Email
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Dubbo依赖关系"><span class="nav-number">1.</span> <span class="nav-text">Dubbo依赖关系</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#注册中心（服务注册与发现）"><span class="nav-number">2.</span> <span class="nav-text">注册中心（服务注册与发现）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#序列化协议"><span class="nav-number">3.</span> <span class="nav-text">序列化协议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络传输"><span class="nav-number">4.</span> <span class="nav-text">网络传输</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#负载均衡"><span class="nav-number">5.</span> <span class="nav-text">负载均衡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#服务端负载均衡-nginx-zuul"><span class="nav-number">5.1.</span> <span class="nav-text">服务端负载均衡(nginx/zuul)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端负载均衡-dubbo-loadbalance-ribbon"><span class="nav-number">5.2.</span> <span class="nav-text">客户端负载均衡(dubbo loadbalance/ribbon)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#负载均衡策略"><span class="nav-number">5.3.</span> <span class="nav-text">负载均衡策略</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#监控"><span class="nav-number">6.</span> <span class="nav-text">监控</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dubbo支持协议-序列化以及网络传输"><span class="nav-number">7.</span> <span class="nav-text">Dubbo支持协议(序列化以及网络传输)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dubbo服务集群容错"><span class="nav-number">8.</span> <span class="nav-text">Dubbo服务集群容错</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Failover-失败转移"><span class="nav-number">8.1.</span> <span class="nav-text">Failover 失败转移</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Failfast-快速失败"><span class="nav-number">8.2.</span> <span class="nav-text">Failfast 快速失败</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Failsafe-失败安全"><span class="nav-number">8.3.</span> <span class="nav-text">Failsafe 失败安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Failback-失败自动恢复"><span class="nav-number">8.4.</span> <span class="nav-text">Failback 失败自动恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Forking-并行调用"><span class="nav-number">8.5.</span> <span class="nav-text">Forking 并行调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Broadcast-广播调用"><span class="nav-number">8.6.</span> <span class="nav-text">Broadcast 广播调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mergeable-合并调用"><span class="nav-number">8.7.</span> <span class="nav-text">Mergeable 合并调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dubbo负载均衡算法"><span class="nav-number">9.</span> <span class="nav-text">Dubbo负载均衡算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Random-LoadBalance-随机均衡算法"><span class="nav-number">9.1.</span> <span class="nav-text">Random LoadBalance(随机均衡算法)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RoundRobin-LoadBalance-权重轮循均衡算法"><span class="nav-number">9.2.</span> <span class="nav-text">RoundRobin LoadBalance(权重轮循均衡算法)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LeastAction-LoadBalance-最少活跃调用数均衡算法"><span class="nav-number">9.3.</span> <span class="nav-text">LeastAction LoadBalance(最少活跃调用数均衡算法)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConsistentHash-LoadBalance-一致性Hash均衡算法"><span class="nav-number">9.4.</span> <span class="nav-text">ConsistentHash LoadBalance(一致性Hash均衡算法)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">10.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <a href="http://www.maxplus1.com/"><i class="fa fa-heart"></i></a>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html">Paleo</a></span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (search_path.endsWith("json")) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
