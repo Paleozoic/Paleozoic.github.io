@@ -21,13 +21,15 @@ Zookeeper是一个分布式协调服务器，基于paxos实现了Zab一致性算
     * EPHEMERAL_SEQUENTIAL(临时顺序编号目录节点):区别于PERSISTENT_SEQUENTIAL，client断开连接后，znode会被删除
 - 发布/订阅通知机制
   * client可以订阅（watch）指定的znode，当znode发生改变时，zk会发布消息通知client。（Redis也有类似的pub/sub机制）基于这个机制zk和redis都可以实现分布式锁以及服务注册与发现（比如dubbo）
-## Zookeeper提可以做什么？
+
+## Zookeeper可以做什么？
 - 服务注册与发现：dubbo
 - 配置管理：disconf
 - 集群管理：HBase Storm等
 - 分布式锁
 - 分布式队列
 - 进程屏障Barrier
+
 ### 服务注册与发现
 作为注册中心，zk大致流程如下，可以实现客户端的负载均衡：
 ![Zookeeper的服务注册与发现](/resources/img/zookeeper/Zookeeper的服务注册与发现.png)

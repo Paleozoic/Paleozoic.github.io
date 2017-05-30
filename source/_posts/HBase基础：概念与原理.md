@@ -169,7 +169,7 @@ HBase每个列族的每个Region的每个Store包含一个MemStore和多个Store
 - 读BlockCache
 - 读MemStore
 - 读HFile
-- PS：在任意地方读到都返回结果，这里通过ReadPoint、WriteNumber实现读写一致性的事务。
+- PS：在任意地方(BlockCache,MemStore,HFile)读到都返回结果，这里通过ReadPoint、WriteNumber实现读写一致性的事务。
 
 # HBase Region Flush
 MemStore存储达到阈值，那么位于MemStore的有序数据集就会写入一个新的HFile。这个过程称之为Flush。
@@ -177,6 +177,18 @@ MemStore存储达到阈值，那么位于MemStore的有序数据集就会写入�
 这里引出一个问题：HBase的列族数量为什么不应过多？
 MapR解析：There is one MemStore per CF; (和上面的There is one MemStore per column family per region.岂不是矛盾，或者表达的是one of the MemStore of CF？)when one is full, they all flush. It also saves the last written sequence number so the system knows what was persisted so far.
 意思就是1个MemStore的flush会触发其**所在Region内（等价于所在Table）**的所有MemStore的flush，所以列族越多，就会有越多的flush，频繁的IO便会影响性能。
+flush过程包括:(其实和HDFS的NameNode的edit log的flush(checkpoint)流程是非常相似的，就是swap的思路)
+- 触发时机：某个Region内的一个MemStore达到阈值，触发整个Region内的所有MemStore的flush操作。
+- prepare(基于MemStore做snapshot)
+> 遍历Region的所有MemStore，将MemStore的数据保存为snapshot，然后新建一个MemStore.NEW，新的写入操作会将数据写入MemStore.NEW。
+flush时，读请求会先从MemStore和MemStore.NEW读取操作，缓存位命中，才会去访问HFile。
+就在生成快照的时候，会上updateLock，阻塞写请求。
+
+- flushcache(基于snapshot生成临时文件)
+> 遍历所有snapshot，将snapshot持久化为临时文件，目录是.tmp。这里涉及到磁盘IO，耗时操作。
+
+- commit(确认flush操作完成，rename临时文件为正式文件名称，清除mem中的snapshot)
+遍历所有的Memstore，将flush阶段生成的临时文件移到指定的ColumnFamily目录下，针对HFile生成对应的storefile和Reader，把storefile添加到HStore的storefiles列表中，最后再清空prepare阶段生成的snapshot。
 ![HBaseRegionFlush](/resources/img/hbase/HBaseRegionFlush.png)
 
 # [HBase的ACID](http://hbase.apache.org/acid-semantics.html)
@@ -203,7 +215,7 @@ ACID是指原子性(Atomicity)，一致性(Consistency)，隔离性(Isolation)�
   * 顺序读取BlockCache、MemStore、HFile，直至取得数据
   * 关闭Scanner
 
-# HBase的锁
+# HBase的锁[TODO:存疑]
 ## 行锁RowLock
 用于实现“写行”时的原子性。RowLock有Lease租约的机制，超时会自动释放行锁。（即使是超时释放行锁，整个操作也是要么全部成功，要么全部失败，保持原子性）
 > MVCC:Multi-Version Concurrency Control 多版本并发控制
@@ -218,17 +230,6 @@ Region update更新锁(updatesLock)，在internalFlushCache时加写锁，导致
 Region close保护锁(lock)，在Region close或者split操作的时(加写锁)，阻塞对region的其他操作(加读锁)，比如compact、flush、scan和其他写操作。
 
 ## StoreFile锁
-flush过程包括:(其实和HDFS的NameNode的edit log的flush流程是非常相似的，就是swap的思路)
-- 触发时机：某个Region内的一个MemStore达到阈值，触发整个Region内的所有MemStore的flush操作。
-- prepare(基于MemStore做snapshot)
-> 遍历Region的所有MemStore，将MemStore的数据保存为snapshot，然后新建一个MemStore.NEW，新的写入操作会将数据写入MemStore.NEW。
-flush时，读请求会先从MemStore和MemStore.NEW读取操作，缓存位命中，才会去访问HFile。
-就在生成快照的时候，会上updateLock，阻塞写请求。
-
-- flushcache(基于snapshot生成临时文件)
-> 遍历所有snapshot，将snapshot持久化为临时文件。这里涉及到磁盘IO，耗时操作。
-
-- commit(确认flush操作完成，rename临时文件为正式文件名称，清除mem中的snapshot)
 其中在flush过程的commit阶段，compact过程的completeCompaction阶段(rename临时compact文件名、清理旧的文件)，close store(关闭store)，bulkLoadHFile，会阻塞对store的写操作。
 
 # 协处理器Coprocessor
