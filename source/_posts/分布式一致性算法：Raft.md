@@ -21,5 +21,9 @@ tags: [分布式一致性算法,Raft]
 - <3>所有交互现在通过Leader完成。
 > 例如写入操作：
 
+
+
+## Raft的CAP分析
+
 # 引用
 [Raft:Understandable Distributed Consensus](http://thesecretlivesofdata.com/raft/)
