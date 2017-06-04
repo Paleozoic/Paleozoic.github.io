@@ -97,10 +97,13 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2017/05/07/分布式系统相关概念/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="分布式系统相关概念">
-<meta property="og:updated_time" content="2017-05-25T14:48:50.509Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/CAP.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/PACELC.png">
+<meta property="og:updated_time" content="2017-06-03T07:19:48.383Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式系统相关概念">
 <meta name="twitter:description" content="分布式系统相关概念">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/CAP.png">
 
 
 
@@ -416,7 +419,68 @@
       
         <p><excerpt in="" index="" |="" 首页摘要=""><br>分布式系统相关概念<a id="more"></a></excerpt></p>
 <p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
-<h1 id="分布式一致性理论"><a href="#分布式一致性理论" class="headerlink" title="分布式一致性理论"></a>分布式一致性理论</h1><h2 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h2><h2 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h2><h2 id="Quorum-NWR"><a href="#Quorum-NWR" class="headerlink" title="Quorum NWR"></a>Quorum NWR</h2><h2 id="Lease机制"><a href="#Lease机制" class="headerlink" title="Lease机制"></a>Lease机制</h2>
+<h1 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h1><p>C(Consistency)：A read is guaranteed to return the most recent write for a given client.数据在各个节点是一致的，读操作总能读到最新写入的数据。<br>A(Availability)：A non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout).非故障节点必须在合理有限的时间返回合理的结果（非Error或者Timeout）<br>P(Partition Tolerance)：The system will continue to function when network partitions occur.分布式系统必须在发生网络分区（脑裂，任意子节点集合故障）的情况下也提供服务。<br>对于CAP，在分布式系统中，总是认为网络是不可靠的，则P是必选，所以分布式系统的一致性也就只存在CP和AP两种选择：在发生网络分区时，是选择一致性还是可用性？<br><img src="/resources/img/distributed_systems/CAP.png" alt="CAP"></p>
+<h1 id="PACELC"><a href="#PACELC" class="headerlink" title="PACELC"></a>PACELC</h1><ul>
+<li>PAC:if there is a partition (P), how does the system trade off availability and consistency (A and C);</li>
+<li>ELC:else (E), when the system is running normally in the absence of partitions, how does the system trade off latency (L) and consistency (C)?<br>个人理解PACELC是CAP的一个细化描述，<br>其中可用性涉及到时延的描述，PACELC细化了CAP，如下图：<br>分布式系统发生网络分区时，是在A和C之间选择(PA or PC)？还是在L和C之间选择(PL or PC)？<br>意思就是，在分布式系统中，网络分区和一致性是硬性要求。根据不同的情景，牺牲一定的一致性来换取低延迟和可用性。<br><img src="/resources/img/distributed_systems/PACELC.png" alt="PACELC"><br>CA:即不考虑网络分区，认为网络是可靠的。（只存在于单节点系统，或系统认为集群是“不可分区的”）<br>CP:牺牲A来获得强一致性。P发生时，为了保证C，必然损失A。例如，写数据最后1个副本时遇上网络延时（分区），此时只能返回Timeout或者Error，可用性丧失。<br>AP：牺牲C来获得A。P发生时，每个节点依然可以提供合理的服务响应。但是在整个分布式系统，各个节点的数据并非一致。一致性丧失，当分区恢复正常，数据逐渐同步，达到最终一致性。</li>
+</ul>
+<h1 id="ACID-and-BASE"><a href="#ACID-and-BASE" class="headerlink" title="ACID and BASE"></a>ACID and BASE</h1><h2 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h2><ul>
+<li>Atomicity:原子性，整个事务中的所有操作，要么全部完成，要么全部不完成，不可能存在中间状态。</li>
+<li>Consistency:(强)一致性，事务提交后，所有读操作都可以读到事务提交后的一致的数据。</li>
+<li>Isolation:隔离性，并发事务之间相互隔离，互不影响。</li>
+<li>Durability:持久性，在事务提交后，该事务对数据库所作的更改便持久的保存在存储介质之中，并且不可变。</li>
+</ul>
+<h2 id="BASE-牺牲一致性"><a href="#BASE-牺牲一致性" class="headerlink" title="BASE(牺牲一致性)"></a>BASE(牺牲一致性)</h2><ul>
+<li><p>Basic Availability:基本可用，分布式系统更加关注系统的可用性。分布式系统在出现不可预知故障时，允许损失部分可用性：性能损失（高延时）和功能损失（降级，参考Spring Cloud熔断器Hystrix）</p>
+<blockquote>
+<p>响应时间上的损失：正常情况下，一个在线搜索引擎需要在0.5秒之内返回给用户相应的查询结果，但由于出现故障（比如系统部分机房发生断电或断网故障），查询结果的响应时间增加到了1～2秒。<br>功能上的损失：正常情况下，在一个电子商务网站上进行购物，消费者几乎能够顺利地完成每一笔订单，但是在一些节日大促购物高峰的时候，由于消费者的购物行为激增，为了保护购物系统的稳定性，部分消费者可能会被引导到一个降级页面。</p>
+</blockquote>
+</li>
+<li><p>Soft-state:软状态/柔性事务。指在分布式系统中，client和server cluster建立的连接是无状态的(stateless)。可以类比Storm集群，Storm状态信息在Zookeeper。无状态提高了Storm的可用性，但牺牲了一致性（Storm节点的内存消息会丢失）。于我理解，无状态的分布式session是否也属于Soft-state的一种运用？</p>
+</li>
+<li>Eventual consistency:最终一致性</li>
+</ul>
+<h2 id="ACID-BASE特点"><a href="#ACID-BASE特点" class="headerlink" title="ACID/BASE特点"></a>ACID/BASE特点</h2><table>
+<thead>
+<tr>
+<th>ACID</th>
+<th>BASE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>强一致性事务优先</td>
+<td>高可用可伸缩优先</td>
+</tr>
+<tr>
+<td>弱化可用性</td>
+<td>弱一致性</td>
+</tr>
+<tr>
+<td>悲观锁</td>
+<td>乐观锁</td>
+</tr>
+<tr>
+<td>rigorous analysis</td>
+<td>best effort最优性能，充分利用系统资源</td>
+</tr>
+<tr>
+<td>复杂机制</td>
+<td>简单高效</td>
+</tr>
+</tbody>
+</table>
+<h1 id="Quorum-NWR"><a href="#Quorum-NWR" class="headerlink" title="Quorum NWR"></a>Quorum NWR</h1><p>Quorom机制，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。<br>具体体现是选主投票（过半数投票才会成为Leader）和NWR。</p>
+<ul>
+<li>N: 数据副本总数量（可以理解为分布式系统中的节点数，因为通常是一个节点一个副本）</li>
+<li>W: 写操作需要写入的最少副本数。W越大，写性能越低。</li>
+<li>R: 读操作需要读取的最少副本数。R越大，读性能越低。<br>NWR其实也是CAP的另外一种体现。</li>
+<li>W+R&gt;N：强一致性。因为读写必然重叠，只要取到版本号最高的数据（读写重叠部分的数据）即为最新数据。无脏读。</li>
+<li>W+R&lt;=N：最终一致性。因为读写不重叠，存在发生脏读的可能。</li>
+</ul>
+<h1 id="Lease机制"><a href="#Lease机制" class="headerlink" title="Lease机制"></a>Lease机制</h1><p>Lease，租约。我在用Redis实现分布式锁的时候使用过（利用expired），目的是防止死锁。<br>在Raft算法里面，term也可以理解是一个租约有效期的体现。<br>理解为：跨进程持有的资源使用的是租赁的形式，持有资源的进程如果存在宕机的可能，则租约过期后，资源会被自动释放。</p>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://cs-www.cs.yale.edu/homes/dna/papers/abadi-pacelc.pdf" target="_blank" rel="external">Consistency Tradeoffs in Modern Distributed Database System Design</a><br><a href="http://slideplayer.com/slide/4972041/" target="_blank" rel="external">15-446 Distributed Systems Spring 2009</a><br><a href="http://blog.csdn.net/historyasamirror/article/details/4458369" target="_blank" rel="external">解惑soft state</a><br><a href="http://book.51cto.com/art/201503/469187.htm" target="_blank" rel="external">CAP和BASE理论</a></p>
+
       
     </div>
 
@@ -544,7 +608,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-count">30</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -555,7 +619,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -566,7 +630,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">34</span>
+                <span class="site-state-item-count">37</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -630,7 +694,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#分布式一致性理论"><span class="nav-number">1.</span> <span class="nav-text">分布式一致性理论</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP"><span class="nav-number">1.1.</span> <span class="nav-text">CAP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BASE"><span class="nav-number">1.2.</span> <span class="nav-text">BASE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Quorum-NWR"><span class="nav-number">1.3.</span> <span class="nav-text">Quorum NWR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lease机制"><span class="nav-number">1.4.</span> <span class="nav-text">Lease机制</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CAP"><span class="nav-number">1.</span> <span class="nav-text">CAP</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PACELC"><span class="nav-number">2.</span> <span class="nav-text">PACELC</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ACID-and-BASE"><span class="nav-number">3.</span> <span class="nav-text">ACID and BASE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ACID"><span class="nav-number">3.1.</span> <span class="nav-text">ACID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BASE-牺牲一致性"><span class="nav-number">3.2.</span> <span class="nav-text">BASE(牺牲一致性)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ACID-BASE特点"><span class="nav-number">3.3.</span> <span class="nav-text">ACID/BASE特点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Quorum-NWR"><span class="nav-number">4.</span> <span class="nav-text">Quorum NWR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lease机制"><span class="nav-number">5.</span> <span class="nav-text">Lease机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">6.</span> <span class="nav-text">引用</span></a></li></ol></div>
             
 
           </div>

@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[分布式一致性算法：二段提交和三段提交]]></title>
+    <url>%2F2017%2F05%2F31%2F%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95%EF%BC%9A%E4%BA%8C%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%92%8C%E4%B8%89%E6%AE%B5%E6%8F%90%E4%BA%A4%2F</url>
+    <content type="text"><![CDATA[分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。]]></content>
+      <categories>
+        <category>分布式</category>
+        <category>一致性算法</category>
+      </categories>
+      <tags>
+        <tag>分布式一致性算法</tag>
+        <tag>二段提交</tag>
+        <tag>三段提交</tag>
+        <tag>分布式事务</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[基础算法]]></title>
     <url>%2F2017%2F05%2F15%2F%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95%2F</url>
     <content type="text"><![CDATA[基础算法，算法有时候好玩，有时候不好玩。看得懂和写得出差距很大很大。 写在前面文章算法正确性均未验证，只是谈谈思路。 常用算法分治 将大问题分解为小问题 合并小问题的解即为大问题的解，小问题之间相互独立。在大数据中，基于MR思想的分布式计算框架，比如MapReduce和Spark。都是典型的分治法的利用。数据分区，分区内的管道式计算。属于“分”，分区内的数据互不干扰，相互独立。分区结果多路归并，比如Reduce操作。得到最优解。 动态规划贪心回溯分支限界快速排序算法 算法思想：分治法 算法思路： 从数组取一个数作为基准元（固定基准元、随机基准元、三数取中，目的是使分隔成的子数组长度尽可能相等） 将数组分割成左右2个子数组，左数组小于基准元，右数组大于基准元。并返回新的基准元下标。（注意边界条件是low&lt;high） 对左右数组分别递归调用，直到low&lt;high12345678910111213141516171819202122232425262728293031//定义分区函数，将数组分为左右数组并返回大小分界处的元素下标。public int Partition(int[] arr,int low,int high)&#123; //取low下标元素作为基准元 int keyNum = arr[low]; int i = low,j = high; while(i&lt;j)&#123; while(arr[i]&gt;keyNum&amp;&amp;i&lt;j)&#123;//找到左边大于基准元的元素下标 i++; &#125; while(arr[j]&lt;keyNum&amp;&amp;i&lt;j)&#123;//找到右边小于基准元的元素下标 j--; &#125; if(i&lt;j)&#123;//交换i，j元素 swap(arr,i,j); &#125; &#125; /** * 循环结束时，左数组小于基准元，右数组大于基准元， * 但是基准元还是位于low处（等于被忽略），所以应将基准元放回中间位置 **/ swap(arr,low,i); return i; //此时的i就是i==j(low==high)的时候&#125;public void qsort(int[] arr,int low,int high)&#123; if(low&lt;high)&#123; int division = Partition(arr,low,high); //得到左右分区边界下标 qsort(arr,low,division-1); //division可以认为有序，递归时应跳过division项 qsort(arr,division+1,high); &#125;&#125;`]]></content>
@@ -113,7 +128,7 @@
   <entry>
     <title><![CDATA[分布式系统相关概念]]></title>
     <url>%2F2017%2F05%2F07%2F%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5%2F</url>
-    <content type="text"><![CDATA[分布式系统相关概念 分布式一致性理论CAPBASEQuorum NWRLease机制]]></content>
+    <content type="text"><![CDATA[分布式系统相关概念 CAPC(Consistency)：A read is guaranteed to return the most recent write for a given client.数据在各个节点是一致的，读操作总能读到最新写入的数据。A(Availability)：A non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout).非故障节点必须在合理有限的时间返回合理的结果（非Error或者Timeout）P(Partition Tolerance)：The system will continue to function when network partitions occur.分布式系统必须在发生网络分区（脑裂，任意子节点集合故障）的情况下也提供服务。对于CAP，在分布式系统中，总是认为网络是不可靠的，则P是必选，所以分布式系统的一致性也就只存在CP和AP两种选择：在发生网络分区时，是选择一致性还是可用性？ PACELC PAC:if there is a partition (P), how does the system trade off availability and consistency (A and C); ELC:else (E), when the system is running normally in the absence of partitions, how does the system trade off latency (L) and consistency (C)?个人理解PACELC是CAP的一个细化描述，其中可用性涉及到时延的描述，PACELC细化了CAP，如下图：分布式系统发生网络分区时，是在A和C之间选择(PA or PC)？还是在L和C之间选择(PL or PC)？意思就是，在分布式系统中，网络分区和一致性是硬性要求。根据不同的情景，牺牲一定的一致性来换取低延迟和可用性。CA:即不考虑网络分区，认为网络是可靠的。（只存在于单节点系统，或系统认为集群是“不可分区的”）CP:牺牲A来获得强一致性。P发生时，为了保证C，必然损失A。例如，写数据最后1个副本时遇上网络延时（分区），此时只能返回Timeout或者Error，可用性丧失。AP：牺牲C来获得A。P发生时，每个节点依然可以提供合理的服务响应。但是在整个分布式系统，各个节点的数据并非一致。一致性丧失，当分区恢复正常，数据逐渐同步，达到最终一致性。 ACID and BASEACID Atomicity:原子性，整个事务中的所有操作，要么全部完成，要么全部不完成，不可能存在中间状态。 Consistency:(强)一致性，事务提交后，所有读操作都可以读到事务提交后的一致的数据。 Isolation:隔离性，并发事务之间相互隔离，互不影响。 Durability:持久性，在事务提交后，该事务对数据库所作的更改便持久的保存在存储介质之中，并且不可变。 BASE(牺牲一致性) Basic Availability:基本可用，分布式系统更加关注系统的可用性。分布式系统在出现不可预知故障时，允许损失部分可用性：性能损失（高延时）和功能损失（降级，参考Spring Cloud熔断器Hystrix） 响应时间上的损失：正常情况下，一个在线搜索引擎需要在0.5秒之内返回给用户相应的查询结果，但由于出现故障（比如系统部分机房发生断电或断网故障），查询结果的响应时间增加到了1～2秒。功能上的损失：正常情况下，在一个电子商务网站上进行购物，消费者几乎能够顺利地完成每一笔订单，但是在一些节日大促购物高峰的时候，由于消费者的购物行为激增，为了保护购物系统的稳定性，部分消费者可能会被引导到一个降级页面。 Soft-state:软状态/柔性事务。指在分布式系统中，client和server cluster建立的连接是无状态的(stateless)。可以类比Storm集群，Storm状态信息在Zookeeper。无状态提高了Storm的可用性，但牺牲了一致性（Storm节点的内存消息会丢失）。于我理解，无状态的分布式session是否也属于Soft-state的一种运用？ Eventual consistency:最终一致性 ACID/BASE特点 ACID BASE 强一致性事务优先 高可用可伸缩优先 弱化可用性 弱一致性 悲观锁 乐观锁 rigorous analysis best effort最优性能，充分利用系统资源 复杂机制 简单高效 Quorum NWRQuorom机制，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。具体体现是选主投票（过半数投票才会成为Leader）和NWR。 N: 数据副本总数量（可以理解为分布式系统中的节点数，因为通常是一个节点一个副本） W: 写操作需要写入的最少副本数。W越大，写性能越低。 R: 读操作需要读取的最少副本数。R越大，读性能越低。NWR其实也是CAP的另外一种体现。 W+R&gt;N：强一致性。因为读写必然重叠，只要取到版本号最高的数据（读写重叠部分的数据）即为最新数据。无脏读。 W+R&lt;=N：最终一致性。因为读写不重叠，存在发生脏读的可能。 Lease机制Lease，租约。我在用Redis实现分布式锁的时候使用过（利用expired），目的是防止死锁。在Raft算法里面，term也可以理解是一个租约有效期的体现。理解为：跨进程持有的资源使用的是租赁的形式，持有资源的进程如果存在宕机的可能，则租约过期后，资源会被自动释放。 引用Consistency Tradeoffs in Modern Distributed Database System Design15-446 Distributed Systems Spring 2009解惑soft stateCAP和BASE理论]]></content>
       <categories>
         <category>分布式</category>
         <category>基础</category>
@@ -137,9 +152,10 @@
   <entry>
     <title><![CDATA[分布式一致性算法：Raft]]></title>
     <url>%2F2017%2F05%2F06%2F%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95%EF%BC%9ARaft%2F</url>
-    <content type="text"><![CDATA[分布式一致性算法：Raft Raft节点状态在集群中，每个节点可能具有一下3中状态 Follower：从节点 Candidate：候选人节点，Follower-&gt;Leader的中间态 Leader：主节点，在集群中有且只有1个；如果存在多个，则term最大的Leader是合法Leader。一致性协议集群启动假设存在1个只有3个节点的集群，分别为A、B、C A、B、C的初始状态均为Follower 由于没有Leader，Follower不能收到Leader的心跳。然后Follower会成为Candidate。假设A成为了Candidate，则A会请求B、C投票让A成为Leader（A会给自己投一票，每个节点在一轮投票中只能投票1次）。一个Candidate如果获得了集群大多数节点的投票，则成为Leader。此过程成为选主（Leader Selection）。 所有交互现在通过Leader完成。 例如写入操作： 引用Raft:Understandable Distributed Consensus]]></content>
+    <content type="text"><![CDATA[分布式一致性算法：Raft 术语概念节点状态在集群中，每个节点可能具有一下3中状态 Follower：从节点 Candidate：候选人节点，Follower-&gt;Leader的中间态 Leader：主节点，在集群中有且只有1个合法Leader；如果存在多个Leader，则term最大的Leader是合法Leader。 选主 Heartbeat Interval：Leader向Follower发送心跳的间隔 Election Timemout/Heartbeat Timeout：我认为这2个Timeout属于同一个东西。Follower失去了与Leader的心跳(在某个时间内没有收到Leader的心跳消息)，则会随机设置ET=[150,300]ms(随机数可以减少多个Node同时成为Candidate的几率)。election timemout后，该节点会成为Candidate，并开始一轮election term，请求其他节点为其投票。 Election Term：选主有效期，带有版本号，election term版本号最高的Leader为合法Leader。每轮选举每个节点只能投票一次，并重置election timemout。 日志复制 LogEntry/AppendEntry：理解为undo log和redo log，并且认为LogEntry一旦写入磁盘便永不改变（持久化），并且需要保持log的顺序。 其他 term：我理解为租约有效期（参考Lease机制）。 集群启动假设存在1个只有3个节点的集群，分别为A、B、C A、B、C的初始状态均为Follower 由于没有Leader，Follower不能收到Leader的心跳。然后某个Follower会成为Candidate。假设A成为了Candidate，则A会请求B、C投票让A成为Leader（A会给自己投一票，每个节点在一轮投票中只能投票1次）。一个Candidate如果获得了集群大多数节点的投票，则成为Leader。此过程成为选主（Leader Selection）。 所有交互现在通过Leader完成（具体参看日志复制章节的写操作示意图）。 选主(Leader Election)Leader定期(Heartbeat Interval)向Followers发送心跳，如下图，假设Leader和Followers之间发生了网络分区，Followers无法收到Leader的心跳，等待Election Timeout时间后，Followers会发起新的一轮选主(Election Term)。选举开始，Candidate初始化并维护term和Vote Count（投票数量），然后会投票给自己。之后将term发送给Followers，请求他们投票。如果该轮选举未投票，Follower会投票给该Candidate。一旦Candidate获得了集群大多数Followers的投票，则Candidate成为Leader。 如何减少多个Follower成为Candidate？ Election Timeout随机设置 如果同时存在多个Candidate呢？ 投票完毕，如果Candidates票数相等，则重置Election Timeout，进行下一轮选主。 如何保证一轮选举只产生一个Leader？ 每个Follower在同一个Election Term只能投票一次，获得大多数投票的Candidate正式成为Leader 还有疑问：集群如何维护term的全局递增序列？ 无责任猜想：在实际中，通过redis，zookeeper等方式实现，比如redis的incr命令，又或者分布式锁。 日志复制(Log Replication)Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。log也应该是有序的。以一次写入操作为例： Client发送请求给Leader，设置X=1。Leader写入undo log和redo log(LogEntry/AppendEntry)，但事务并未提交。 Leader将x=1的LogEntry复制至Follower Follower响应leader，告知写入成功（这里遵循NWR规则） Leader响应Client，告知些如此成功。 如果网络分区将集群分为多个子集群，如何保证一致性？ 每个子集群都会有一个Leader，当网络恢复后，在整个集群之中，term最高的Leader为合法Leader。其他Leader产生的log会被回滚（因为无法获得大部分节点的log写入确认，所以所有的log都不能提交），然后同步唯一的合法Leader的log至整个集群。含有大部分节点的子集群依然正常提供服务，但是含有少部分节点的子集群永远无法提交事务，丧失部分可用性。此处就是典型的牺牲可用性来换取一致性。所以Raft是一个CP算法。疑问：根据Raft:Understandable Distributed Consensus介绍，网络分区分为大小集群，分区集群独立选主，但是提交log却按照整个进群的节点进行写入确认。还有如何保证网络分区时如何保证大的子集群的的term一定高于小的子集群？[待研究] Raft的CAP分析Raft是一个CP算法，具体参看日志复制章节介绍。 引用Raft:Understandable Distributed ConsensusIn Search of an Understandable Consensus Algorithm]]></content>
       <categories>
         <category>分布式</category>
+        <category>一致性算法</category>
       </categories>
       <tags>
         <tag>分布式一致性算法</tag>

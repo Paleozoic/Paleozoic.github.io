@@ -97,10 +97,16 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2017/05/06/分布式一致性算法：Raft/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="分布式一致性算法：Raft">
-<meta property="og:updated_time" content="2017-05-14T11:28:58.407Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_ServerStates.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_ElectionTimeout.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_LeaderElection.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_Write.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_NetworkPartition.png">
+<meta property="og:updated_time" content="2017-06-04T17:11:13.542Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式一致性算法：Raft">
 <meta name="twitter:description" content="分布式一致性算法：Raft">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_ServerStates.png">
 
 
 
@@ -376,6 +382,17 @@
 
                 
                 
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/一致性算法/" itemprop="url" rel="index">
+                    <span itemprop="name">一致性算法</span>
+                  </a>
+                </span>
+
+                
+                
               
             </span>
           
@@ -405,19 +422,63 @@
       
         <p><excerpt in="" index="" |="" 首页摘要=""><br>分布式一致性算法：Raft<a id="more"></a></excerpt></p>
 <p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
-<h1 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h1><h2 id="节点状态"><a href="#节点状态" class="headerlink" title="节点状态"></a>节点状态</h2><p>在集群中，每个节点可能具有一下3中状态</p>
+<h1 id="术语概念"><a href="#术语概念" class="headerlink" title="术语概念"></a>术语概念</h1><h2 id="节点状态"><a href="#节点状态" class="headerlink" title="节点状态"></a>节点状态</h2><p>在集群中，每个节点可能具有一下3中状态</p>
 <ul>
 <li>Follower：从节点</li>
 <li>Candidate：候选人节点，Follower-&gt;Leader的中间态</li>
-<li>Leader：主节点，在集群中有且只有1个；如果存在多个，则term最大的Leader是合法Leader。<h2 id="一致性协议"><a href="#一致性协议" class="headerlink" title="一致性协议"></a>一致性协议</h2><h3 id="集群启动"><a href="#集群启动" class="headerlink" title="集群启动"></a>集群启动</h3>假设存在1个只有3个节点的集群，分别为A、B、C</li>
-<li><1>A、B、C的初始状态均为Follower</1></li>
-<li><2>由于没有Leader，Follower不能收到Leader的心跳。然后Follower会成为Candidate。假设A成为了Candidate，则A会请求B、C投票让A成为Leader（A会给自己投一票，每个节点在一轮投票中只能投票1次）。一个Candidate如果获得了集群<strong>大多数</strong>节点的投票，则成为Leader。此过程成为选主（Leader Selection）。</2></li>
-<li><3>所有交互现在通过Leader完成。<blockquote>
-<p>例如写入操作：</p>
-</blockquote>
-</3></li>
+<li>Leader：主节点，在集群中有且只有1个合法Leader；如果存在多个Leader，则term最大的Leader是合法Leader。<br><img src="/resources/img/distributed_systems/Raft_ServerStates.png" alt="Raft_ServerStates"></li>
 </ul>
-<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://thesecretlivesofdata.com/raft/" target="_blank" rel="external">Raft:Understandable Distributed Consensus</a></p>
+<h2 id="选主"><a href="#选主" class="headerlink" title="选主"></a>选主</h2><ul>
+<li>Heartbeat Interval：Leader向Follower发送心跳的间隔</li>
+<li>Election Timemout/Heartbeat Timeout：我认为这2个Timeout属于同一个东西。Follower失去了与Leader的心跳(在某个时间内没有收到Leader的心跳消息)，则会随机设置ET=[150,300]ms(随机数可以减少多个Node同时成为Candidate的几率)。election timemout后，该节点会成为Candidate，并开始一轮election term，请求其他节点为其投票。</li>
+<li>Election Term：选主有效期，带有版本号，election term版本号最高的Leader为合法Leader。每轮选举每个节点只能投票一次，并重置election timemout。</li>
+</ul>
+<h2 id="日志复制"><a href="#日志复制" class="headerlink" title="日志复制"></a>日志复制</h2><ul>
+<li>LogEntry/AppendEntry：理解为undo log和redo log，并且认为LogEntry一旦写入磁盘便永不改变（持久化），并且需要保持log的顺序。</li>
+</ul>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
+<li>term：我理解为租约有效期（参考Lease机制）。</li>
+</ul>
+<h1 id="集群启动"><a href="#集群启动" class="headerlink" title="集群启动"></a>集群启动</h1><p>假设存在1个只有3个节点的集群，分别为A、B、C</p>
+<ul>
+<li><1>A、B、C的初始状态均为Follower</1></li>
+<li><2>由于没有Leader，Follower不能收到Leader的心跳。然后某个Follower会成为Candidate。假设A成为了Candidate，则A会请求B、C投票让A成为Leader（A会给自己投一票，每个节点在一轮投票中只能投票1次）。一个Candidate如果获得了集群<strong>大多数</strong>节点的投票，则成为Leader。此过程成为选主（Leader Selection）。</2></li>
+<li><3>所有交互现在通过Leader完成（具体参看日志复制章节的写操作示意图）。</3></li>
+</ul>
+<h1 id="选主-Leader-Election"><a href="#选主-Leader-Election" class="headerlink" title="选主(Leader Election)"></a>选主(Leader Election)</h1><p>Leader定期(Heartbeat Interval)向Followers发送心跳，如下图，假设Leader和Followers之间发生了网络分区，<br>Followers无法收到Leader的心跳，等待Election Timeout时间后，Followers会发起新的一轮选主(Election Term)。<br><img src="/resources/img/distributed_systems/Raft_ElectionTimeout.png" alt="Raft_ElectionTimeout"><br>选举开始，Candidate初始化并维护term和Vote Count（投票数量），然后会投票给自己。<br>之后将term发送给Followers，请求他们投票。如果该轮选举未投票，Follower会投票给该Candidate。<br>一旦Candidate获得了集群大多数Followers的投票，则Candidate成为Leader。<br><img src="/resources/img/distributed_systems/Raft_LeaderElection.png" alt="Raft_LeaderElection"></p>
+<ul>
+<li>如何减少多个Follower成为Candidate？<blockquote>
+<p>Election Timeout随机设置</p>
+</blockquote>
+</li>
+<li>如果同时存在多个Candidate呢？<blockquote>
+<p>投票完毕，如果Candidates票数相等，则重置Election Timeout，进行下一轮选主。</p>
+</blockquote>
+</li>
+<li>如何保证一轮选举只产生一个Leader？<blockquote>
+<p>每个Follower在同一个Election Term只能投票一次，获得大多数投票的Candidate正式成为Leader</p>
+</blockquote>
+</li>
+<li>还有疑问：集群如何维护term的全局递增序列？<blockquote>
+<p>无责任猜想：在实际中，通过redis，zookeeper等方式实现，比如redis的incr命令，又或者分布式锁。</p>
+</blockquote>
+</li>
+</ul>
+<h1 id="日志复制-Log-Replication"><a href="#日志复制-Log-Replication" class="headerlink" title="日志复制(Log Replication)"></a>日志复制(Log Replication)</h1><p>Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。log也应该是有序的。<br>以一次写入操作为例：</p>
+<ul>
+<li>Client发送请求给Leader，设置X=1。Leader写入undo log和redo log(LogEntry/AppendEntry)，但事务并未提交。</li>
+<li>Leader将x=1的LogEntry复制至Follower</li>
+<li>Follower响应leader，告知写入成功（这里遵循<strong>NWR</strong>规则）</li>
+<li>Leader响应Client，告知些如此成功。<br><img src="/resources/img/distributed_systems/Raft_Write.png" alt="Raft_Write"></li>
+</ul>
+<ul>
+<li>如果网络分区将集群分为多个子集群，如何保证一致性？<blockquote>
+<p>每个子集群都会有一个Leader，当网络恢复后，在整个集群之中，term最高的Leader为合法Leader。其他Leader产生的log会被回滚（因为无法获得大部分节点的log写入确认，所以所有的log都不能提交），然后同步唯一的合法Leader的log至整个集群。含有大部分节点的子集群依然正常提供服务，但是含有少部分节点的子集群永远无法提交事务，丧失部分可用性。<br>此处就是典型的牺牲可用性来换取一致性。所以Raft是一个CP算法。<br><strong>疑问：根据<a href="http://thesecretlivesofdata.com/raft/" target="_blank" rel="external">Raft:Understandable Distributed Consensus</a>介绍，网络分区分为大小集群，分区集群独立选主，但是提交log却按照整个进群的节点进行写入确认。还有如何保证网络分区时如何保证大的子集群的的term一定高于小的子集群？[待研究]</strong><br><img src="/resources/img/distributed_systems/Raft_NetworkPartition.png" alt="Raft_NetworkPartition"></p>
+</blockquote>
+</li>
+</ul>
+<h1 id="Raft的CAP分析"><a href="#Raft的CAP分析" class="headerlink" title="Raft的CAP分析"></a>Raft的CAP分析</h1><p>Raft是一个CP算法，具体参看日志复制章节介绍。</p>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://thesecretlivesofdata.com/raft/" target="_blank" rel="external">Raft:Understandable Distributed Consensus</a><br><a href="https://www.usenix.org/system/files/conference/atc14/atc14-paper-ongaro.pdf" target="_blank" rel="external">In Search of an Understandable Consensus Algorithm</a></p>
 
       
     </div>
@@ -548,7 +609,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-count">30</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -559,7 +620,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -570,7 +631,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">34</span>
+                <span class="site-state-item-count">37</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -634,7 +695,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Raft"><span class="nav-number">1.</span> <span class="nav-text">Raft</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#节点状态"><span class="nav-number">1.1.</span> <span class="nav-text">节点状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一致性协议"><span class="nav-number">1.2.</span> <span class="nav-text">一致性协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#集群启动"><span class="nav-number">1.2.1.</span> <span class="nav-text">集群启动</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">2.</span> <span class="nav-text">引用</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#术语概念"><span class="nav-number">1.</span> <span class="nav-text">术语概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#节点状态"><span class="nav-number">1.1.</span> <span class="nav-text">节点状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选主"><span class="nav-number">1.2.</span> <span class="nav-text">选主</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志复制"><span class="nav-number">1.3.</span> <span class="nav-text">日志复制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">1.4.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#集群启动"><span class="nav-number">2.</span> <span class="nav-text">集群启动</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#选主-Leader-Election"><span class="nav-number">3.</span> <span class="nav-text">选主(Leader Election)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#日志复制-Log-Replication"><span class="nav-number">4.</span> <span class="nav-text">日志复制(Log Replication)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Raft的CAP分析"><span class="nav-number">5.</span> <span class="nav-text">Raft的CAP分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">6.</span> <span class="nav-text">引用</span></a></li></ol></div>
             
 
           </div>
