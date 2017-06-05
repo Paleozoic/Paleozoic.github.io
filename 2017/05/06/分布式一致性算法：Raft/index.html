@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_LeaderElection.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_Write.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/Raft_NetworkPartition.png">
-<meta property="og:updated_time" content="2017-06-04T17:11:13.542Z">
+<meta property="og:updated_time" content="2017-06-05T11:49:56.639Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式一致性算法：Raft">
 <meta name="twitter:description" content="分布式一致性算法：Raft">
@@ -464,7 +464,7 @@
 </blockquote>
 </li>
 </ul>
-<h1 id="日志复制-Log-Replication"><a href="#日志复制-Log-Replication" class="headerlink" title="日志复制(Log Replication)"></a>日志复制(Log Replication)</h1><p>Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。log也应该是有序的。<br>以一次写入操作为例：</p>
+<h1 id="日志复制-Log-Replication"><a href="#日志复制-Log-Replication" class="headerlink" title="日志复制(Log Replication)"></a>日志复制(Log Replication)</h1><p>Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。<br>log也应该是有序的（如何保证有序性不展开讲，不过如果log乱序，一致性没有保证，比如先删后写，和先写后删完全是不一样的最终结果）。<br>以一次写入操作为例：</p>
 <ul>
 <li>Client发送请求给Leader，设置X=1。Leader写入undo log和redo log(LogEntry/AppendEntry)，但事务并未提交。</li>
 <li>Leader将x=1的LogEntry复制至Follower</li>
@@ -620,7 +620,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
