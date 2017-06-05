@@ -14,6 +14,17 @@ RDD就像数据库里面的一个个表，SQL的计算便是RDD的API。比如wh
 所以在编写Spark程序的时候，倒不需要死记RDD的API，而是想象如果用SQL如何实现，然后再来查询相关的API，或者使用SparkSQL。
 写得多了，便是唯手熟尔。
 
+# 如何练习API
+开发的时候，想看看某个API的结果是否复合预期，毕竟Scala语法糖甜死人，会常常有所疑问。
+此时就可以通过`spark-shell`调用API进行测试。
+比如测试leftOuterJoin，通过以下代码可以很直观地看到改API的实际操作结果：
+```scala
+var rdd1 = sc.makeRDD(Array(("A","1"),("B","2"),("C","3")),2)
+var rdd2 = sc.makeRDD(Array(("A","a"),("A","c"),("D","d")),2)
+rdd1.leftOuterJoin(rdd2).collect
+# 输出：Array[(String, (String, Option[String]))] = Array((B,(2,None)), (A,(1,Some(a))),(A,(1,Some(c))), (C,(3,None)))
+```
+
 # Spark主要类
 - SparkContext：是Spark对外接口，负责向调用该类的scala应用提供Spark的各种功能，如连接Spark集群、创建RDD等。
 - SparkConf：Spark应用配置类，如配置应用名称，执行模式，executor内存等。

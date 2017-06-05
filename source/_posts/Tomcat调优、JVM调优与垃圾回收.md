@@ -1,7 +1,7 @@
 ---
 title: Tomcat调优、JVM调优与垃圾回收
 date: 2017-05-05 20:41:42
-categories: [JVM]
+categories: [JVM,资料集]
 tags: [Tomcat调优,JVM调优,垃圾回收,资料集]
 ---
 <Excerpt in index | 首页摘要>

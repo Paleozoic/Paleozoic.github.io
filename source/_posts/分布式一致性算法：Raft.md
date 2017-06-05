@@ -51,7 +51,8 @@ Followers无法收到Leader的心跳，等待Election Timeout时间后，Followe
 > 无责任猜想：在实际中，通过redis，zookeeper等方式实现，比如redis的incr命令，又或者分布式锁。
 
 # 日志复制(Log Replication)
-Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。log也应该是有序的。
+Raft算法必须认为log一旦写入，便是持久的（即不可改变），这是前提。
+log也应该是有序的（如何保证有序性不展开讲，不过如果log乱序，一致性没有保证，比如先删后写，和先写后删完全是不一样的最终结果）。
 以一次写入操作为例：
 * Client发送请求给Leader，设置X=1。Leader写入undo log和redo log(LogEntry/AppendEntry)，但事务并未提交。
 * Leader将x=1的LogEntry复制至Follower
