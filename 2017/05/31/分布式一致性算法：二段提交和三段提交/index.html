@@ -104,7 +104,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/3PC.png">
-<meta property="og:updated_time" content="2017-06-07T15:54:46.820Z">
+<meta property="og:updated_time" content="2017-06-07T17:10:30.150Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式一致性算法：二段提交和三段提交">
 <meta name="twitter:description" content="分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。">
@@ -459,7 +459,9 @@
 </ul>
 <h2 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h2><p>如上，解决2PC的代价便是缺点。只是减少了阻塞，带来更大的数据不一致可能。<br>不得不联想到CAP啊，三者不能共存。</p>
 <h1 id="其他分布式事务解决方案"><a href="#其他分布式事务解决方案" class="headerlink" title="其他分布式事务解决方案"></a>其他分布式事务解决方案</h1><ul>
-<li>TCC模型(2PC的变种)，手动事务补偿<br>-</li>
+<li>TCC(Try-Confirm-Cancel)模型(2PC的变种)，手动事务补偿</li>
+<li>事务性消息队列</li>
+<li>普通消息队列+定时补偿机制</li>
 </ul>
 <h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://blog.jobbole.com/95618/" target="_blank" rel="external">分布式系统的一致性探讨</a><br><a href="https://coderknock.com/blog/2016/12/18/PC.html" target="_blank" rel="external">深入理解分布式系统的2PC和3PC</a><br><a href="http://blog.jobbole.com/95632/" target="_blank" rel="external">关于分布式事务、两阶段提交协议、三阶提交协议</a><br><a href="http://blog.csdn.net/forever_wind/article/details/37506027" target="_blank" rel="external">两阶段提交协议的异常处理</a><br><a href="http://blog.csdn.net/whycold/article/details/47702133" target="_blank" rel="external">分布式事务－二阶段提交与三阶段提交</a><br><a href="http://csruiliu.github.io/blog/2016/05/30/intro_3PC/" target="_blank" rel="external">Introduction to 3PC 三阶段提交协议简介</a></p>
 
