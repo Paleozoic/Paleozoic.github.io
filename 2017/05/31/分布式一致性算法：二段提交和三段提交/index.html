@@ -97,10 +97,18 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2017/05/31/分布式一致性算法：二段提交和三段提交/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。">
-<meta property="og:updated_time" content="2017-06-04T07:24:56.109Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis1.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis2.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis3.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/3PC.png">
+<meta property="og:updated_time" content="2017-06-07T15:54:46.820Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式一致性算法：二段提交和三段提交">
 <meta name="twitter:description" content="分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC.png">
 
 
 
@@ -415,8 +423,46 @@
 
       
         <p><excerpt in="" index="" |="" 首页摘要=""><br>分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。<a id="more"></a></excerpt></p>
-<the rest="" of="" contents="" |="" 余下全文="">
-</the>
+<p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="概念定义"><a href="#概念定义" class="headerlink" title="概念定义"></a>概念定义</h1><ul>
+<li>协调者：coordinator,事务管理器，每个节点（参与者）都知道自己的事务状态，但无法知道自己之外的事务状态。协调者的作用是管理所有参与者的事务状态。决定整个事务的commit/rollback。</li>
+<li>参与者：participant,资源管理器，真正控制锁定事务资源的节点。可以理解为提供RPC服务的节点。</li>
+</ul>
+<h1 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h1><ul>
+<li>节点可恢复：宕机后节点必须是能恢复提供正常服务的。</li>
+<li>日志持久化：节点写入的undo log和redo log是被认为持久化且不可改变的。</li>
+<li>单点问题：单点问题属于HA问题，不在讨论范围内。</li>
+</ul>
+<h1 id="二段提交2PC-Two-phase-commit"><a href="#二段提交2PC-Two-phase-commit" class="headerlink" title="二段提交2PC(Two-phase commit)"></a>二段提交2PC(Two-phase commit)</h1><h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><ul>
+<li>准备阶段(Voting phase)：协调者询问参与者开启事务，参与者写入undo log和redo log，并告知协调者已就绪</li>
+<li>事务提交阶段(Commit phase)：协调者收到所有参与者的就绪确认，则向参与者发送提交事务请求。参与者commit事务并释放资源。并告知协调者事务已提交。<br><img src="/resources/img/distributed_systems/2PC.png" alt="2PC"></li>
+</ul>
+<h2 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h2><p>新的协调者也就无法告知其他参与者执行commit还是rollback了。</p>
+<ul>
+<li>参与者宕机：协调者会告知所有参与者回滚事务，执行rollback。参与者如果恢复，对于未提交的事务也采取rollback操作。<br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis1.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis2.png" alt="2PC_ExceptionAnalysis"></li>
+<li>协调者宕机：协调者在提交阶段宕机，如果此前没有任何参与者收到协调者的commit or abort命令，则整个事务的状态不可知。只能等待协调者恢复后，重新发送命令告诉参与者。（如果引入协调者响应超时机制，超时后去询问其他参与者，参与者都未提交事务，则事务回滚；若有一个参与者提交了事务，则所有参与者提交事务。）</li>
+<li>协调者和参与者同时宕机：而参与者执行了rollback/commit操作，却来不及返回给协调者。此时即使选举了新的协调者，也不知道宕掉的参与者的事务状态。<br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis3.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png" alt="2PC_ExceptionAnalysis"></li>
+</ul>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li>最终一致性：参与者宕机，等待恢复期间数据节点间的数据不一致。实现的是最终一致性。</li>
+<li>资源阻塞问题：准备阶段事务已经start，各个参与者锁定所有的相关资源，等待事务结束后才释放资源。通过Lease机制，超时后自动释放事务资源，缓解阻塞问题。特别是协调者在提交阶段没有发送commit/abort命令时宕机，所有参与者都不知道事务状态，只能一直阻塞等待协调者恢复服务。</li>
+</ul>
+<h2 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h2><p>来自《Distributed Systems: Principles and Paradigms》一书。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//协调者的代码实现</span></div><div class="line">write(<span class="string">"START_2PC tolocal log"</span>);</div><div class="line">multicast(<span class="string">"VOTE_REQUESTto all participants"</span>); <span class="comment">//协调者广播消息给参与者并写入WAL</span></div><div class="line"><span class="keyword">while</span>(not all votes have been collected) <span class="comment">//协调者等待所有参与者返回ack消息</span></div><div class="line">&#123;</div><div class="line">  waitfor(<span class="string">"any incoming vote"</span>);<span class="comment">//有一个参与者响应了</span></div><div class="line">  <span class="keyword">if</span>(timeout)<span class="comment">//参与者响应超时</span></div><div class="line">  &#123;</div><div class="line">    write(<span class="string">"GLOBAL_ABORT to local host"</span>); <span class="comment">//协调者放弃事务</span></div><div class="line">    multicast(<span class="string">"GLOBAL_ABORT to all participants"</span>); <span class="comment">//广播所有参与者放弃事务</span></div><div class="line">    exit();</div><div class="line">  &#125;</div><div class="line">  record(vote);<span class="comment">//记录参与者的响应消息</span></div><div class="line">&#125;</div><div class="line"><span class="keyword">if</span>(all participants send VOTE_COMMIT and coordinatorvotes COMMIT)<span class="comment">//所有参与者同意提交事务，并且协调者确定应提交事务</span></div><div class="line">&#123;</div><div class="line">  write(<span class="string">"GLOBAL_COMMIT to local log"</span>); <span class="comment">//协调者提交本地WAL</span></div><div class="line">  multicast(<span class="string">"GLOBAL_COMMIT to all participants"</span>); <span class="comment">//广播所有参与者提交WAL</span></div><div class="line">&#125;</div><div class="line"><span class="keyword">else</span> <span class="comment">//如果投票是放弃事务</span></div><div class="line">&#123;</div><div class="line">  write(<span class="string">"GLOBAL_ABORT to local log"</span>);</div><div class="line">  multicast(<span class="string">"GLOBAL_ABORT to all participants"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">//参与者的代码实现</span></div><div class="line">write(<span class="string">"INIT to locallog"</span>);</div><div class="line">waitfor(<span class="string">"VOTE_REQUEST from coordinator"</span>);<span class="comment">//等待协调者的开启事务请求</span></div><div class="line"><span class="keyword">if</span>(timeout) <span class="comment">//如果超时，放弃事务</span></div><div class="line">&#123;</div><div class="line">  write(<span class="string">"VOTE_ABORT to local log"</span>);</div><div class="line">  exit();</div><div class="line">&#125;</div><div class="line"><span class="keyword">if</span>(<span class="string">"participantvotes COMMIT"</span>) <span class="comment">//如果当前参与者同意commit</span></div><div class="line">&#123;</div><div class="line">  write(<span class="string">"VOTE_COMMIT to local log"</span>); <span class="comment">//写入WAL</span></div><div class="line">  send(<span class="string">"VOTE_COMMIT to coordinator"</span>); <span class="comment">//告诉协调者已经就绪</span></div><div class="line">  waitfor(<span class="string">"DESCISION from coordinator"</span>); <span class="comment">//等待协调者收集所有参与者的投票，确认是abort or commit</span></div><div class="line">  <span class="keyword">if</span>(timeout) <span class="comment">//如果协调者响应超时</span></div><div class="line">  &#123;</div><div class="line">    multicast(<span class="string">"DECISION_REQUEST to other participants"</span>); <span class="comment">//询问其他参与者的事务状态</span></div><div class="line">    waituntil(<span class="string">"DECISION is received"</span>); <span class="comment">/// remain blocked 等待确认：是abort or commit</span></div><div class="line">    write(<span class="string">"DECISION to local log"</span>); <span class="comment">//写本地日志记录</span></div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span>(DECISION == <span class="string">"GLOBAL_COMMIT"</span>) <span class="comment">//如果确定提交事务</span></div><div class="line">  &#123;</div><div class="line">    write(<span class="string">"GLOBAL_COMMIT to local log"</span>);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">else</span> <span class="keyword">if</span>(DECISION== <span class="string">"GLOBAL_ABORT"</span>) <span class="comment">//如果确定放弃事务</span></div><div class="line">  &#123;</div><div class="line">    write(<span class="string">"GLOBAL_ABORT to local log"</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">else</span> <span class="comment">//如果参与者不同意事务，告诉协调者</span></div><div class="line">&#123;</div><div class="line">    write(<span class="string">"GLOBAL_ABORT to local log"</span>);</div><div class="line">    send(<span class="string">"GLOBAL_ABORT to coordinator"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h1 id="三段提交3PC-Three-phase-commit"><a href="#三段提交3PC-Three-phase-commit" class="headerlink" title="三段提交3PC(Three-phase commit)"></a>三段提交3PC(Three-phase commit)</h1><h2 id="过程-1"><a href="#过程-1" class="headerlink" title="过程"></a>过程</h2><ul>
+<li>canCommit：协调者询问参与者是否可以开启事务？（此时事务没有打开，资源没有被锁定阻塞）</li>
+<li>preCommit：参与者确认可以提交，协调者请求参与者开启事务，写入redo log和undo log。</li>
+<li>doCommit：协调者收到参与者preCommit的确认后，发送请求让参与者提交事务。<br><img src="/resources/img/distributed_systems/3PC.png" alt="3PC"></li>
+</ul>
+<h2 id="异常分析-1"><a href="#异常分析-1" class="headerlink" title="异常分析"></a>异常分析</h2><h2 id="解决了2PC的问题和代价"><a href="#解决了2PC的问题和代价" class="headerlink" title="解决了2PC的问题和代价"></a>解决了2PC的问题和代价</h2><p>3PC将2PC的第一阶段拆分为canCommit和preCommit两个阶段。</p>
+<ul>
+<li>资源阻塞问题：canCommit阶段不开启事务，只是询问状态。降低阻塞的可能性。代价：多了一次RPC请求，存在数据不一致的情况。preCommit阶段，如果有参与者宕机无法进行preCommit的ACK，会默认commit，通过这个来减少阻塞。canCommit用来投票，但是preCommit如果反馈的结果是abort事务，不是数据直接不一致了？<br><strong>PS：但是之后的preCommit和doCommit不正是2PC吗？2PC会出现的问题理论上也会出现在3PC才对。</strong></li>
+</ul>
+<h2 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h2><p>如上，解决2PC的代价便是缺点。只是减少了阻塞，带来更大的数据不一致可能。<br>不得不联想到CAP啊，三者不能共存。</p>
+<h1 id="其他分布式事务解决方案"><a href="#其他分布式事务解决方案" class="headerlink" title="其他分布式事务解决方案"></a>其他分布式事务解决方案</h1><ul>
+<li>TCC模型(2PC的变种)，手动事务补偿<br>-</li>
+</ul>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://blog.jobbole.com/95618/" target="_blank" rel="external">分布式系统的一致性探讨</a><br><a href="https://coderknock.com/blog/2016/12/18/PC.html" target="_blank" rel="external">深入理解分布式系统的2PC和3PC</a><br><a href="http://blog.jobbole.com/95632/" target="_blank" rel="external">关于分布式事务、两阶段提交协议、三阶提交协议</a><br><a href="http://blog.csdn.net/forever_wind/article/details/37506027" target="_blank" rel="external">两阶段提交协议的异常处理</a><br><a href="http://blog.csdn.net/whycold/article/details/47702133" target="_blank" rel="external">分布式事务－二阶段提交与三阶段提交</a><br><a href="http://csruiliu.github.io/blog/2016/05/30/intro_3PC/" target="_blank" rel="external">Introduction to 3PC 三阶段提交协议简介</a></p>
+
       
     </div>
 
@@ -521,8 +567,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/resources/img/head.jpg"
@@ -613,6 +668,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概念定义"><span class="nav-number">1.</span> <span class="nav-text">概念定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#前提"><span class="nav-number">2.</span> <span class="nav-text">前提</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二段提交2PC-Two-phase-commit"><span class="nav-number">3.</span> <span class="nav-text">二段提交2PC(Two-phase commit)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#过程"><span class="nav-number">3.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异常分析"><span class="nav-number">3.2.</span> <span class="nav-text">异常分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点"><span class="nav-number">3.3.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伪代码"><span class="nav-number">3.4.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三段提交3PC-Three-phase-commit"><span class="nav-number">4.</span> <span class="nav-text">三段提交3PC(Three-phase commit)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#过程-1"><span class="nav-number">4.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异常分析-1"><span class="nav-number">4.2.</span> <span class="nav-text">异常分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决了2PC的问题和代价"><span class="nav-number">4.3.</span> <span class="nav-text">解决了2PC的问题和代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点-1"><span class="nav-number">4.4.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#其他分布式事务解决方案"><span class="nav-number">5.</span> <span class="nav-text">其他分布式事务解决方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">6.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
