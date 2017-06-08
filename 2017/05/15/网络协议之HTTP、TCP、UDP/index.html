@@ -97,10 +97,12 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2017/05/15/网络协议之HTTP、TCP、UDP/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="介绍网络协议：HTTP、TCP、UDP">
-<meta property="og:updated_time" content="2017-05-25T14:11:54.322Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/OSI_通信示意图.png">
+<meta property="og:updated_time" content="2017-06-08T12:45:41.583Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="网络协议之HTTP、TCP、UDP">
 <meta name="twitter:description" content="介绍网络协议：HTTP、TCP、UDP">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/network/OSI_通信示意图.png">
 
 
 
@@ -405,7 +407,61 @@
       
         <p><excerpt in="" index="" |="" 首页摘要=""><br>介绍网络协议：HTTP、TCP、UDP<a id="more"></a></excerpt></p>
 <p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
-<h1 id="HTTP协议"><a href="#HTTP协议" class="headerlink" title="HTTP协议"></a>HTTP协议</h1>
+<h1 id="OSI模型"><a href="#OSI模型" class="headerlink" title="OSI模型"></a>OSI模型</h1><p>OSI即Open System Interconnection，开放系统互联。<br>OSI定义了7层协议栈。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>描述</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>应用层</td>
+<td>这层协议是为了满足特定应用的通信需求而设计的，通常定义一个服务接口</td>
+<td>HTTP、FTP、STMP</td>
+</tr>
+<tr>
+<td>表示层</td>
+<td>这层协议将以一种网络表示传输数据，这种表示与计算机使用的表示无关，两种表示可能完全不相同。如果需要，可以在这一层对数据进行加密</td>
+<td>TLS安全、CORBA数据表示</td>
+</tr>
+<tr>
+<td>会话层</td>
+<td>在这层要实现可靠性和适应性，例如故障检测和自动恢复</td>
+<td>SIP</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td>这是处理消息（而不是数据包）的最低一层。消息被定位到与进程相连的通信端口上。这层协议是可以面向连接的，也可以是无连接的。</td>
+<td>TCP、UDP</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>在特定网络的计算机间传输数据包，在一个WAN或一个互连网络中，这一层负责生成一个通过路由器的路径。在单一的LAN中不需要路由</td>
+<td>IP、ATM虚电路</td>
+</tr>
+<tr>
+<td>数据链路层</td>
+<td>负责再有直接物理连接的结点间传输数据包。在WAN中，传输是在路由器间或路由器或主机间进行的。在LAN中，传输是在任意一对的主机间进行的</td>
+<td>Ethernet MAC、ATM信元传送、PPP</td>
+</tr>
+<tr>
+<td>物理层</td>
+<td>指驱动网络的电路和硬件。它通过发送模拟信号传输二进制数据序列，用电信号的振幅或频率调制信号（在电缆电路上），光信号（在光纤电路上），或其他电磁信号（在无线电和微波电路上）</td>
+<td>Ethernet基带信号、ISDN</td>
+</tr>
+</tbody>
+</table>
+<p>两台主机在网络中通信的示意图：<br><img src="/resources/img/network/OSI_通信示意图.png" alt="OSI_通信示意图"></p>
+<h1 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h1><ul>
+<li>面向无连接。即发送数据前不需要建立连接</li>
+<li>不可靠传输，可能发生丢包，并且传输可能乱序</li>
+<li>UDP占用较少系统资源，协议信息简单<br>常见运用：网络聊天</li>
+</ul>
+<h1 id="HTTP协议"><a href="#HTTP协议" class="headerlink" title="HTTP协议"></a>HTTP协议</h1><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://blog.csdn.net/u014581901/article/details/50733888" target="_blank" rel="external">计算机网络11–OSI参考模型</a><br>《分布式系统：概念与设计》</p>
+
       
     </div>
 
@@ -537,7 +593,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">32</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -548,7 +604,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -559,7 +615,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">37</span>
+                <span class="site-state-item-count">40</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -623,7 +679,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP协议"><span class="nav-number">1.</span> <span class="nav-text">HTTP协议</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OSI模型"><span class="nav-number">1.</span> <span class="nav-text">OSI模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UDP"><span class="nav-number">2.</span> <span class="nav-text">UDP</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP协议"><span class="nav-number">3.</span> <span class="nav-text">HTTP协议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">4.</span> <span class="nav-text">引用</span></a></li></ol></div>
             
 
           </div>
