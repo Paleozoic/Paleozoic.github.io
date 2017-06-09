@@ -50,7 +50,7 @@ menu:
   tags: /tags
   archives: /archives
   about: /about
-  sitemap: /sitemap.xml
+  #sitemap: /sitemap.xml
   commonweal: 404.html
 
 
