@@ -98,7 +98,13 @@
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="介绍网络协议：HTTP、TCP、UDP">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/OSI_通信示意图.png">
-<meta property="og:updated_time" content="2017-06-08T12:45:41.583Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_IP.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/UDP_data.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/UDP_head.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_data.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_head.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_open_close.jpg">
+<meta property="og:updated_time" content="2017-06-09T12:17:49.036Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="网络协议之HTTP、TCP、UDP">
 <meta name="twitter:description" content="介绍网络协议：HTTP、TCP、UDP">
@@ -177,7 +183,7 @@
       </a>
     </div>
       
-        <p class="site-subtitle">超然物外，天道酬勤。</p>
+        <h1 class="site-subtitle" itemprop="description">超然物外，天道酬勤。</h1>
       
   </div>
 
@@ -243,6 +249,16 @@
               <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
             
             关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
           </a>
         </li>
       
@@ -336,7 +352,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">网络协议之HTTP、TCP、UDP</h1>
+          <h2 class="post-title" itemprop="name headline">网络协议之HTTP、TCP、UDP</h2>
         
 
         <div class="post-meta">
@@ -407,6 +423,7 @@
       
         <p><excerpt in="" index="" |="" 首页摘要=""><br>介绍网络协议：HTTP、TCP、UDP<a id="more"></a></excerpt></p>
 <p><the rest="" of="" contents="" |="" 余下全文=""></the></p>
+<h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>此篇blog仅作了解计算机网络的一些基础知识。如果对于网络协议有更深入的追求。<br>强烈推荐<a href="http://www.52im.net/topic-tcpipvol1.html" target="_blank" rel="external">TCP/IP详解：卷I：协议</a></p>
 <h1 id="OSI模型"><a href="#OSI模型" class="headerlink" title="OSI模型"></a>OSI模型</h1><p>OSI即Open System Interconnection，开放系统互联。<br>OSI定义了7层协议栈。</p>
 <table>
 <thead>
@@ -455,12 +472,54 @@
 </tbody>
 </table>
 <p>两台主机在网络中通信的示意图：<br><img src="/resources/img/network/OSI_通信示意图.png" alt="OSI_通信示意图"></p>
-<h1 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h1><ul>
+<p>OSI模型详情图：<br><img src="/resources/img/network/TCP_IP.png" alt="OSI"></p>
+<h1 id="UDP-User-Datagram-Protocol-用户数据报协议"><a href="#UDP-User-Datagram-Protocol-用户数据报协议" class="headerlink" title="UDP(User Datagram Protocol,用户数据报协议)"></a>UDP(User Datagram Protocol,用户数据报协议)</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
 <li>面向无连接。即发送数据前不需要建立连接</li>
 <li>不可靠传输，可能发生丢包，并且传输可能乱序</li>
-<li>UDP占用较少系统资源，协议信息简单<br>常见运用：网络聊天</li>
+<li>UDP占用较少系统资源，协议信息简单<br>常见运用：网络视频、语音聊天、直播等</li>
 </ul>
-<h1 id="HTTP协议"><a href="#HTTP协议" class="headerlink" title="HTTP协议"></a>HTTP协议</h1><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://blog.csdn.net/u014581901/article/details/50733888" target="_blank" rel="external">计算机网络11–OSI参考模型</a><br>《分布式系统：概念与设计》</p>
+<h2 id="UDP封装"><a href="#UDP封装" class="headerlink" title="UDP封装"></a>UDP封装</h2><p>IP是网络层协议，UDP是网络层上一层的传输层协议。所以UDP数据报与IP首部会组成一个IP数据报：<br><img src="/resources/img/network/UDP_data.png" alt="UDP封装"></p>
+<h2 id="UDP首部"><a href="#UDP首部" class="headerlink" title="UDP首部"></a>UDP首部</h2><p><img src="/resources/img/network/UDP_head.png" alt="UDP首部"></p>
+<ul>
+<li>源端口号：发送进程</li>
+<li>目的端口号：接收进程</li>
+<li>UDP长度：指UDP首部和UDP数据的字节长度</li>
+<li>UDP校验和：可选，UDP报文可没有UDP校验和。覆盖UDP首部和UDP数据</li>
+</ul>
+<h1 id="TCP-Transmission-Control-Protocol-传输控制协议"><a href="#TCP-Transmission-Control-Protocol-传输控制协议" class="headerlink" title="TCP(Transmission Control Protocol,传输控制协议)"></a>TCP(Transmission Control Protocol,传输控制协议)</h1><h2 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h2><ul>
+<li>TCP为应用层提供全双工服务。这意味数据能在两个方向上独立地进行传输。</li>
+<li>面向连接，可靠传输，保证传输顺序、完整</li>
+</ul>
+<h2 id="TCP封装"><a href="#TCP封装" class="headerlink" title="TCP封装"></a>TCP封装</h2><p>IP是网络层协议，TCP是网络层上一层的传输层协议。所以TCP数据报与IP首部会组成一个IP数据报：<br><img src="/resources/img/network/TCP_data.png" alt="TCP封装"></p>
+<h2 id="TCP首部"><a href="#TCP首部" class="headerlink" title="TCP首部"></a>TCP首部</h2><p><img src="/resources/img/network/TCP_head.png" alt="TCP首部"></p>
+<ul>
+<li>源端口号：发送进程</li>
+<li>目的端口号：接收进程</li>
+<li>TCP校验和：必选，TCP报文必须有TCP校验和。覆盖TCP首部和TCP数据</li>
+<li>序号：SYN，用来标识TCP发送端向接收端发送的数据字节流，它表示在这个报文段中的第一个数据字节。一共32位，SYN&gt;2<sup>32</sup>－1后从0开始计数。</li>
+<li>确认序号：ACK，上次已成功收到数据字节序号加1</li>
+<li>URG：紧急指针（urgent pointer）有效</li>
+<li>PSH：接收方应尽快将这个报文段交给应用层</li>
+<li>RST：重建连接</li>
+<li>FIN：发送端完成发送任务</li>
+</ul>
+<h2 id="TCP三次握手与四次挥手"><a href="#TCP三次握手与四次挥手" class="headerlink" title="TCP三次握手与四次挥手"></a>TCP三次握手与四次挥手</h2><p><img src="/resources/img/network/TCP_open_close.jpg" alt="TCP_open_close"></p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>Server监听指定端口，等待Clinet的申请建立TCP连接</p>
+<h3 id="三次握手（建立连接）"><a href="#三次握手（建立连接）" class="headerlink" title="三次握手（建立连接）"></a>三次握手（建立连接）</h3><ul>
+<li>第一次握手：Client发送SYN seq=x给Server请求确认。Client状态：SYN_SEND</li>
+<li>第二次握手：Server回复ACK=x+1确认收到Client的请求。Client-&gt;Server连接建立。并发送SYN seq=x，请求Client建立连接。Server状态：SYN_RECV</li>
+<li>第三次握手：Client回复ACK=y+1确认收到Server的请求。Server-&gt;Client连接建立。至此双方连接建立完毕，可以开始传输数据<br>由于TCP是全双工的，需要至少三次握手来确定双方的SYN序号，如此才能保证Client&lt;-&gt;Server的数据是有序、准确的。</li>
+</ul>
+<h3 id="网络异常分析"><a href="#网络异常分析" class="headerlink" title="网络异常分析"></a>网络异常分析</h3><ul>
+<li>第一次握手失败，Client周期性重发，直至Server ACK</li>
+<li>第二次握手失败，Server周期性重发</li>
+<li>第三次握手失败，Server周期性重发</li>
+</ul>
+<h3 id="数据传输"><a href="#数据传输" class="headerlink" title="数据传输"></a>数据传输</h3><h3 id="四次回收（断开连接）"><a href="#四次回收（断开连接）" class="headerlink" title="四次回收（断开连接）"></a>四次回收（断开连接）</h3><h1 id="HTTP-HyperText-Transfer-Protocol-超文本传输协议"><a href="#HTTP-HyperText-Transfer-Protocol-超文本传输协议" class="headerlink" title="HTTP(HyperText Transfer Protocol,超文本传输协议)"></a>HTTP(HyperText Transfer Protocol,超文本传输协议)</h1><h1 id="基于Java-NIO的封装"><a href="#基于Java-NIO的封装" class="headerlink" title="基于Java NIO的封装"></a>基于Java NIO的封装</h1><ul>
+<li>Mina</li>
+<li>Netty</li>
+</ul>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://blog.csdn.net/u014581901/article/details/50733888" target="_blank" rel="external">计算机网络11–OSI参考模型</a><br><a href="http://docs.52im.net/extend/docs/book/tcpip/vol1/11/" target="_blank" rel="external">第11章 UDP:用户数据报协议</a><br><a href="http://docs.52im.net/extend/docs/book/tcpip/vol1/17/" target="_blank" rel="external">第17章 TCP：传输控制协议</a><br>《分布式系统：概念与设计》<br><a href="http://coolshell.cn/articles/11564.html" target="_blank" rel="external">TCP 的那些事儿（上）</a></p>
 
       
     </div>
@@ -585,8 +644,8 @@
                alt="Paleo" />
           <p class="site-author-name" itemprop="name">Paleo</p>
            
-              <p class="site-description motion-element" itemprop="description">超然物外，天道酬勤。</p>
-          
+              <p class="site-description motion-element" itemprop="description"></p>
+           
         </div>
         <nav class="site-state motion-element">
 
@@ -679,7 +738,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OSI模型"><span class="nav-number">1.</span> <span class="nav-text">OSI模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UDP"><span class="nav-number">2.</span> <span class="nav-text">UDP</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP协议"><span class="nav-number">3.</span> <span class="nav-text">HTTP协议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">4.</span> <span class="nav-text">引用</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#OSI模型"><span class="nav-number">2.</span> <span class="nav-text">OSI模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UDP-User-Datagram-Protocol-用户数据报协议"><span class="nav-number">3.</span> <span class="nav-text">UDP(User Datagram Protocol,用户数据报协议)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#特点"><span class="nav-number">3.1.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP封装"><span class="nav-number">3.2.</span> <span class="nav-text">UDP封装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP首部"><span class="nav-number">3.3.</span> <span class="nav-text">UDP首部</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP-Transmission-Control-Protocol-传输控制协议"><span class="nav-number">4.</span> <span class="nav-text">TCP(Transmission Control Protocol,传输控制协议)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#特点-1"><span class="nav-number">4.1.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP封装"><span class="nav-number">4.2.</span> <span class="nav-text">TCP封装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP首部"><span class="nav-number">4.3.</span> <span class="nav-text">TCP首部</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP三次握手与四次挥手"><span class="nav-number">4.4.</span> <span class="nav-text">TCP三次握手与四次挥手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">4.4.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三次握手（建立连接）"><span class="nav-number">4.4.2.</span> <span class="nav-text">三次握手（建立连接）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络异常分析"><span class="nav-number">4.4.3.</span> <span class="nav-text">网络异常分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据传输"><span class="nav-number">4.4.4.</span> <span class="nav-text">数据传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四次回收（断开连接）"><span class="nav-number">4.4.5.</span> <span class="nav-text">四次回收（断开连接）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP-HyperText-Transfer-Protocol-超文本传输协议"><span class="nav-number">5.</span> <span class="nav-text">HTTP(HyperText Transfer Protocol,超文本传输协议)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基于Java-NIO的封装"><span class="nav-number">6.</span> <span class="nav-text">基于Java NIO的封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">7.</span> <span class="nav-text">引用</span></a></li></ol></div>
             
 
           </div>
@@ -1174,6 +1233,21 @@
   
 
   
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
 
   
 
