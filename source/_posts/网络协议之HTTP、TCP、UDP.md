@@ -269,7 +269,7 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 - 第一次握手：Client发送SYN seq=x给Server请求确认。Client状态：SYN_SEND
 - 第二次握手：Server回复ACK=x+1确认收到Client的请求。Client->Server连接建立。并发送SYN seq=x，请求Client建立连接。Server状态：SYN_RECV
 - 第三次握手：Client回复ACK=y+1确认收到Server的请求。Server->Client连接建立。至此双方连接建立完毕，可以开始传输数据
-由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。
+由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。(Client顺序发送，Server顺序接收)
 
 #### 网络异常分析
 可通过上面的FSM伪代码分析握手失败的处理。
@@ -281,7 +281,7 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 ### 数据传输
 #### 传输过程
 如图所示：
-- 首先执行三次握手：1-3步，初始化了Client的seq=1，Server的ack=1
+- 首先执行三次握手：1-3步，初始化了Client的seq(SYN)=1，Server的ack(SYN)=1
 - Client发送数据包，seq=1，ACK=1，数据包Len=1440
 - Client发送数据包，seq=1441，ACK=1，数据包Len=1440
 - Server接收数据包，返回seq=1，ACK=1441
