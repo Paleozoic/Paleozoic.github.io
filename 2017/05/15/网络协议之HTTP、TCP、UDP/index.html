@@ -108,7 +108,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_FSM.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_FSM1.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/network/TCP_transport_example.jpg">
-<meta property="og:updated_time" content="2017-06-11T17:12:43.616Z">
+<meta property="og:updated_time" content="2017-06-11T17:18:54.748Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="网络协议之HTTP、TCP、UDP">
 <meta name="twitter:description" content="介绍网络协议：HTTP、TCP、UDP">
@@ -572,7 +572,7 @@
 <h3 id="三次握手（建立连接）"><a href="#三次握手（建立连接）" class="headerlink" title="三次握手（建立连接）"></a>三次握手（建立连接）</h3><h4 id="握手过程"><a href="#握手过程" class="headerlink" title="握手过程"></a>握手过程</h4><ul>
 <li>第一次握手：Client发送SYN seq=x给Server请求确认。Client状态：SYN_SEND</li>
 <li>第二次握手：Server回复ACK=x+1确认收到Client的请求。Client-&gt;Server连接建立。并发送SYN seq=x，请求Client建立连接。Server状态：SYN_RECV</li>
-<li>第三次握手：Client回复ACK=y+1确认收到Server的请求。Server-&gt;Client连接建立。至此双方连接建立完毕，可以开始传输数据<br>由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client&lt;-&gt;Server的数据是有序、准确的。</li>
+<li>第三次握手：Client回复ACK=y+1确认收到Server的请求。Server-&gt;Client连接建立。至此双方连接建立完毕，可以开始传输数据<br>由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client&lt;-&gt;Server的数据是有序、准确的。(Client顺序发送，Server顺序接收)</li>
 </ul>
 <h4 id="网络异常分析"><a href="#网络异常分析" class="headerlink" title="网络异常分析"></a>网络异常分析</h4><p>可通过上面的FSM伪代码分析握手失败的处理。</p>
 <ul>
@@ -583,7 +583,7 @@
 </ul>
 <h3 id="数据传输"><a href="#数据传输" class="headerlink" title="数据传输"></a>数据传输</h3><h4 id="传输过程"><a href="#传输过程" class="headerlink" title="传输过程"></a>传输过程</h4><p>如图所示：</p>
 <ul>
-<li>首先执行三次握手：1-3步，初始化了Client的seq=1，Server的ack=1</li>
+<li>首先执行三次握手：1-3步，初始化了Client的seq(SYN)=1，Server的ack(SYN)=1</li>
 <li>Client发送数据包，seq=1，ACK=1，数据包Len=1440</li>
 <li>Client发送数据包，seq=1441，ACK=1，数据包Len=1440</li>
 <li>Server接收数据包，返回seq=1，ACK=1441</li>
