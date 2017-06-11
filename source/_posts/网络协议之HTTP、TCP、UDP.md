@@ -63,32 +63,246 @@ IP是网络层协议，TCP是网络层上一层的传输层协议。所以TCP数
 - 源端口号：发送进程
 - 目的端口号：接收进程
 - TCP校验和：必选，TCP报文必须有TCP校验和。覆盖TCP首部和TCP数据
-- 序号：SYN，用来标识TCP发送端向接收端发送的数据字节流，它表示在这个报文段中的第一个数据字节。一共32位，SYN>2<sup>32</sup>－1后从0开始计数。
-- 确认序号：ACK，上次已成功收到数据字节序号加1
-- URG：紧急指针（urgent pointer）有效
-- PSH：接收方应尽快将这个报文段交给应用层
-- RST：重建连接
-- FIN：发送端完成发送任务
+- 同步序号：Synchronize Sequence Numbers，SYN，用来标识TCP发送端向接收端发送的数据字节流，它表示在这个报文段中的第一个数据字节。一共32位，SYN>2<sup>32</sup>－1后从0开始计数。
+- 确认序号：Acknowledgement Number，ACK，上次已成功收到数据字节序号加1
+- TCP状态位
+  * SYN：SYNchronous，同步标识
+  * ACK：ACKnowledgement，确认标识
+  * URG：URGent，紧急指针（urgent pointer）有效
+  * PSH：PuSH，接收方应尽快将这个报文段交给应用层
+  * RST：ReSeT，重建连接
+  * FIN：FINish，发送端完成发送任务
 
 ## TCP三次握手与四次挥手
 ![TCP_open_close](/resources/img/network/TCP_open_close.jpg)
+![TCP_open_close](/resources/img/network/TCP_open_close1.png)
+看到[一篇blog](http://www.cnblogs.com/guguli/p/4520921.html)通过FSM(Finite State Machine,有限状态机)伪代码描述TCP传输过程。
+> PS：此blog的FSM图和算法都是中文描述，非常清晰。
+
+先看FSM图：
+![TCP_FSM](/resources/img/network/TCP_FSM.png)
+![TCP_FSM](/resources/img/network/TCP_FSM1.png)
+- TCB：Transmit Control Block，传输控制模块，它用于记录TCP协议运行过程中的变量。对于有多个连接的TCP，每个连接都有一个TCB。
+TCB结构的定义包括这个连接使用的源端口、目的端口、序号、应答序号、对方窗口大小、己方窗口大小、TCP状态、TCP的重传有关变量。
+- RTS：Request-to-send
+- CTS：Clear-to-send
+- Segment：传输的数据报文
+
+|State|Description|
+|--|--|
+|CLOSED|No connection exists|
+|LISTEN|Passive open received; waiting for SYN|
+|SYN-SENT|SYN sent; waiting for ACK|
+|SYN-RCVD|SYN+ACK sent; waiting for ACK|
+|ESTABLISHED|Connection established; data transfer in progress|
+|FIN-WAIT-1|First FIN sent; waiting for ACK|
+|FIN-WAIT-2|ACK to first FIN received; waiting for second FIN|
+|CLOSED-WAIT|First FIN received, ACK sent; waiting for application to close|
+|TIME-WAIT|Second FIN received, ACK sent; waiting for 2MSL time-out|
+|LAST-ACK|Second FIN sent; waiting for ACK|
+|CLOSING|Both sides decided to close simultaneously|
+
+```java
+TCP_Main_Module (Segment){
+  Search the TCB Table //搜索TCB Table
+  if (corresponding TCB is not found){//TCB不存在
+    Create a TCB with the state CLOSED //创建TCB，状态为CLOSED
+  }
+  Find the state of the entry in the TCB table //获取TCB的state
+  switch (state){
+      case CLOSED state:{  //CLOSED状态
+          if ("passive open" message received){ //收到“被动打开”报文，进入LISTEN状态
+            go to LISTEN state.
+          }
+          if ("active open" message received){//收到“主动打开”报文
+            send a SYN segment //发送SYN信号
+            go to SYN-SENT state //进入SYN-SENT状态
+          }
+          if (any segment received){//收到报文
+            send an RST segment //发送RST(Reset)信号
+          }
+          if (any other message received){//收到其他报文
+            issue an error message //报告错误响应
+          }
+          break;
+      }
+      case LISTEN state:{
+          if ("send data" message received) {
+            Send a SYN segment //发送SYN信号
+            Go to SYN-SENT state //进入SYN-SENT状态
+          }
+          if (any SYN segment received){
+            Send a SYN + ACK segment
+            Go to SYN-RCVD state
+          }
+          if (any other segment or message received){
+            Issue an error message
+          }
+          break;
+      }
+      case SYN-SENT state:{
+          if (time-out){
+            Go to CLOSED state
+          }
+          if (SYN segment received){
+            Send a SYN + ACK segment
+            Go to SYN-RCVD state
+          }
+          if (SYN + ACK segment received){
+            Send an ACK segment
+            Go to ESTABLISHED state
+          }
+          if (any other segment or message received){
+            Issue an error message
+          }
+          break;
+      }
+      case SYN-RCVD state:{
+        if (an ACK segment received){
+          Go to ESTABLISHID state
+        }
+        if (time-out){
+          Send an RTS segment
+          Go to CLOSED state
+        }
+        if ("close" message received){
+          Send a FIN segment
+          Go to FIN-WAIT-I state
+        }
+        if (RTS segment received){
+           Go to LISTEN state
+        }
+        if (any other segment or message received){
+          Issue an error message
+        }
+        break;
+      }
+      case ESTABLISHED state:{
+        if (a FIN segment received){
+          Send an ACK segment
+          Go to CLOSED-WAIT state
+        }
+        if ("close" message received){
+          Send a FIN segment
+          Go to FIN-WAIT-I
+        }
+        if (a RTS or an SYN segment received){
+          Issue an error message
+        }
+        if (data or ACK segment received){
+          call the input module
+        }
+        if ("send" message received){
+          call the output module
+        }
+        break;
+      }
+      case FIN-WAIT-1 state:{
+        if (a FIN segment received){
+          Send an ACK segment
+          Go to CLOSING state
+        }
+        if (a FIN + ACK segment received){
+          Send an ACK segment
+          Go to FIN-WAIT state
+        }
+        if (an ACK segment received){
+          Go to FIN-WAIT-2 state
+        }
+        if (any other segment or message received){
+          Issue an error message
+        }
+        break;
+      }
+      case FIN-WAIT-2 state:{
+        if (a FIN segment received){
+          Send an ACK segment
+          Go to TIME-WAIT state
+        }
+        break;
+      }
+      case CLOSING state:{
+        if (an ACK segment received){
+          Go to TIME-WAIT state
+        }
+        if (any other message or segment received){
+          Issue an error message
+        }
+        break;
+      }
+      case TIME-WAIT state:{
+        if (time-out){
+          Go to CLOSED state
+        }
+        if (any other message or segment received){
+          Issue an error message
+        }
+        break;
+      }
+      case CLOSED-WAIT state:{
+        if ("close" message received){
+          Send a FIN segment
+          Go to LAST-ACK state
+        }
+        if (any other message or segment received){
+          Issue an error message
+        }
+        break;
+      }
+      case LAST-ACK state:{
+        if (an ACK segment received){
+          Go to CLOSED state
+        }
+        if (any other message or segment received){
+          Issue an error message
+        }
+        break;
+      }
+    }
+} // end module
+```
 ### 初始化
 Server监听指定端口，等待Clinet的申请建立TCP连接
 
 ### 三次握手（建立连接）
+#### 握手过程
 - 第一次握手：Client发送SYN seq=x给Server请求确认。Client状态：SYN_SEND
 - 第二次握手：Server回复ACK=x+1确认收到Client的请求。Client->Server连接建立。并发送SYN seq=x，请求Client建立连接。Server状态：SYN_RECV
 - 第三次握手：Client回复ACK=y+1确认收到Server的请求。Server->Client连接建立。至此双方连接建立完毕，可以开始传输数据
-由于TCP是全双工的，需要至少三次握手来确定双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。
+由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。
 
-### 网络异常分析
-- 第一次握手失败，Client周期性重发，直至Server ACK
-- 第二次握手失败，Server周期性重发
-- 第三次握手失败，Server周期性重发
+#### 网络异常分析
+可通过上面的FSM伪代码分析握手失败的处理。
+- 第[1,2]次握手失败，Client收不到Server的SYN+ACK，超时后关闭连接
+- 第[2,3]次握手失败，Server收不到Client的ACK，超时后发送RTS报文段，进入CLOSED状态
+- 超时CLOSED：Lease机制的运用，超时释放资源，防止死锁。或者说资源被占用时间过长。
+- SYN Flood攻击：攻击者恶意申请大量的TCP连接，使Server存在大量等待SYN-ACK的TCP连接，占用系统资源。这些资源都只能等待超时后释放。
 
 ### 数据传输
+#### 传输过程
+如图所示：
+- 首先执行三次握手：1-3步，初始化了Client的seq=1，Server的ack=1
+- Client发送数据包，seq=1，ACK=1，数据包Len=1440
+- Client发送数据包，seq=1441，ACK=1，数据包Len=1440
+- Server接收数据包，返回seq=1，ACK=1441
+- Client发送数据包，seq=1441+1440=2881，ACK=1，数据包Len=1440
+- Client发送数据包，seq=2881+1440=4321，ACK=1，数据包Len=1440
+- Server接收数据包，返回seq=1，ACK=2881
+- ……(重复)
+- 注意：Client顺序发送数据包，Server必然数序ACK数据包。但是不是一应一答的阻塞。（**猜想**应存在缓冲区，先缓存一个时间窗口的数据包，Server再顺序ACK）
+![TCP_数据传输](/resources/img/network/TCP_transport_example.jpg)
 
-### 四次回收（断开连接）
+
+#### 流量控制
+
+#### 拥塞控制
+
+
+### 四次挥手（断开连接）
+- 第一次挥手：Client发送seq=x+2，ACK=y+1。请求Server关闭连接。Client状态：FIN-WAIT-1
+- 第二次挥手：Server确认ACK x+3。Server状态：CLOSED-WAIT
+- 第三次挥手：Server发送seq=y+1，请求Client关闭连接。Server状态：LAST-ACK
+- 第四次挥手：Client收到Server的关闭连接请求。进入状态TIME-WAIT。并发送ACK=y+2确认关闭连接。
 
 # HTTP(HyperText Transfer Protocol,超文本传输协议)
 
@@ -96,10 +310,12 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 - Mina
 - Netty
 
-
 # 引用
 [计算机网络11--OSI参考模型](http://blog.csdn.net/u014581901/article/details/50733888)
 [第11章 UDP:用户数据报协议](http://docs.52im.net/extend/docs/book/tcpip/vol1/11/)
 [第17章 TCP：传输控制协议](http://docs.52im.net/extend/docs/book/tcpip/vol1/17/)
 《分布式系统：概念与设计》
+《TCP/IP Protocol Suite Fourth Edition》
 [TCP 的那些事儿（上）](http://coolshell.cn/articles/11564.html)
+[<再看TCP/IP第一卷>TCP/IP协议族中的最压轴戏----TCP协议及细节](http://www.cnblogs.com/guguli/p/4520921.html)
+[传输控制协议](https://zh.wikipedia.org/wiki/传输控制协议)
