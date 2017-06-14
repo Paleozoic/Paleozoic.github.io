@@ -286,9 +286,10 @@ public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, L
 
 # Dubbo负载均衡算法
 ## Random LoadBalance(随机均衡算法)
+[com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/loadbalance/RandomLoadBalance.java)
 根据权重进行实例的随机选择，即每个实例的随机选中的概率是根据权重的决定的。
 ```java
-protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) { //URL是消费者的相关信息
   int length = invokers.size(); // 总个数
   int totalWeight = 0; // 总权重
   boolean sameWeight = true; // 权重是否都一样
@@ -316,6 +317,7 @@ protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation
 }
 ```
 ## RoundRobin LoadBalance(权重轮循均衡算法)
+[com.alibaba.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/loadbalance/RoundRobinLoadBalance.java)
 ```java
 protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
 	String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
@@ -361,6 +363,7 @@ protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation
 ```
 
 ## LeastAction LoadBalance(最少活跃调用数均衡算法)
+[com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/loadbalance/LeastActiveLoadBalance.java)
 如果一个实例被调用的次数较少，则会优先调用该实例。
 ```java
 protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
@@ -414,6 +417,7 @@ protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation
 ```
 
 ## ConsistentHash LoadBalance(一致性Hash均衡算法)
+[com.alibaba.dubbo.rpc.cluster.loadbalance.ConsistentHashLoadBalance](https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/loadbalance/ConsistentHashLoadBalance.java)
 根据一致性哈希算法，
 一致性哈希选择器依赖的参数是：
 - virtualInvokers：每个哈希槽对应的Invoker

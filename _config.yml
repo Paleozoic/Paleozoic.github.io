@@ -4,11 +4,12 @@
 
 # Site
 title: Paleo's blog
-subtitle: 超然物外，天道酬勤。
-description: 超然物外，天道酬勤。
+subtitle: 超然物外，天道酬勤。明德识礼，格物致知。
+description: 超然物外，天道酬勤。明德识礼，格物致知。
 author: Paleo
 language: zh-Hans
 timezone:
+signature: 超然物外，天道酬勤。明德识礼，格物致知。 #开启SEO后 https://github.com/iissnan/hexo-theme-next/issues/1484
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
