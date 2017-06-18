@@ -1,0 +1,1299 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="RPC,Dubbo," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/resources/img/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta name="keywords" content="RPC,Dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo之基于“版本”的服务调度(路由规则)">
+<meta property="og:url" content="http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/index.html">
+<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/REST_nginx_router.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/dubbo_fault_tolerance.jpg">
+<meta property="og:updated_time" content="2017-06-18T17:44:22.764Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dubbo之基于“版本”的服务调度(路由规则)">
+<meta name="twitter:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/rpc/REST_nginx_router.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/"/>
+
+
+
+
+
+  <title>Dubbo之基于“版本”的服务调度(路由规则) | Paleo's blog</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Paleo's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">超然物外，天道酬勤。明德识礼，格物致知。</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Paleo">
+      <meta itemprop="description" content="超然物外，天道酬勤。明德识礼，格物致知。">
+      <meta itemprop="image" content="/resources/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Paleo's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Dubbo之基于“版本”的服务调度(路由规则)</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-14T14:46:08+08:00">
+                2017-06-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RPC/" itemprop="url" rel="index">
+                    <span itemprop="name">RPC</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RPC/Dubbo/" itemprop="url" rel="index">
+                    <span itemprop="name">Dubbo</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。<a id="more"></a></excerpt></p>
+<the rest="" of="" contents="" |="" 余下全文="">
+
+<h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>dubbo.xsd完全没有router的配置，what the fuck！<br>注解也没关相关配置！！<br>官方文档如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;dubbo:protocol router=&quot;xxx&quot; /&gt;</div><div class="line">&lt;dubbo:provider router=&quot;xxx&quot; /&gt; &lt;!-- 缺省值设置，当&lt;dubbo:protocol&gt;没有配置loadbalance时，使用此配置 --&gt;</div></pre></td></tr></table></figure></p>
+<p>走读源码：<br>首先dubbo APP启动时，便会在<code>RegistryDirectory</code>初始化时，针对每个消费者加载路由规则（不过看源码routers传入的都是null）。<br>并且每当注册中心相关数据有改变时会调用<code>public synchronized void notify(List&lt;URL&gt; urls)</code>方法，从注册中心同步消费者路由规则。<br>内部会调用<code>protected void setRouters(List&lt;Router&gt; routers)</code>来设置路由规则，且会append MockInvokersSelector路由器：<code>routers.add(new MockInvokersSelector());</code><br>即dubbo目前的路由规则是通过注册中心将表达式等推送到客户端（其实还有脚本、文件等方式，此处不展开讲）</p>
+<h1 id="遇到问题"><a href="#遇到问题" class="headerlink" title="遇到问题"></a>遇到问题</h1><ul>
+<li>不修改消费者代码可以用新的提供者</li>
+<li>不修改原来的提供者</li>
+<li>通过增加数据库配置：key-rest url的KV对实现指定调度</li>
+</ul>
+<h1 id="基于REST的解决方案"><a href="#基于REST的解决方案" class="headerlink" title="基于REST的解决方案"></a>基于REST的解决方案</h1><p>这种方案本质上和dubbo没啥关系了。我大致画个架构图出来，就可以很明显看到其实现。</p>
+<p>DB里面提供类似如下的配置（结合nginx）：</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Nginx</th>
+<th>Real IP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>192.168.1.1:8080/P1_ng/</td>
+<td>192.168.2.1:8080</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>192.168.2.2:8080</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>192.168.1.1:8080/P2_ng/</td>
+<td>192.168.2.3:8080</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>192.168.2.4:8080</td>
+</tr>
+</tbody>
+</table>
+<p>代码里面根据Key的不同，通过HTTP REST去调用nginx，然后nginx分发到不同IP下的实例。</p>
+<p>架构图（图中并未画出多个nginx分流的情况，自行脑补之）：</p>
+<p><img src="/resources/img/rpc/REST_nginx_router.png" alt="REST_nginx_router"></p>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li>需要指定IP，而IP并不是恒定不变的（虽然生产环境很少改变，但是dev/st/uat就不一定了）</li>
+<li>负载均衡：需要通过nginx实现服务端的负载均衡</li>
+<li>nginx HA：需要引入nginx HA方案</li>
+<li>分流：通过多个nginx实例分流减少IO压力</li>
+</ul>
+<h1 id="基于扩展dubbo路由规则的解决方案"><a href="#基于扩展dubbo路由规则的解决方案" class="headerlink" title="基于扩展dubbo路由规则的解决方案"></a>基于扩展dubbo路由规则的解决方案</h1><p>dubbo通过group，interface，version，三者决定是不是同一个服务。group暂不作考虑（目前没用到，那么整个服务注册便是一颗无根树）。<strong>配置version=”*”可以获取所有版本的提供者实例</strong><br>针对上面的需求，有3个方案：</p>
+<ul>
+<li>方案一：使用一个版本号，然后dubbo拿到该version的所有Invoker，然后通过提供者、消费者的IP进行匹配。<br>这样子便解决了上面除IP之外的所有问题。并且不需要修改dubbo源码。</li>
+<li>方案二：修改dubbo原生路由规则，让其支持基于版本号的路由设定。</li>
+<li>方案三：通过配置version=”*”，让dubbo可以通过某个注解获取所有的版本的所有Invoker。然后再扩展路由过滤。</li>
+</ul>
+<p>方案一只需要研究dubbo的表达式怎么写就可以了；</p>
+<p>方案二需要扩展路由，而具体可以参考方案三的实现；</p>
+<p>方案三我会具体介绍，基本上包含了方案二的全部实现，但是注意方案二是通过注册中心推送规则。而方案三是通过注解注入相关规则。从而导致方案三的缺点：<strong>更新配置时需要更新所有实例的内存数据</strong></p>
+<p>解决方案如下：（这些只是顺便一提，不展开讲了）</p>
+<ul>
+<li>配置所有实例共享，显然需要跨进程缓存：Redis、Zookeeper之类的。还可以利用watch实时更新</li>
+<li>更新配置时，调用所有节点的方法更新配置数据</li>
+</ul>
+<h2 id="dubbo容错调度"><a href="#dubbo容错调度" class="headerlink" title="dubbo容错调度"></a>dubbo容错调度</h2><p><img src="/resources/img/rpc/dubbo_fault_tolerance.jpg" alt="dubbo_fault_tolerance"></p>
+<ul>
+<li>Invoker：这里的Invoker是Provider的一个可调用Service的抽象，Invoker封装了Provider地址及Service接口信息。</li>
+<li>Directory：(SPI, Prototype, ThreadSafe)集群目录服务，<a href="https://en.wikipedia.org/wiki/Directory_service" target="_blank" rel="external">Directory service</a>。Directory代表多个Invoker，可以把它看成List<invoker>，但与List不同的是，它的值可能是动态变化的，比如注册中心推送变更。</invoker></li>
+<li>Cluster：Cluster将Directory中的多个Invoker伪装成一个Invoker，对上层透明，伪装过程包含了容错逻辑，调用失败后，重试另一个。</li>
+<li>Router：Router负责从多个Invoker中按路由规则选出子集，比如读写分离，应用隔离等。</li>
+<li>LoadBalance：LoadBalance负责从多个Invoker中选出具体的一个用于本次调用，选的过程包含了负载均衡算法，调用失败后，需要重选。</li>
+<li>关于Router，有以下应用：<blockquote>
+<p>服务路由是治理的核心功能，它可以动态调整集群间的访问关系：</p>
+<ul>
+<li>排除预发布机：<code>=&gt; host != 172.22.3.91</code></li>
+<li>白名单：(注意：一个服务只能有一条白名单规则，否则两条规则交叉，就都被筛选掉了)，<code>host != 10.20.153.10,10.20.153.11 =&gt;</code></li>
+<li>黑名单：<code>host = 10.20.153.10,10.20.153.11 =&gt;</code></li>
+<li>服务寄宿在应用上，只暴露一部分的机器，防止整个集群挂掉：<code>=&gt; host = 172.22.3.1*,172.22.3.2*</code></li>
+<li>为重要应用提供额外的机器：<code>application != kylin =&gt; host != 172.22.3.95,172.22.3.96</code></li>
+<li>读写分离：<code>method != find*,list*,get*,is* =&gt; host = 172.22.3.97,172.22.3.98</code> or <code>method = find*,list*,get*,is* =&gt; host = 172.22.3.94,172.22.3.95,172.22.3.96</code></li>
+<li>前后台分离：<code>application = bops =&gt; host = 172.22.3.91,172.22.3.92,172.22.3.93</code> or <code>application != bops =&gt; host = 172.22.3.94,172.22.3.95,172.22.3.96</code></li>
+<li>隔离不同机房网段：<code>host != 172.22.3.* =&gt; host != 172.22.3.*</code></li>
+<li>提供者与消费者部署在同集群内，本机只访问本机的服务：<code>=&gt; host = $host</code><br>  而路由规则的配置通常是通过监控中心or治理中心的页面完成，也可以通过<code>RegistryFactory</code>写入。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h2 id="dubbo源码解析"><a href="#dubbo源码解析" class="headerlink" title="dubbo源码解析"></a>dubbo源码解析</h2><p><strong>以下可以概括为源码乱读= =||</strong></p>
+<h3 id="AnnotationBean"><a href="#AnnotationBean" class="headerlink" title="AnnotationBean"></a>AnnotationBean</h3><p><code>AnnotationBean extends AbstractConfig</code>用于包装处理<code>com.alibaba.dubbo.config.annotation.Reference</code>和<code>com.alibaba.dubbo.config.annotation.Service</code>注解。</p>
+<p>通过<code>AnnotationBean</code>的方法<code>private Object refer(Reference reference, Class&lt;?&gt; referenceClass)</code>解析<code>AnnotationBean</code>成<code>private final ConcurrentMap&lt;String, ReferenceBean&lt;?&gt;&gt; referenceConfigs = new ConcurrentHashMap&lt;String, ReferenceBean&lt;?&gt;&gt;();</code></p>
+<p>在<code>refer</code>方法中，对consumer的解析执行了2次（此处甚是迷惑）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Object <span class="title">refer</span><span class="params">(Reference reference, Class&lt;?&gt; referenceClass)</span> </span>&#123; <span class="comment">//method.getParameterTypes()[0]</span></div><div class="line">    String interfaceName;</div><div class="line">    <span class="keyword">if</span> (! <span class="string">""</span>.equals(reference.interfaceName())) &#123;</div><div class="line">        interfaceName = reference.interfaceName();</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (! <span class="keyword">void</span>.class.equals(reference.interfaceClass())) &#123;</div><div class="line">        interfaceName = reference.interfaceClass().getName();</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (referenceClass.isInterface()) &#123;</div><div class="line">        interfaceName = referenceClass.getName();</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"The @Reference undefined interfaceClass or interfaceName, and the property type "</span> + referenceClass.getName() + <span class="string">" is not a interface."</span>);</div><div class="line">    &#125;</div><div class="line">    String key = reference.group() + <span class="string">"/"</span> + interfaceName + <span class="string">":"</span> + reference.version();</div><div class="line">    ReferenceBean&lt;?&gt; referenceConfig = referenceConfigs.get(key);</div><div class="line">    <span class="keyword">if</span> (referenceConfig == <span class="keyword">null</span>) &#123;</div><div class="line">        referenceConfig = <span class="keyword">new</span> ReferenceBean&lt;Object&gt;(reference);</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">void</span>.class.equals(reference.interfaceClass())</div><div class="line">                &amp;&amp; <span class="string">""</span>.equals(reference.interfaceName())</div><div class="line">                &amp;&amp; referenceClass.isInterface()) &#123;</div><div class="line">            referenceConfig.setInterface(referenceClass);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (applicationContext != <span class="keyword">null</span>) &#123;</div><div class="line">            referenceConfig.setApplicationContext(applicationContext);</div><div class="line">            <span class="keyword">if</span> (reference.registry() != <span class="keyword">null</span> &amp;&amp; reference.registry().length &gt; <span class="number">0</span>) &#123;</div><div class="line">                List&lt;RegistryConfig&gt; registryConfigs = <span class="keyword">new</span> ArrayList&lt;RegistryConfig&gt;();</div><div class="line">                <span class="keyword">for</span> (String registryId : reference.registry()) &#123;</div><div class="line">                    <span class="keyword">if</span> (registryId != <span class="keyword">null</span> &amp;&amp; registryId.length() &gt; <span class="number">0</span>) &#123;</div><div class="line">                        registryConfigs.add((RegistryConfig)applicationContext.getBean(registryId, RegistryConfig.class));</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                referenceConfig.setRegistries(registryConfigs);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (reference.consumer() != <span class="keyword">null</span> &amp;&amp; reference.consumer().length() &gt; <span class="number">0</span>) &#123; <span class="comment">//</span></div><div class="line">                referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (reference.monitor() != <span class="keyword">null</span> &amp;&amp; reference.monitor().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">                referenceConfig.setMonitor((MonitorConfig)applicationContext.getBean(reference.monitor(), MonitorConfig.class));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (reference.application() != <span class="keyword">null</span> &amp;&amp; reference.application().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">                referenceConfig.setApplication((ApplicationConfig)applicationContext.getBean(reference.application(), ApplicationConfig.class));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (reference.<span class="keyword">module</span>() != <span class="keyword">null</span> &amp;&amp; reference.<span class="keyword">module</span>().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">                referenceConfig.setModule((ModuleConfig)applicationContext.getBean(reference.<span class="keyword">module</span>(), ModuleConfig.class));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (reference.consumer() != <span class="keyword">null</span> &amp;&amp; reference.consumer().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">                referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                referenceConfig.afterPropertiesSet();</div><div class="line">            &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</div><div class="line">                <span class="keyword">throw</span> (RuntimeException) e;</div><div class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(e.getMessage(), e);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        referenceConfigs.putIfAbsent(key, referenceConfig);</div><div class="line">        referenceConfig = referenceConfigs.get(key);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> referenceConfig.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="AbstractDirectory"><a href="#AbstractDirectory" class="headerlink" title="AbstractDirectory"></a>AbstractDirectory</h3><p>AbstractDirectory是增加router的Directory。<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/directory/AbstractDirectory.java" target="_blank" rel="external">com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//获取所有的Invoker，并遍历路由规则过滤求Invokers子集</span></div><div class="line"><span class="keyword">public</span> List&lt;Invoker，并根据路由规则遍历过滤&lt;T&gt;&gt; list(Invocation invocation) <span class="keyword">throws</span> RpcException &#123;</div><div class="line">    <span class="keyword">if</span> (destroyed)&#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(<span class="string">"Directory already destroyed .url: "</span>+ getUrl());</div><div class="line">    &#125;</div><div class="line">    List&lt;Invoker&lt;T&gt;&gt; invokers = doList(invocation);</div><div class="line">    List&lt;Router&gt; localRouters = <span class="keyword">this</span>.routers; <span class="comment">// local reference</span></div><div class="line">    <span class="keyword">if</span> (localRouters != <span class="keyword">null</span> &amp;&amp; localRouters.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">for</span> (Router router: localRouters)&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                <span class="keyword">if</span> (router.getUrl() == <span class="keyword">null</span> || router.getUrl().getParameter(Constants.RUNTIME_KEY, <span class="keyword">true</span>)) &#123;</div><div class="line">                    invokers = router.route(invokers, getConsumerUrl(), invocation);</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</div><div class="line">                logger.error(<span class="string">"Failed to execute router: "</span> + getUrl() + <span class="string">", cause: "</span> + t.getMessage(), t);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> invokers;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="RegistryDirectory"><a href="#RegistryDirectory" class="headerlink" title="RegistryDirectory"></a>RegistryDirectory</h3><p>RegistryDirectory: 注册目录服务，通过此类可以获取消费者消费的提供者的所有实例Invokers<br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-registry/dubbo-registry-api/src/main/java/com/alibaba/dubbo/registry/integration/RegistryDirectory.java" target="_blank" rel="external">com.alibaba.dubbo.registry.integration.RegistryDirectory</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//从注册中心获取消费者消费的提供者的所有实例Invokers</span></div><div class="line"><span class="keyword">public</span> List&lt;Invoker&lt;T&gt;&gt; doList(Invocation invocation) &#123;</div><div class="line">    <span class="keyword">if</span> (forbidden) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(RpcException.FORBIDDEN_EXCEPTION, <span class="string">"Forbid consumer "</span> +  NetUtils.getLocalHost() + <span class="string">" access service "</span> + getInterface().getName() + <span class="string">" from registry "</span> + getUrl().getAddress() + <span class="string">" use dubbo version "</span> + Version.getVersion() + <span class="string">", Please check registry access list (whitelist/blacklist)."</span>);</div><div class="line">    &#125;</div><div class="line">    List&lt;Invoker&lt;T&gt;&gt; invokers = <span class="keyword">null</span>;</div><div class="line">    Map&lt;String, List&lt;Invoker&lt;T&gt;&gt;&gt; localMethodInvokerMap = <span class="keyword">this</span>.methodInvokerMap; <span class="comment">// local reference</span></div><div class="line">    <span class="keyword">if</span> (localMethodInvokerMap != <span class="keyword">null</span> &amp;&amp; localMethodInvokerMap.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">        String methodName = RpcUtils.getMethodName(invocation);</div><div class="line">        Object[] args = RpcUtils.getArguments(invocation);</div><div class="line">        <span class="keyword">if</span>(args != <span class="keyword">null</span> &amp;&amp; args.length &gt; <span class="number">0</span> &amp;&amp; args[<span class="number">0</span>] != <span class="keyword">null</span></div><div class="line">                &amp;&amp; (args[<span class="number">0</span>] <span class="keyword">instanceof</span> String || args[<span class="number">0</span>].getClass().isEnum())) &#123;</div><div class="line">            invokers = localMethodInvokerMap.get(methodName + <span class="string">"."</span> + args[<span class="number">0</span>]); <span class="comment">// 可根据第一个参数枚举路由</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span>(invokers == <span class="keyword">null</span>) &#123;</div><div class="line">            invokers = localMethodInvokerMap.get(methodName);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span>(invokers == <span class="keyword">null</span>) &#123;</div><div class="line">            invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span>(invokers == <span class="keyword">null</span>) &#123;</div><div class="line">            Iterator&lt;List&lt;Invoker&lt;T&gt;&gt;&gt; iterator = localMethodInvokerMap.values().iterator();</div><div class="line">            <span class="keyword">if</span> (iterator.hasNext()) &#123;</div><div class="line">                invokers = iterator.next();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> invokers == <span class="keyword">null</span> ? <span class="keyword">new</span> ArrayList&lt;Invoker&lt;T&gt;&gt;(<span class="number">0</span>) : invokers;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="ConditionRouter"><a href="#ConditionRouter" class="headerlink" title="ConditionRouter"></a>ConditionRouter</h3><p>ConditionRouter：条件路由，关于条件路由的定义以及正则匹配，具体见<a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1%E8%A7%84%E5%88%99" target="_blank" rel="external">这里</a>，源码是：<code>Map&lt;String, MatchPair&gt; parseRule(String rule)</code><br><a href="https://github.com/alibaba/dubbo/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/router/condition/ConditionRouter.java" target="_blank" rel="external">com.alibaba.dubbo.rpc.cluster.router.condition.ConditionRouter</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">  * 路由规则逻辑</div><div class="line">  * 1. 必须同时配置 消费端匹配 和 提供端过滤</div><div class="line">  * 2. 消费端不匹配 返回所有 invoker</div><div class="line">  *</div><div class="line">  * <span class="doctag">@param</span> invokers</div><div class="line">  * <span class="doctag">@param</span> url refer url</div><div class="line">  * <span class="doctag">@param</span> invocation</div><div class="line">  * <span class="doctag">@param</span> &lt;T&gt;</div><div class="line">  * <span class="doctag">@return</span></div><div class="line">  * <span class="doctag">@throws</span> RpcException</div><div class="line">  */</div><div class="line"> <span class="keyword">public</span> &lt;T&gt; List&lt;Invoker&lt;T&gt;&gt; route(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</div><div class="line">         <span class="keyword">throws</span> RpcException &#123;</div><div class="line">     <span class="keyword">if</span> (invokers == <span class="keyword">null</span> || invokers.size() == <span class="number">0</span>) &#123;</div><div class="line">         <span class="keyword">return</span> invokers;</div><div class="line">     &#125;</div><div class="line">     <span class="keyword">try</span> &#123;</div><div class="line">         <span class="comment">//消费端匹配 如果不匹配 直接返回所有invoker</span></div><div class="line">         <span class="keyword">if</span> (!matchWhen(url)) &#123;</div><div class="line">             <span class="keyword">return</span> invokers;</div><div class="line">         &#125;</div><div class="line">         List&lt;Invoker&lt;T&gt;&gt; result = <span class="keyword">new</span> ArrayList&lt;Invoker&lt;T&gt;&gt;();</div><div class="line">         <span class="keyword">if</span> (!hasThenCondition()) &#123;</div><div class="line">             logger.warn(<span class="string">"The current consumer in the service blacklist. consumer: "</span> + NetUtils.getLocalHost() + <span class="string">", service: "</span> + url.getServiceKey());</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">         &#125;</div><div class="line">         <span class="keyword">for</span> (Invoker&lt;T&gt; invoker : invokers) &#123;</div><div class="line">             <span class="keyword">if</span> (matchThen(invoker.getUrl(), url)) &#123;</div><div class="line">                 result.add(invoker);</div><div class="line">             &#125;</div><div class="line">         &#125;</div><div class="line">         <span class="keyword">if</span> (result.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (force) &#123;</div><div class="line">             logger.warn(<span class="string">"The route result is empty and force execute. consumer: "</span> + NetUtils.getLocalHost() + <span class="string">", service: "</span> + url.getServiceKey() + <span class="string">", router: "</span> + url.getParameterAndDecoded(Constants.RULE_KEY));</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">         &#125;</div><div class="line">     &#125; <span class="keyword">catch</span> (Throwable t) &#123;</div><div class="line">         logger.error(<span class="string">"Failed to execute condition router rule: "</span> + getUrl() + <span class="string">", invokers: "</span> + invokers + <span class="string">", cause: "</span> + t.getMessage(), t);</div><div class="line">     &#125;</div><div class="line">     <span class="keyword">return</span> invokers;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<h2 id="修改源码（此步才是关键）"><a href="#修改源码（此步才是关键）" class="headerlink" title="修改源码（此步才是关键）"></a>修改源码（此步才是关键）</h2><h3 id="dubbo运行流程"><a href="#dubbo运行流程" class="headerlink" title="dubbo运行流程"></a>dubbo运行流程</h3><p>先理清一下dubbo的运行流程：</p>
+<ul>
+<li>Spring扫描注解得到所有的<code>AnnotationBean</code>。即<code>@Refernce</code>和<code>@Service</code>注解的引用</li>
+<li>对每一个<code>AnnotationBean</code>执行：<code>private Object refer(Reference reference, Class&lt;?&gt; referenceClass)</code>，得到<code>ConcurrentMap&lt;String, ReferenceBean&lt;?&gt;&gt; referenceConfigs</code>和<code>Set&lt;ServiceConfig&lt;?&gt;&gt; serviceConfigs = new ConcurrentHashSet&lt;ServiceConfig&lt;?&gt;&gt;()</code>。这两个都是<code>AnnotationBean</code>的属性。（在这里查找对注解的解析代码，层层引用，可以定位到：<code>com.alibaba.dubbo.config.AbstractConfig#appendAnnotation</code>）</li>
+<li>从<code>ReferenceConfig&lt;T&gt;</code>调用<code>get()</code>方法，会进行<code>init()</code>操作。ReferenceConfig会被缓存，所以消费者代理也会被缓存（消费者代理是ReferenceConfig的属性）。里面有下面一段源码（留意我写的注释）：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//attributes是？？？</span></div><div class="line">StaticContext.getSystemContext().putAll(attributes);<span class="comment">//attributes通过系统context进行存储.</span></div><div class="line"><span class="comment">//map是时间戳、PID、revision、methods等参数，这些参数编码之后作为url的refer参数的值。所以不能将router放在map里面。后面会说routers是如何识别的</span></div><div class="line">ref = createProxy(map); <span class="comment">//创建代理</span></div></pre></td></tr></table></figure>
+<ul>
+<li>通过带来调用服务提供者</li>
+</ul>
+<h3 id="注解配置解析"><a href="#注解配置解析" class="headerlink" title="注解配置解析"></a>注解配置解析</h3><p>首先，路由器应该是可配置的，那么就要添加解析路由器的相关代码。<br>dubbo是客户端负载均衡，理论上路由的判断应放在客户端执行，所以这里我本来打算修改消费者相关的代码。<br><a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-config/dubbo-config-api/src/main/java/com/alibaba/dubbo/config/ReferenceConfig.java" target="_blank" rel="external">com.alibaba.dubbo.config.ReferenceConfig </a>的<code>private void init()</code>方法初始化并解析消费者的配置。<br>但注意：如果在<code>com.alibaba.dubbo.config.AbstractReferenceConfig</code> 抽象类添加router属性，会有点问题：<strong>（<code>AbstractInterfaceConfig</code>属于提供者和消费者共同的配置接口，而且从注册中心加载URL的方法<code>protected List&lt;URL&gt; loadRegistries(boolean provider)</code>由它提供，所以扩展路由代码写在<code>AbstractInterfaceConfig</code>里面）</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 路由</span></div><div class="line"><span class="keyword">protected</span> String router;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getRouter</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> router;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRouter</span><span class="params">(String router)</span> </span>&#123;</div><div class="line">  <span class="keyword">this</span>.router = router;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>先修改注解：<br>增加routers的配置参数：<br><a href="">com.alibaba.dubbo.config.annotation.Reference</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">String[] routers() <span class="keyword">default</span> &#123;&#125;;</div></pre></td></tr></table></figure></p>
+<p>注意到：在<code>ReferenceConfig</code>的构造方法里会调用<code>appendAnnotation</code>来解析注解（注：对于数组合会并成’,’分隔的字符串）。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">ReferenceConfig</span><span class="params">(Reference reference)</span> </span>&#123;</div><div class="line">    appendAnnotation(Reference.class, reference);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>修改<code>com.alibaba.dubbo.config.AbstractConfig#appendAnnotation</code>:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Object value = method.invoke(annotation, <span class="keyword">new</span> Object[<span class="number">0</span>]);</div><div class="line"><span class="keyword">if</span> (value != <span class="keyword">null</span> &amp;&amp; ! value.equals(method.getDefaultValue())) &#123;</div><div class="line">    Class&lt;?&gt; parameterType = ReflectUtils.getBoxedClass(method.getReturnType());</div><div class="line">    <span class="keyword">if</span> (<span class="string">"filter"</span>.equals(property) || <span class="string">"listener"</span>.equals(property) || <span class="string">"router"</span>.equals(property)) &#123; <span class="comment">//增加路由处理</span></div><div class="line">        parameterType = String.class;</div><div class="line">        value = StringUtils.join((String[]) value, <span class="string">","</span>); <span class="comment">//将数组处理成字符串</span></div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"parameters"</span>.equals(property)) &#123;</div><div class="line">        parameterType = Map.class;</div><div class="line">        value = CollectionUtils.toStringMap((String[]) value);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="comment">//此处的setter方法属于AbstractReferenceConfig</span></div><div class="line">        Method setterMethod = getClass().getMethod(setter, <span class="keyword">new</span> Class&lt;?&gt;[] &#123; parameterType &#125;); <span class="comment">//根据参数类型和参数，通过反射调用set方法设置指。</span></div><div class="line">        setterMethod.invoke(<span class="keyword">this</span>, <span class="keyword">new</span> Object[] &#123; value &#125;); <span class="comment">//调用set方法</span></div><div class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</div><div class="line">        <span class="comment">// ignore</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>经过了上面的一步，注解的参数已经被解析到<code>AbstractConfig</code>里面了。</p>
+<h3 id="router设置"><a href="#router设置" class="headerlink" title="router设置"></a>router设置</h3><p>注意：dubbo的router扩展如下(这种方式是JDK SPI)：</p>
+<ul>
+<li>写2个类，分别实现Router和RouterFactory。RouterFactory假设是<code>com.alibaba.dubbo.rpc.cluster.router.xxxRouterFactory</code></li>
+<li>然后让dubbo可以识别routerName是xxx的路由。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">src</div><div class="line"> |-main</div><div class="line">    |-java</div><div class="line">        |-com</div><div class="line">            |-xxx</div><div class="line">                |-xxxRouterFactory.java (实现RouterFactory接口)</div><div class="line">                |-xxxRouter.java (实现Router接口)</div><div class="line">    |-resources</div><div class="line">        |-META-INF</div><div class="line">            |-dubbo</div><div class="line">                |-com.alibaba.dubbo.rpc.cluster.RouterFactory (纯文本文件，内容为：xxx=com.alibaba.dubbo.rpc.cluster.router.xxxRouterFactory)</div></pre></td></tr></table></figure>
+<ul>
+<li>设置路由，通常在初始化<code>AbstractDirectory</code>时设置，或由<code>RegistryDirectory</code>的<code>notify</code>通知更新。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">setRouters</span><span class="params">(List&lt;Router&gt; routers)</span></span>&#123;</div><div class="line">    <span class="comment">// copy list</span></div><div class="line">    routers = routers == <span class="keyword">null</span> ? <span class="keyword">new</span>  ArrayList&lt;Router&gt;() : <span class="keyword">new</span> ArrayList&lt;Router&gt;(routers);</div><div class="line">    <span class="comment">// append url router</span></div><div class="line">    String routerkey = url.getParameter(Constants.ROUTER_KEY); <span class="comment">//看是否存在routerName，URL会通过category=routers&amp;router=xxxRouterName&amp;dynamic=false传入router相关配置 注：Constants.ROUTER_KEY="router"</span></div><div class="line">    <span class="keyword">if</span> (routerkey != <span class="keyword">null</span> &amp;&amp; routerkey.length() &gt; <span class="number">0</span>) &#123;</div><div class="line">        RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);<span class="comment">//getExtensionLoader获取ExtensionLoader然后根据routerName获取RouterFactory实例</span></div><div class="line">        routers.add(routerFactory.getRouter(url));</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// append mock invoker selector</span></div><div class="line">    routers.add(<span class="keyword">new</span> MockInvokersSelector());</div><div class="line">    Collections.sort(routers);</div><div class="line">    <span class="keyword">this</span>.routers = routers;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>那么问题来了，URL是怎么生成的呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">else</span> &#123; <span class="comment">// 通过注册中心配置拼装URL，其他两种情况是本地调用和指定的点对点调用。可不做考虑</span></div><div class="line">  List&lt;URL&gt; us = loadRegistries(<span class="keyword">false</span>);<span class="comment">//URL从注册中心来</span></div><div class="line">  <span class="keyword">if</span> (us != <span class="keyword">null</span> &amp;&amp; us.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">    <span class="keyword">for</span> (URL u : us) &#123;</div><div class="line">      URL monitorUrl = loadMonitor(u);</div><div class="line">      <span class="keyword">if</span> (monitorUrl != <span class="keyword">null</span>) &#123;</div><div class="line">        map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));</div><div class="line">      &#125;</div><div class="line">      urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span> (urls == <span class="keyword">null</span> || urls.size() == <span class="number">0</span>) &#123;</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"No such any registry to reference "</span> + interfaceName  + <span class="string">" on the consumer "</span> + NetUtils.getLocalHost() + <span class="string">" use dubbo version "</span> + Version.getVersion() + <span class="string">", please config &lt;dubbo:registry address=\"...\" /&gt; to your spring config."</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>到此为止，在URL添加上router即可，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> List&lt;URL&gt; <span class="title">loadRegistries</span><span class="params">(<span class="keyword">boolean</span> provider)</span> </span>&#123;</div><div class="line">  checkRegistry();</div><div class="line">  List&lt;URL&gt; registryList = <span class="keyword">new</span> ArrayList&lt;URL&gt;();</div><div class="line">  <span class="keyword">if</span> (registries != <span class="keyword">null</span> &amp;&amp; registries.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">    <span class="keyword">for</span> (RegistryConfig config : registries) &#123;</div><div class="line">      String address = config.getAddress();</div><div class="line">      <span class="keyword">if</span> (address == <span class="keyword">null</span> || address.length() == <span class="number">0</span>) &#123;</div><div class="line">        address = Constants.ANYHOST_VALUE;</div><div class="line">      &#125;</div><div class="line">      String sysaddress = System.getProperty(<span class="string">"dubbo.registry.address"</span>);</div><div class="line">      <span class="keyword">if</span> (sysaddress != <span class="keyword">null</span> &amp;&amp; sysaddress.length() &gt; <span class="number">0</span>) &#123;</div><div class="line">        address = sysaddress;</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (address != <span class="keyword">null</span> &amp;&amp; address.length() &gt; <span class="number">0</span></div><div class="line">          &amp;&amp; ! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) &#123;</div><div class="line">        Map&lt;String, String&gt; map = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</div><div class="line">        appendParameters(map, application);</div><div class="line">        appendParameters(map, config);</div><div class="line">        map.put(<span class="string">"path"</span>, RegistryService.class.getName());</div><div class="line">        map.put(<span class="string">"dubbo"</span>, Version.getVersion());</div><div class="line">        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));</div><div class="line">        <span class="keyword">if</span> (ConfigUtils.getPid() &gt; <span class="number">0</span>) &#123;</div><div class="line">          map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (! map.containsKey(<span class="string">"protocol"</span>)) &#123;</div><div class="line">          <span class="keyword">if</span> (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension(<span class="string">"remote"</span>)) &#123;</div><div class="line">            map.put(<span class="string">"protocol"</span>, <span class="string">"remote"</span>);</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            map.put(<span class="string">"protocol"</span>, <span class="string">"dubbo"</span>);</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">        List&lt;URL&gt; urls = UrlUtils.parseURLs(address, map);</div><div class="line">        <span class="keyword">for</span> (URL url : urls) &#123;</div><div class="line">          url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());</div><div class="line">          <span class="keyword">if</span>(<span class="keyword">this</span>.router!=<span class="keyword">null</span>&amp;&amp;<span class="keyword">this</span>.router.length()&gt;<span class="number">0</span>)&#123;<span class="comment">//router存在</span></div><div class="line">            url = url.addParameter(Constants.ROUTER_KEY, <span class="keyword">this</span>.router);<span class="comment">//添加路由参数</span></div><div class="line">          &#125;</div><div class="line">          url = url.setProtocol(Constants.REGISTRY_PROTOCOL);</div><div class="line">          <span class="keyword">if</span> ((provider &amp;&amp; url.getParameter(Constants.REGISTER_KEY, <span class="keyword">true</span>))</div><div class="line">              || (! provider &amp;&amp; url.getParameter(Constants.SUBSCRIBE_KEY, <span class="keyword">true</span>))) &#123;</div><div class="line">            registryList.add(url);</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> registryList;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="修改的具体代码如下"><a href="#修改的具体代码如下" class="headerlink" title="修改的具体代码如下"></a>修改的具体代码如下</h3><p><a href="https://github.com/Paleozoic/dubbox/commit/c10416a67aafc8fac9665d5100f5ff8dadfaf02f" target="_blank" rel="external">Github查看</a></p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><p><a href="https://github.com/Paleozoic/spring_boot_dubbox_demo" target="_blank" rel="external">项目示例见Github</a><br><a href="https://github.com/Paleozoic/spring_boot_dubbox_demo/commit/f25ae9ea48bbbf73f5ef942a3914db5390c81345" target="_blank" rel="external">关键代码</a></p>
+<ul>
+<li><a href="https://github.com/Paleozoic/spring_boot_dubbox_demo/tree/master/31-ms-consumer/src/main/java/com/alibaba/dubbo/rpc/cluster/router" target="_blank" rel="external">KeyRouter</a>：包括工厂类和实例类</li>
+<li><a href="https://github.com/Paleozoic/spring_boot_dubbox_demo/tree/master/31-ms-consumer/src/main/resources/META-INF/dubbo" target="_blank" rel="external">JDK SPI</a>：注意文件名和位置</li>
+<li>注解引入router：<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Reference</span>(version = <span class="string">"*"</span>,router = <span class="string">"keyRouter"</span>)</div><div class="line"><span class="keyword">private</span> HelloRest helloRest3;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="关于XML配置文件"><a href="#关于XML配置文件" class="headerlink" title="关于XML配置文件"></a>关于XML配置文件</h2><p>这里并没有扩展XML配置文件，有兴趣可以自行扩展。或许有一天我会补上这儿的代码。</p>
+<p>其实原理上大体差不多。区别应该是初始化的时候读的是XML。</p>
+<p>那么关注的类是：</p>
+<ul>
+<li><code>NamespaceHandler</code></li>
+<li><code>BeandefinitionParser</code></li>
+<li><code>DubboBeanDefinitionParser</code></li>
+<li><code>DubboNamespaceHandler</code></li>
+</ul>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>从注册中心推送的routers是否会影响现有的routers？覆盖/被覆盖/叠加/抛异常？待研究。</p>
+<h1 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h1><p>dubbo的确是优秀的框架，一开始我的设计是重写负载均衡器，然后走读代码+官方文档，才发现dubbo早已考虑到了这些需求。<br>dubbo提供了router层，稍作变动问题便可以迎刃而解。<br>很感谢阿里的开源。：)</p>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://dubbo.io/User+Guide-zh.htm" target="_blank" rel="external">Dubbo用户指南</a><br><a href="http://dubbo.io/Developer+Guide-zh.htm" target="_blank" rel="external">Dubbo开发者指南</a></p>
+</the>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/RPC/" rel="tag"># RPC</a>
+          
+            <a href="/tags/Dubbo/" rel="tag"># Dubbo</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/08/Spring Cloud搭建分布式服务治理架构/" rel="prev" title="Spring Cloud搭建分布式服务治理架构">
+                Spring Cloud搭建分布式服务治理架构 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8yODU3Mi81MTQz"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/resources/img/head.jpg"
+               alt="Paleo" />
+          <p class="site-author-name" itemprop="name">Paleo</p>
+           
+              <p class="site-description motion-element" itemprop="description">超然物外，天道酬勤。明德识礼，格物致知。</p>
+           
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">33</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">27</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">40</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/Paleozoic" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://coding.net/u/paleozoic" target="_blank" title="Coding">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Coding
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:qxloong@foxmail.com" target="_blank" title="Email">
+                  
+                    <i class="fa fa-fw fa-commenting"></i>
+                  
+                  Email
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#遇到问题"><span class="nav-number">2.</span> <span class="nav-text">遇到问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基于REST的解决方案"><span class="nav-number">3.</span> <span class="nav-text">基于REST的解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点"><span class="nav-number">3.1.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基于扩展dubbo路由规则的解决方案"><span class="nav-number">4.</span> <span class="nav-text">基于扩展dubbo路由规则的解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#dubbo容错调度"><span class="nav-number">4.1.</span> <span class="nav-text">dubbo容错调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dubbo源码解析"><span class="nav-number">4.2.</span> <span class="nav-text">dubbo源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AnnotationBean"><span class="nav-number">4.2.1.</span> <span class="nav-text">AnnotationBean</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AbstractDirectory"><span class="nav-number">4.2.2.</span> <span class="nav-text">AbstractDirectory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RegistryDirectory"><span class="nav-number">4.2.3.</span> <span class="nav-text">RegistryDirectory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConditionRouter"><span class="nav-number">4.2.4.</span> <span class="nav-text">ConditionRouter</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改源码（此步才是关键）"><span class="nav-number">4.3.</span> <span class="nav-text">修改源码（此步才是关键）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dubbo运行流程"><span class="nav-number">4.3.1.</span> <span class="nav-text">dubbo运行流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注解配置解析"><span class="nav-number">4.3.2.</span> <span class="nav-text">注解配置解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#router设置"><span class="nav-number">4.3.3.</span> <span class="nav-text">router设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改的具体代码如下"><span class="nav-number">4.3.4.</span> <span class="nav-text">修改的具体代码如下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用示例"><span class="nav-number">4.3.5.</span> <span class="nav-text">使用示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于XML配置文件"><span class="nav-number">4.4.</span> <span class="nav-text">关于XML配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TODO"><span class="nav-number">4.5.</span> <span class="nav-text">TODO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#写在最后"><span class="nav-number">5.</span> <span class="nav-text">写在最后</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引用"><span class="nav-number">6.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <a href="http://www.maxplus1.com/"><i class="fa fa-heart"></i></a>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html">Paleo</a></span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (search_path.endsWith("json")) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
