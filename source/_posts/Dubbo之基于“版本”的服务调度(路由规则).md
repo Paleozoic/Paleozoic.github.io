@@ -588,6 +588,7 @@ protected List<URL> loadRegistries(boolean provider) {
 
 ###  修改的具体代码
 [Github查看](https://github.com/Paleozoic/dubbox/commit/c10416a67aafc8fac9665d5100f5ff8dadfaf02f)
+PS：一看提交记录，其实才改了几行代码，但是其中需要做的准备工作感觉很多。这也算是Coding的乐趣之一了:)
 
 ### 使用示例
 [项目示例见Github](https://github.com/Paleozoic/spring_boot_dubbox_demo)
