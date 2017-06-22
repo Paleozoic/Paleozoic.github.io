@@ -3,6 +3,7 @@ title: 网络协议之HTTP、TCP、UDP
 date: 2017-05-15 00:33:47
 categories: [计算机网络]
 tags: [HTTP,TCP,UDP]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 介绍网络协议：HTTP、TCP、UDP<!-- more -->
@@ -15,15 +16,15 @@ tags: [HTTP,TCP,UDP]
 OSI即Open System Interconnection，开放系统互联。
 OSI定义了7层协议栈。
 
-|层|描述|例子|
-|--|--|--|
-|应用层|这层协议是为了满足特定应用的通信需求而设计的，通常定义一个服务接口|HTTP、FTP、STMP|
-|表示层|这层协议将以一种网络表示传输数据，这种表示与计算机使用的表示无关，两种表示可能完全不相同。如果需要，可以在这一层对数据进行加密|TLS安全、CORBA数据表示|
-|会话层|在这层要实现可靠性和适应性，例如故障检测和自动恢复|SIP|
-|传输层|这是处理消息（而不是数据包）的最低一层。消息被定位到与进程相连的通信端口上。这层协议是可以面向连接的，也可以是无连接的。|TCP、UDP|
-|网络层|在特定网络的计算机间传输数据包，在一个WAN或一个互连网络中，这一层负责生成一个通过路由器的路径。在单一的LAN中不需要路由|IP、ATM虚电路|
-|数据链路层|负责再有直接物理连接的结点间传输数据包。在WAN中，传输是在路由器间或路由器或主机间进行的。在LAN中，传输是在任意一对的主机间进行的|Ethernet MAC、ATM信元传送、PPP|
-|物理层|指驱动网络的电路和硬件。它通过发送模拟信号传输二进制数据序列，用电信号的振幅或频率调制信号（在电缆电路上），光信号（在光纤电路上），或其他电磁信号（在无线电和微波电路上）|Ethernet基带信号、ISDN|
+| 层     | 描述                                       | 例子                       |
+| ----- | ---------------------------------------- | ------------------------ |
+| 应用层   | 这层协议是为了满足特定应用的通信需求而设计的，通常定义一个服务接口        | HTTP、FTP、STMP            |
+| 表示层   | 这层协议将以一种网络表示传输数据，这种表示与计算机使用的表示无关，两种表示可能完全不相同。如果需要，可以在这一层对数据进行加密 | TLS安全、CORBA数据表示          |
+| 会话层   | 在这层要实现可靠性和适应性，例如故障检测和自动恢复                | SIP                      |
+| 传输层   | 这是处理消息（而不是数据包）的最低一层。消息被定位到与进程相连的通信端口上。这层协议是可以面向连接的，也可以是无连接的。 | TCP、UDP                  |
+| 网络层   | 在特定网络的计算机间传输数据包，在一个WAN或一个互连网络中，这一层负责生成一个通过路由器的路径。在单一的LAN中不需要路由 | IP、ATM虚电路                |
+| 数据链路层 | 负责再有直接物理连接的结点间传输数据包。在WAN中，传输是在路由器间或路由器或主机间进行的。在LAN中，传输是在任意一对的主机间进行的 | Ethernet MAC、ATM信元传送、PPP |
+| 物理层   | 指驱动网络的电路和硬件。它通过发送模拟信号传输二进制数据序列，用电信号的振幅或频率调制信号（在电缆电路上），光信号（在光纤电路上），或其他电磁信号（在无线电和微波电路上） | Ethernet基带信号、ISDN        |
 
 两台主机在网络中通信的示意图：
 ![OSI_通信示意图](/resources/img/network/OSI_通信示意图.png)
@@ -36,7 +37,7 @@ OSI模型详情图：
 - 面向无连接。即发送数据前不需要建立连接
 - 不可靠传输，可能发生丢包，并且传输可能乱序
 - UDP占用较少系统资源，协议信息简单
-常见运用：网络视频、语音聊天、直播等
+  常见运用：网络视频、语音聊天、直播等
 
 ## UDP封装
 IP是网络层协议，UDP是网络层上一层的传输层协议。所以UDP数据报与IP首部会组成一个IP数据报：
@@ -83,24 +84,24 @@ IP是网络层协议，TCP是网络层上一层的传输层协议。所以TCP数
 ![TCP_FSM](/resources/img/network/TCP_FSM.png)
 ![TCP_FSM](/resources/img/network/TCP_FSM1.png)
 - TCB：Transmit Control Block，传输控制模块，它用于记录TCP协议运行过程中的变量。对于有多个连接的TCP，每个连接都有一个TCB。
-TCB结构的定义包括这个连接使用的源端口、目的端口、序号、应答序号、对方窗口大小、己方窗口大小、TCP状态、TCP的重传有关变量。
+  TCB结构的定义包括这个连接使用的源端口、目的端口、序号、应答序号、对方窗口大小、己方窗口大小、TCP状态、TCP的重传有关变量。
 - RTS：Request-to-send
 - CTS：Clear-to-send
 - Segment：传输的数据报文
 
-|State|Description|
-|--|--|
-|CLOSED|No connection exists|
-|LISTEN|Passive open received; waiting for SYN|
-|SYN-SENT|SYN sent; waiting for ACK|
-|SYN-RCVD|SYN+ACK sent; waiting for ACK|
-|ESTABLISHED|Connection established; data transfer in progress|
-|FIN-WAIT-1|First FIN sent; waiting for ACK|
-|FIN-WAIT-2|ACK to first FIN received; waiting for second FIN|
-|CLOSED-WAIT|First FIN received, ACK sent; waiting for application to close|
-|TIME-WAIT|Second FIN received, ACK sent; waiting for 2MSL time-out|
-|LAST-ACK|Second FIN sent; waiting for ACK|
-|CLOSING|Both sides decided to close simultaneously|
+| State       | Description                              |
+| ----------- | ---------------------------------------- |
+| CLOSED      | No connection exists                     |
+| LISTEN      | Passive open received; waiting for SYN   |
+| SYN-SENT    | SYN sent; waiting for ACK                |
+| SYN-RCVD    | SYN+ACK sent; waiting for ACK            |
+| ESTABLISHED | Connection established; data transfer in progress |
+| FIN-WAIT-1  | First FIN sent; waiting for ACK          |
+| FIN-WAIT-2  | ACK to first FIN received; waiting for second FIN |
+| CLOSED-WAIT | First FIN received, ACK sent; waiting for application to close |
+| TIME-WAIT   | Second FIN received, ACK sent; waiting for 2MSL time-out |
+| LAST-ACK    | Second FIN sent; waiting for ACK         |
+| CLOSING     | Both sides decided to close simultaneously |
 
 ```java
 TCP_Main_Module (Segment){
@@ -267,9 +268,13 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 ### 三次握手（建立连接）
 #### 握手过程
 - 第一次握手：Client发送SYN seq=x给Server请求确认。Client状态：SYN_SEND
+
 - 第二次握手：Server回复ACK=x+1确认收到Client的请求。Client->Server连接建立。并发送SYN seq=x，请求Client建立连接。Server状态：SYN_RECV
+
 - 第三次握手：Client回复ACK=y+1确认收到Server的请求。Server->Client连接建立。至此双方连接建立完毕，可以开始传输数据
-由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。(Client顺序发送，Server顺序接收)
+  由于TCP是全双工的，需要至少三次握手来同步双方的SYN序号，如此才能保证Client<->Server的数据是有序、准确的。(Client顺序发送，Server顺序接收)
+
+  所以说，三次握手是保证TCP可靠传输的前提。
 
 #### 网络异常分析
 可通过上面的FSM伪代码分析握手失败的处理。
@@ -289,13 +294,52 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 - Client发送数据包，seq=2881+1440=4321，ACK=1，数据包Len=1440
 - Server接收数据包，返回seq=1，ACK=2881
 - ……(重复)
-- 注意：Client顺序发送数据包，Server必然数序ACK数据包。但是不是一应一答的阻塞。（**猜想**应存在缓冲区，先缓存一个时间窗口的数据包，Server再顺序ACK）
-![TCP_数据传输](/resources/img/network/TCP_transport_example.jpg)
+- 注意：Client顺序发送数据包（seq number），Server必然顺序ACK数据包（ack number）。但不是一应一答的阻塞。（**猜想**应存在缓冲区，先缓存一个时间窗口的数据包，Server再顺序ACK）
+  ![TCP_数据传输](/resources/img/network/TCP_transport_example.jpg)
 
 
-#### 流量控制
+由上图可以看出：Seq和Ack共同保证了数据的可靠性（顺序传输和顺序确认）。而三次握手分别初始化了Seq和Ack，这便是可靠传输的前提。
 
-#### 拥塞控制
+#### 流量控制（接收方流量控制）
+
+#### 目的
+
+接收方通过接收窗口，让发送方的发送速率不要太快，要让接收方来得及接收。突出的是端到端的流量控制。
+
+接收窗口：rwnd，receiver window/advertised window
+
+假设Client(Sender)->Server(Receiver)发送数据，Server会告诉Client一个接收窗口，比如rwnd=400字节，那Client会向Server发送400字节的数据。
+
+假设Client每次向Server发送100字节的数据，第一次Server收到100字节后会返回rwnd=300字节...一直循环至rwnd=0。
+
+此时Client会等待Server重新发送一个rwnd。
+
+- 如果Server->Client发送的rwnd=200丢失了呢？Client会不会一直等待Server发送非0 rwnd？而Server也在等待Client发送数据？（死锁出现）如何解决死锁？
+
+  TCP维护了一个计时器。TCP接到rwnd=0，就启动一个Timer。Timer到期会向Server发送请求非0 rwnd。若Server返回的rwnd仍为0，则重置Timer，直至rwnd>0。
+
+
+- 如果是Client->Server发送的数据丢失了呢？
+
+  Server会重新发送rwnd给Client。
+
+![TCP_flow_control](/resources/img/network/TCP_flow_control.png)
+
+#### 拥塞控制（发送方流量控制）
+
+在某段时间，若对网络中某资源的需求超过了该资源所能提供的可用部分，网络的性能就要变坏——产生拥塞(congestion)。 出现资源拥塞的条件： 对资源需求的总和 > 可用资源。若网络中有许多资源同时产生拥塞，网络的性能就要明显变坏，整个网络的吞吐量将随输入负荷的增大而下降。目的是防止网络过载，强调的是整个网络环境的资源控制。
+
+拥塞窗口：cwnd，congestion window
+
+- 慢启动
+
+  发送方维持一个拥塞窗口，拥塞窗口的大小取决于网络的拥塞程度，根据此动态变化。发送方维持cwnd=rwnd。考虑到接收方的流量控制，cwnd=rwnd
+
+- 拥塞避免
+
+- 拥塞发生
+
+- 快速恢复
 
 
 ### 四次挥手（断开连接）
@@ -317,5 +361,8 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 《分布式系统：概念与设计》
 《TCP/IP Protocol Suite Fourth Edition》
 [TCP 的那些事儿（上）](http://coolshell.cn/articles/11564.html)
+[TCP 的那些事儿（下）](http://coolshell.cn/articles/11564.html)
 [<再看TCP/IP第一卷>TCP/IP协议族中的最压轴戏----TCP协议及细节](http://www.cnblogs.com/guguli/p/4520921.html)
 [传输控制协议](https://zh.wikipedia.org/wiki/传输控制协议)
+[TCP流量控制](http://www.cnblogs.com/13224ACMer/p/6414620.html)
+[TCP拥塞控制](http://www.cnblogs.com/13224ACMer/p/6415892.html)
