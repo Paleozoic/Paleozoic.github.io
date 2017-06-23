@@ -32,7 +32,10 @@ OSI定义了7层协议栈。
 OSI模型详情图：
 ![OSI](/resources/img/network/TCP_IP.png)
 
-# UDP(User Datagram Protocol,用户数据报协议)
+# UDP
+
+(User Datagram Protocol,用户数据报协议)
+
 ## 特点
 - 面向无连接。即发送数据前不需要建立连接
 - 不可靠传输，可能发生丢包，并且传输可能乱序
@@ -50,7 +53,10 @@ IP是网络层协议，UDP是网络层上一层的传输层协议。所以UDP数
 - UDP长度：指UDP首部和UDP数据的字节长度
 - UDP校验和：可选，UDP报文可没有UDP校验和。覆盖UDP首部和UDP数据
 
-# TCP(Transmission Control Protocol,传输控制协议)
+# TCP
+
+(Transmission Control Protocol,传输控制协议)
+
 ## 特点
 - TCP为应用层提供全双工服务。这意味数据能在两个方向上独立地进行传输。
 - 面向连接，可靠传输，保证传输顺序、完整
@@ -302,8 +308,6 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 
 #### 流量控制（接收方流量控制）
 
-#### 目的
-
 接收方通过接收窗口，让发送方的发送速率不要太快，要让接收方来得及接收。突出的是端到端的流量控制。
 
 接收窗口：rwnd，receiver window/advertised window
@@ -331,15 +335,42 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 
 拥塞窗口：cwnd，congestion window
 
-- 慢启动
+RTT：Round-Trip Time，往返时延。在计算机网络中它是一个重要的性能指标，表示从发送端发送数据开始，到发送端收到来自接收端的确认（接收端收到数据后便立即发送确认），总共经历的时延。
 
-  发送方维持一个拥塞窗口，拥塞窗口的大小取决于网络的拥塞程度，根据此动态变化。发送方维持cwnd=rwnd。考虑到接收方的流量控制，cwnd=rwnd
+MSS：maximum segment size，TCP协议会将大于MSS的数据包拆分成多个小的数据包进行传输。
 
-- 拥塞避免
+![TCP_congestion_control](/resources/img/network/TCP_congestion_control.png)
 
-- 拥塞发生
 
-- 快速恢复
+
+- 慢启动（slow start，exponential increase）
+
+  发送方维持一个拥塞窗口，慢启动开始时，发送方使cwnd=MSS。每次接收方ACK后，cwnd会递增一个MSS大小。总体会呈指数增长。
+
+  具体如下图（Slow start, exponential increase），随着RTT的递增，ACK和cwnd都会指数增长。
+
+  ![TCP_slow_start](/resources/img/network/TCP_slow_start.png)
+
+  当然，指数增长只在开始阶段存在，当cwnd增长到慢启动的阈值（ssthresh，slow start threshold）后，进入到拥塞避免阶段，cwnd加法增长（Additive Increase）。
+
+- 拥塞避免（congestion avoidance，additive increase）
+
+  拥塞避免阶段，cwnd呈线性（加法）增长（additive increase）。直至超时（丢包，收到3次重复的ACK），或者达到最大窗口。会有一下2种快速恢复处理方式：
+
+  * TCP Tahoe：设置新的ssthresh为当前cwnd的一半，设置cwnd=1。之后进入慢启动阶段。
+  * TCP  Reno：设置新的ssthresh为当前cwnd的一半，设置cwnd=ssthresh_new。之后进入拥塞避免阶段。
+
+- 快速重传（fast retransmission）
+
+  重传在TCP中本应等待超时后重复发送数据包，快重传则是在收到3次重复ACK后，则直接立刻重发而不用等待超时。
+
+  ![TCP_fast_retransmission](/resources/img/network/TCP_fast_retransmission.png)
+
+- 快速恢复（fast recovery）
+
+  ​
+
+  ![TCP_fast_recovery](/resources/img/network/TCP_fast_recovery.png)
 
 
 ### 四次挥手（断开连接）
@@ -348,9 +379,50 @@ Server监听指定端口，等待Clinet的申请建立TCP连接
 - 第三次挥手：Server发送seq=y+1，请求Client关闭连接。Server状态：LAST-ACK
 - 第四次挥手：Client收到Server的关闭连接请求。进入状态TIME-WAIT。并发送ACK=y+2确认关闭连接。
 
-# HTTP(HyperText Transfer Protocol,超文本传输协议)
+# HTTP
+
+(HyperText Transfer Protocol,超文本传输协议)
+
+## HTTP/1.1
+
+首先，我们知道HTTP协议是基于TCP进行传输的。
+
+### 持久连接（persistent connection）
+
+HTTP/1.1对比HTTP/1.0引入了持久连接（persistent connection），所谓持久连接，即默认TCP连接不关闭，TCP连接可以被多个HTTP请求复用。避免重复的三次握手建立连接。
+
+在HTTP/1.0需要设置`Connection: keep-alive`来开启持久连接。
+
+TCP连接在超时`keep-alive timeout`或者服务器收到`Connection: close`命令后，连接被关闭。
+
+**注意：HTTP的持久连接不等价于HTTP的长连接，持久连接维持的是传输层的TCP连接**
+
+### 管道机制（pipelining）
+
+管道机制：即同一个TCP连接里面，可以将多个HTTP请求（request）整批提交，而在发送过程中不需先等待服务端的回应。
+
+![HTTP_pipelining](/resources/img/network/HTTP_pipelining.png)
+
+### HTTP头部
+
+![HTTP_ifeng_example](/resources/img/network/HTTP_ifeng_example.png)
+
+## HTTP/2.0
+
+
+
+
+
+# HTTPS
+
+(Hyper Text Transfer Protocol over Secure Socket Layer)
+
+## HTTPS头部
+
+![HTTPS_baidu_example](/resources/img/network/HTTPS_baidu_example.png)
 
 # 基于Java NIO的封装
+
 - Mina
 - Netty
 
