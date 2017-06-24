@@ -5,7 +5,7 @@ categories: [RPC,Dubbo]
 tags: [RPC,Dubbo]
 ---
 <Excerpt in index | 首页摘要>
-通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。<!-- more -->
+通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)<!-- more -->
 <The rest of contents | 余下全文>
 
 # 写在前面

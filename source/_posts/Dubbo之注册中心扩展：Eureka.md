@@ -9,10 +9,11 @@ tags: [RPC,Dubbo]
 <The rest of contents | 余下全文>
 
 # dubbo扩展方式
-首先dubbo是通过JDK SPI的方式进行扩展的，具体操作可以浏览[Dubbo之基于“版本”的服务调度(路由规则)](http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/)，有所参考。
+首先dubbo是通过JDK SPI的方式进行扩展的，具体操作可以浏览[Dubbo之基于“版本”的服务调度(路由规则)][1]，有所参考。
+[1]:http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/
 
-
-
+# 待续
+待到明年花开时……
 
 
 # 引用
