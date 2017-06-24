@@ -90,19 +90,19 @@
 
 
 
-<meta name="description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta name="description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)">
 <meta name="keywords" content="RPC,Dubbo">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Dubbo之基于“版本”的服务调度(路由规则)">
 <meta property="og:url" content="http://blog.maxplus1.com/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/index.html">
 <meta property="og:site_name" content="Paleo's blog">
-<meta property="og:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta property="og:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/REST_nginx_router.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/rpc/dubbo_fault_tolerance.jpg">
-<meta property="og:updated_time" content="2017-06-18T18:01:48.918Z">
+<meta property="og:updated_time" content="2017-06-24T08:35:46.398Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dubbo之基于“版本”的服务调度(路由规则)">
-<meta name="twitter:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。">
+<meta name="twitter:description" content="通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)">
 <meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/rpc/REST_nginx_router.png">
 
 
@@ -417,7 +417,7 @@
       
 
       
-        <p><excerpt in="" index="" |="" 首页摘要=""><br>通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。<a id="more"></a></excerpt></p>
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)<a id="more"></a></excerpt></p>
 <the rest="" of="" contents="" |="" 余下全文="">
 
 <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>dubbo.xsd完全没有router的配置，what the fuck！<br>注解也没关相关配置！！<br>官方文档如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;dubbo:protocol router=&quot;xxx&quot; /&gt;</div><div class="line">&lt;dubbo:provider router=&quot;xxx&quot; /&gt; &lt;!-- 缺省值设置，当&lt;dubbo:protocol&gt;没有配置loadbalance时，使用此配置 --&gt;</div></pre></td></tr></table></figure></p>
@@ -612,6 +612,10 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2017/06/23/Dubbo之注册中心扩展：Eureka/" rel="next" title="Dubbo之注册中心扩展：Eureka">
+                <i class="fa fa-chevron-left"></i> Dubbo之注册中心扩展：Eureka
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
@@ -694,7 +698,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">33</span>
+                <span class="site-state-item-count">34</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
