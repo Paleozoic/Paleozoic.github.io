@@ -103,7 +103,8 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/design_patterns/设计模式_创建型模式_抽象工厂模式_UML图.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/design_patterns/设计模式_结构型模式_装饰者模式_UML图.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/design_patterns/设计模式_行为型模式_责任链模式_UML图.png">
-<meta property="og:updated_time" content="2017-06-26T11:25:03.010Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/design_patterns/设计模式_行为型模式_观察者模式_UML图.png">
+<meta property="og:updated_time" content="2017-06-26T16:24:05.898Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="设计模式">
 <meta name="twitter:description" content="设计模式的学习，巩固面向对象的开发知识，力求写出更加优雅的代码。">
@@ -546,6 +547,15 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple input)</span> </span>&#123;</div><div class="line">  _collector.setContext(input);</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    _bolt.execute(input, _collector);</div><div class="line">    _collector.getOutputter().ack(input);</div><div class="line">  &#125; <span class="keyword">catch</span>(FailedException e) &#123;</div><div class="line">    <span class="keyword">if</span>(e <span class="keyword">instanceof</span> ReportedFailedException) &#123;</div><div class="line">      _collector.reportError(e);</div><div class="line">    &#125;</div><div class="line">    _collector.getOutputter().fail(input);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 </li>
 </ul>
+<p>例子：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-rpc/dubbo-rpc-api/src/main/java/com/alibaba/dubbo/rpc/protocol/ProtocolFilterWrapper.java" target="_blank" rel="external">dubbo的ProtocolFilterWrapper</a></p>
+<p><code>ProtocolFilterWrapper</code>扩展的功能如下：<code>export</code>和<code>refer</code>之前先判断是否是<code>Constants.REGISTRY_PROTOCOL</code>，执行不同的操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">Exporter&lt;T&gt; <span class="title">export</span><span class="params">(Invoker&lt;T&gt; invoker)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">  <span class="keyword">if</span> (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) &#123;</div><div class="line">    <span class="keyword">return</span> protocol.export(invoker);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">refer</span><span class="params">(Class&lt;T&gt; type, URL url)</span> <span class="keyword">throws</span> RpcException </span>&#123;</div><div class="line">  <span class="keyword">if</span> (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) &#123;</div><div class="line">    <span class="keyword">return</span> protocol.refer(type, url);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>Component：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-rpc/dubbo-rpc-api/src/main/java/com/alibaba/dubbo/rpc/Protocol.java" target="_blank" rel="external">Protocol</a></li>
+<li>ConcreteComponent：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-rpc/dubbo-rpc-default/src/main/java/com/alibaba/dubbo/rpc/protocol/dubbo/DubboProtocol.java" target="_blank" rel="external">DubboProtocol</a></li>
+<li>Decorator：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-rpc/dubbo-rpc-api/src/main/java/com/alibaba/dubbo/rpc/protocol/AbstractProtocol.java" target="_blank" rel="external">AbstractProtocol</a></li>
+<li>ConcreteDecorator：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-rpc/dubbo-rpc-api/src/main/java/com/alibaba/dubbo/rpc/protocol/ProtocolFilterWrapper.java" target="_blank" rel="external">ProtocolFilterWrapper</a></li>
+</ul>
 <h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><h1 id="行为型设计模式"><a href="#行为型设计模式" class="headerlink" title="行为型设计模式"></a>行为型设计模式</h1><h2 id="责任链模式"><a href="#责任链模式" class="headerlink" title="责任链模式"></a>责任链模式</h2><p>Chain of Responsibility，做过工作流的话，可以看到两者的相似之处。</p>
 <p>解耦流程处理者与调用者的关系，带来更复杂的代码以及部分性能损耗。</p>
 <ul>
@@ -569,7 +579,54 @@
 <p><code>buildInvokerChain</code>返回了责任链的最后一个环，假设是<code>lastInvoker</code>。那么当执行<code>lastInvoker.invoke(invocation)</code>的时候，便会执行<code>filter.invoke(nextInvoker, invocation)</code>。<code>nextInvoker</code>是final对象引用（引用不可变）。在<code>filter.invoke(nextInvoker, invocation)</code>中，还会执行<code>nextInvoker.invoke(invocation)</code>，而<code>nextInvoker.invoke(invocation)</code>又会去调用<code>filter.invoke(next, invocation)</code>。通过这样的递归调用，实际上会优先执行第一个环（递归栈：先进后出）。</p>
 </li>
 </ul>
-<h2 id="命令模式"><a href="#命令模式" class="headerlink" title="命令模式"></a>命令模式</h2><h2 id="迭代器模式"><a href="#迭代器模式" class="headerlink" title="迭代器模式"></a>迭代器模式</h2><h2 id="中介者模式"><a href="#中介者模式" class="headerlink" title="中介者模式"></a>中介者模式</h2><h2 id="备忘录模式"><a href="#备忘录模式" class="headerlink" title="备忘录模式"></a>备忘录模式</h2><h2 id="观察者模式"><a href="#观察者模式" class="headerlink" title="观察者模式"></a>观察者模式</h2><h2 id="反应器模式"><a href="#反应器模式" class="headerlink" title="反应器模式"></a>反应器模式</h2><h2 id="状态模式"><a href="#状态模式" class="headerlink" title="状态模式"></a>状态模式</h2><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://design-patterns.readthedocs.io/zh_CN/latest/index.html" target="_blank" rel="external">图说设计模式</a></p>
+<h2 id="命令模式"><a href="#命令模式" class="headerlink" title="命令模式"></a>命令模式</h2><h2 id="迭代器模式"><a href="#迭代器模式" class="headerlink" title="迭代器模式"></a>迭代器模式</h2><h2 id="中介者模式"><a href="#中介者模式" class="headerlink" title="中介者模式"></a>中介者模式</h2><h2 id="备忘录模式"><a href="#备忘录模式" class="headerlink" title="备忘录模式"></a>备忘录模式</h2><h2 id="观察者模式"><a href="#观察者模式" class="headerlink" title="观察者模式"></a>观察者模式</h2><p>观察者模式在有pub/sub（发布/订阅）的地方普遍存在，并用来替代轮询。比如：redis的pub/sub，Kafka Consumer的Listener订阅注册等。还有RxJava的实现。</p>
+<p>比如在锁的运用中，自旋锁便是轮询，而通过notify()去通知锁的Monitor便是观察者。</p>
+<ul>
+<li><p>Observer：抽象观察者</p>
+<ul>
+<li>doWhenNotify()：表示被观察者变化，通知观察者响应变化的操作。</li>
+</ul>
+</li>
+<li><p>ConcreteObserver：具体观察者</p>
+</li>
+<li><p>Subject：抽象观察目标</p>
+<ul>
+<li>observerList：订阅了事件的观察者列表</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>regist(Oberver)：被观察者将观察者注册，<code>notify()</code>将会通知这些观察者执行<code>doWhenNotify()</code></li>
+<li>unregist(Oberver)：将指定Oberver从订阅者列表移除</li>
+<li>notify()：遍历observerList，然后调用<code>doWhenNotify()</code></li>
+</ul>
+<ul>
+<li><p>ConcreteSubject：抽象观察目标</p>
+<ul>
+<li>state：被观察者状态，该状态如果改变。则应调用<code>notify()</code>通知所有订阅者（观察者）。</li>
+</ul>
+</li>
+</ul>
+<p><img src="/resources/img/design_patterns/设计模式_行为型模式_观察者模式_UML图.png" alt="设计模式_行为型模式_责观察者模式_UML图"></p>
+<p>例子：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-registry/dubbo-registry-api/src/main/java/com/alibaba/dubbo/registry/integration/RegistryDirectory.java" target="_blank" rel="external">dubbo的RegistryDirectory</a></p>
+<p>dubbo注册中心的服务发布订阅也是典型的观察者模式。消费者观察注册中心，若注册中心发生变化，则调用notify更新服务。</p>
+<p>TODO：这里的代码较为复杂，暂时不分析了。</p>
+<ul>
+<li>Observer：无，<code>public final class URL implements Serializable</code></li>
+<li>ConcreteObserver：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-common/src/main/java/com/alibaba/dubbo/common/URL.java" target="_blank" rel="external">URL</a> 消费者<ul>
+<li>doWhenNotify()：具体看<code>RegistryDirectory#public synchronized void notify(List&lt;URL&gt; urls)</code>里面的代码</li>
+</ul>
+</li>
+<li>Subject：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-cluster/src/main/java/com/alibaba/dubbo/rpc/cluster/directory/AbstractDirectory.java" target="_blank" rel="external">AbstractDirectory</a></li>
+<li>ConcreteSubject：<a href="https://github.com/dangdangdotcom/dubbox/blob/master/dubbo-registry/dubbo-registry-api/src/main/java/com/alibaba/dubbo/registry/integration/RegistryDirectory.java" target="_blank" rel="external">RegistryDirectory</a> 注册中心，被观察者<ul>
+<li>observerList：URLs</li>
+<li>regist(Oberver)：<code>public void subscribe(URL url)</code></li>
+<li>unregist(Oberver)：<code>public void destroy()</code>，该方法内部调用<code>egistry.unsubscribe(getConsumerUrl(), this);</code>取消订阅。</li>
+<li>notify()：<code>public synchronized void notify(List&lt;URL&gt; urls)</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="反应器模式"><a href="#反应器模式" class="headerlink" title="反应器模式"></a>反应器模式</h2><h2 id="状态模式"><a href="#状态模式" class="headerlink" title="状态模式"></a>状态模式</h2><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a href="http://design-patterns.readthedocs.io/zh_CN/latest/index.html" target="_blank" rel="external">图说设计模式</a></p>
 
       
     </div>
