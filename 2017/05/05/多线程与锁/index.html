@@ -105,7 +105,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/jvm/CountDownLatch.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/jvm/乐观锁_版本号机制.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/jvm/synchronized原理.jpg">
-<meta property="og:updated_time" content="2017-05-30T16:34:40.510Z">
+<meta property="og:updated_time" content="2017-06-27T16:51:52.597Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="多线程与锁">
 <meta name="twitter:description" content="多线程与锁，介绍JVM内存模型，多线程以及线程同步（锁），还有线程池等知识。">
@@ -446,7 +446,7 @@
 </li>
 <li>线程本地变量（局部变量，方法参数等）在堆栈中，不受JMM(Java Memory Model)影响  </li>
 <li>JMM如何体现可见性？<blockquote>
-<p>在JMM中，通过并发线程修改变量值，必须将线程变量同步回竹村后，其他线程才能访问到。</p>
+<p>在JMM中，通过并发线程修改变量值，必须将线程变量同步回主存后，其他线程才能访问到。</p>
 </blockquote>
 </li>
 <li>JMM怎么体现有序性？<blockquote>

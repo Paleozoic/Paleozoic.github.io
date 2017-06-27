@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖与窄依赖.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/宽依赖容错恢复.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/spark-webui-accumulators.png">
-<meta property="og:updated_time" content="2017-05-14T11:30:42.634Z">
+<meta property="og:updated_time" content="2017-06-27T17:04:37.411Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spark基础：概念与原理">
 <meta name="twitter:description" content="简单介绍Spark里面的一些基础知识和原理实现。">
@@ -563,61 +563,7 @@
 <p>程序员可以通过调用<code>SparkContext.longAccumulator()</code>或<code>SparkContext.doubleAccumulator()</code>来分别创建Long或Double类型的数字累加器。<br>然后集群运行这的Task可以调用<code>add</code>方法添加accumulators。 不过Task不能获取accumulators的值。 只有Driver可以使用<code>value</code>方法读取accumulators的值。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> accum = sc.longAccumulator(<span class="string">"My Accumulator"</span>)</div><div class="line"><span class="comment">// accum: org.apache.spark.util.LongAccumulator = LongAccumulator(id: 0, name: Some(My Accumulator), value: 0)</span></div><div class="line">sc.parallelize(<span class="type">Array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)).foreach(x =&gt; accum.add(x))</div><div class="line">accum.value</div><div class="line"><span class="comment">//res2: Long = 10</span></div></pre></td></tr></table></figure></p>
 <p>而实现自定义的accumulators，需要继承<code>AccumulatorV2</code>。代码如下：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">VectorAccumulatorV2</span> <span class="keyword">extends</span> <span class="title">AccumulatorV2</span>[<span class="type">MyVector</span>, <span class="type">MyVector</span>] </span>&#123;</div><div class="line"></div><div class="line">  <span class="keyword">private</span> <span class="keyword">val</span> myVector: <span class="type">MyVector</span> = <span class="type">MyVector</span>.createZeroVector</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reset</span></span>(): <span class="type">Unit</span> = &#123;</div><div class="line">    myVector.reset()</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">add</span></span>(v: <span class="type">MyVector</span>): <span class="type">Unit</span> = &#123;</div><div class="line">    myVector.add(v)</div><div class="line">  &#125;</div><div class="line">  ...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Then, create an Accumulator of this type:</span></div><div class="line"><span class="keyword">val</span> myVectorAcc = <span class="keyword">new</span> <span class="type">VectorAccumulatorV2</span></div><div class="line"><span class="comment">// Then, register it into spark context:</span></div><div class="line">sc.register(myVectorAcc, <span class="string">"MyVectorAcc1"</span>)</div></pre></td></tr></table></figure></p>
 <p>注意：For accumulator updates performed inside <strong>actions only</strong>,即accumulator的更新需要Actions来触发计算。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> accum = sc.longAccumulator</div><div class="line">data.map &#123; x =&gt; accum.add(x); x &#125;</div><div class="line"><span class="comment">// Here, accum is still 0 because no actions have caused the map operation to be computed.</span></div></pre></td></tr></table></figure></p>
-<h1 id="提交任务到集群"><a href="#提交任务到集群" class="headerlink" title="提交任务到集群"></a><a href="http://spark.apache.org/docs/latest/submitting-applications.html#launching-applications-with-spark-submit" target="_blank" rel="external">提交任务到集群</a></h1><pre><code class="bash"><span class="comment"># Run application locally on 8 cores</span>
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master <span class="built_in">local</span>[8] \
-  /path/to/examples.jar \
-  100
-
-<span class="comment"># Run on a Spark standalone cluster in client deploy mode</span>
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://207.184.161.138:7077 \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  /path/to/examples.jar \
-  1000
-
-<span class="comment"># Run on a Spark standalone cluster in cluster deploy mode with supervise</span>
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://207.184.161.138:7077 \
-  --deploy-mode cluster \
-  --supervise \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  /path/to/examples.jar \
-  1000
-
-<span class="comment"># Run on a YARN cluster</span>
-<span class="built_in">export</span> HADOOP_CONF_DIR=XXX
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master yarn \
-  --deploy-mode cluster \  <span class="comment"># can be client for client mode</span>
-  --executor-memory 20G \
-  --num-executors 50 \
-  /path/to/examples.jar \
-  1000
-
-<span class="comment"># Run a Python application on a Spark standalone cluster</span>
-./bin/spark-submit \
-  --master spark://207.184.161.138:7077 \
-  examples/src/main/python/pi.py \
-  1000
-
-<span class="comment"># Run on a Mesos cluster in cluster deploy mode with supervise</span>
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master mesos://207.184.161.138:7077 \
-  --deploy-mode cluster \
-  --supervise \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  http://path/to/examples.jar \
-  1000
-</code></pre>
+<h1 id="提交任务到集群"><a href="#提交任务到集群" class="headerlink" title="提交任务到集群"></a><a href="http://spark.apache.org/docs/latest/submitting-applications.html#launching-applications-with-spark-submit" target="_blank" rel="external">提交任务到集群</a></h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Run application locally on 8 cores</span></div><div class="line">./bin/spark-submit \</div><div class="line">  --class org.apache.spark.examples.SparkPi \</div><div class="line">  --master <span class="built_in">local</span>[8] \</div><div class="line">  /path/to/examples.jar \</div><div class="line">  100</div><div class="line"></div><div class="line"><span class="comment"># Run on a Spark standalone cluster in client deploy mode</span></div><div class="line">./bin/spark-submit \</div><div class="line">  --class org.apache.spark.examples.SparkPi \</div><div class="line">  --master spark://207.184.161.138:7077 \</div><div class="line">  --executor-memory 20G \</div><div class="line">  --total-executor-cores 100 \</div><div class="line">  /path/to/examples.jar \</div><div class="line">  1000</div><div class="line"></div><div class="line"><span class="comment"># Run on a Spark standalone cluster in cluster deploy mode with supervise</span></div><div class="line">./bin/spark-submit \</div><div class="line">  --class org.apache.spark.examples.SparkPi \</div><div class="line">  --master spark://207.184.161.138:7077 \</div><div class="line">  --deploy-mode cluster \</div><div class="line">  --supervise \</div><div class="line">  --executor-memory 20G \</div><div class="line">  --total-executor-cores 100 \</div><div class="line">  /path/to/examples.jar \</div><div class="line">  1000</div><div class="line"></div><div class="line"><span class="comment"># Run on a YARN cluster</span></div><div class="line"><span class="built_in">export</span> HADOOP_CONF_DIR=XXX</div><div class="line">./bin/spark-submit \</div><div class="line">  --class org.apache.spark.examples.SparkPi \</div><div class="line">  --master yarn \</div><div class="line">  --deploy-mode cluster \  <span class="comment"># can be client for client mode</span></div><div class="line">  --executor-memory 20G \</div><div class="line">  --num-executors 50 \</div><div class="line">  /path/to/examples.jar \</div><div class="line">  1000</div><div class="line"></div><div class="line"><span class="comment"># Run a Python application on a Spark standalone cluster</span></div><div class="line">./bin/spark-submit \</div><div class="line">  --master spark://207.184.161.138:7077 \</div><div class="line">  examples/src/main/python/pi.py \</div><div class="line">  1000</div><div class="line"></div><div class="line"><span class="comment"># Run on a Mesos cluster in cluster deploy mode with supervise</span></div><div class="line">./bin/spark-submit \</div><div class="line">  --class org.apache.spark.examples.SparkPi \</div><div class="line">  --master mesos://207.184.161.138:7077 \</div><div class="line">  --deploy-mode cluster \</div><div class="line">  --supervise \</div><div class="line">  --executor-memory 20G \</div><div class="line">  --total-executor-cores 100 \</div><div class="line">  http://path/to/examples.jar \</div><div class="line">  1000</div></pre></td></tr></table></figure>
 <h1 id="通过Java-Scala启动Spark作业"><a href="#通过Java-Scala启动Spark作业" class="headerlink" title="通过Java/Scala启动Spark作业"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#launching-spark-jobs-from-java--scala" target="_blank" rel="external">通过Java/Scala启动Spark作业</a></h1><p>The <a href="http://spark.apache.org/docs/latest/api/java/index.html?org/apache/spark/launcher/package-summary.html" target="_blank" rel="external">org.apache.spark.launcher</a> package provides classes for launching Spark jobs as child processes using a simple Java API.</p>
 <h1 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#unit-testing" target="_blank" rel="external">单元测试</a></h1><p>Spark is friendly to unit testing with any popular unit test framework. Simply create a SparkContext in your test with the master URL set to local, run your operations, and then call SparkContext.stop() to tear it down. Make sure you stop the context within a finally block or the test framework’s tearDown method, as Spark does not support two contexts running concurrently in the same program.</p>
 <h1 id="Spark官方示例"><a href="#Spark官方示例" class="headerlink" title="Spark官方示例"></a><a href="http://spark.apache.org/docs/latest/programming-guide.html#where-to-go-from-here" target="_blank" rel="external">Spark官方示例</a></h1>

@@ -104,7 +104,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/checkpoint.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/read.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/hdfs/write.png">
-<meta property="og:updated_time" content="2017-05-28T19:27:00.135Z">
+<meta property="og:updated_time" content="2017-06-27T17:01:25.830Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HDFS基础：概念与原理">
 <meta name="twitter:description" content="简单介绍HDFS里面的一些基础知识和原理实现。">
@@ -433,7 +433,7 @@
 </li>
 <li>不支持：<ul>
 <li>低延迟数据访问(Low-latency data access)：HDFS不适用于低延迟的数据访问，比如数百ms的响应时间。HDFS强调的是吞吐量，如果需要实时的数据访问，基于HDFS的HBase才是合适的技术。</li>
-<li>海量小文件(Lots of small files)：HDFS会将文件系统的元数据加载到NameNode的内存。NameNode的内存限制了文件存储的数量。每个文件的元数据大约占用150 bytes空间。<br>PS：在HDFS 2.x，已经支持NameNode分片扩展(NameNode Federation)，类似于Redis Cluster。</li>
+<li>海量小文件(Lots of small files)：HDFS会将文件系统的元数据加载到NameNode的内存。NameNode的内存限制了文件存储的数量。每个文件的元数据大约占用150 bytes空间。<br> PS：在HDFS 2.x，已经支持NameNode分片扩展(NameNode Federation)，类似于Redis Cluster。</li>
 <li>多用户写入，文件任意修改(Multiple writers, arbitrary file modifications)：在HDFS文件只能被一个用户写入，并且只能是文件末尾追加。不支持多用户写入以及通过偏移量修改文件任意位置。</li>
 </ul>
 </li>

@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/group-by-key-wordcount.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/reduce-by-key-wordcount.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/spark/spark-base-mech.png">
-<meta property="og:updated_time" content="2017-05-14T11:27:08.746Z">
+<meta property="og:updated_time" content="2017-06-27T17:05:20.566Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【转】Spark性能优化指南——基础篇">
 <meta name="twitter:description" content="转自美团点评技术团队：Spark性能优化指南——基础篇">
@@ -543,17 +543,7 @@
 <li>参数说明：该参数用于设置shuffle过程中一个task拉取到上个stage的task的输出后，进行聚合操作时能够使用的Executor内存的比例，默认是0.2。也就是说，Executor默认只有20%的内存用来进行该操作。shuffle操作在进行聚合时，如果发现使用的内存超出了这个20%的限制，那么多余的数据就会溢写到磁盘文件中去，此时就会极大地降低性能。</li>
 <li>参数调优建议：如果Spark作业中的RDD持久化操作较少，shuffle操作较多时，建议降低持久化操作的内存占比，提高shuffle操作的内存占比比例，避免shuffle过程中数据过多时内存不够用，必须溢写到磁盘上，降低了性能。此外，如果发现作业由于频繁的gc导致运行缓慢，意味着task执行用户代码的内存不够用，那么同样建议调低这个参数的值。<br>资源参数的调优，没有一个固定的值，需要同学们根据自己的实际情况（包括Spark作业中的shuffle操作数量、RDD持久化操作数量以及spark web ui中显示的作业gc情况），同时参考本篇文章中给出的原理以及调优建议，合理地设置上述参数。</li>
 </ul>
-<p><strong>资源参数参考示例</strong><br>以下是一份spark-submit命令的示例，大家可以参考一下，并根据自己的实际情况进行调节：</p>
-<pre><code class="bash">./bin/spark-submit \
-  --master yarn-cluster \
-  --num-executors 100 \
-  --executor-memory 6G \
-  --executor-cores 4 \
-  --driver-memory 1G \
-  --conf spark.default.parallelism=1000 \
-  --conf spark.storage.memoryFraction=0.5 \
-  --conf spark.shuffle.memoryFraction=0.3 \
-</code></pre>
+<p><strong>资源参数参考示例</strong><br>以下是一份spark-submit命令的示例，大家可以参考一下，并根据自己的实际情况进行调节：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">./bin/spark-submit \</div><div class="line">  --master yarn-cluster \</div><div class="line">  --num-executors 100 \</div><div class="line">  --executor-memory 6G \</div><div class="line">  --executor-cores 4 \</div><div class="line">  --driver-memory 1G \</div><div class="line">  --conf spark.default.parallelism=1000 \</div><div class="line">  --conf spark.storage.memoryFraction=0.5 \</div><div class="line">  --conf spark.shuffle.memoryFraction=0.3 \</div></pre></td></tr></table></figure></p>
 <h1 id="写在最后的话"><a href="#写在最后的话" class="headerlink" title="写在最后的话"></a>写在最后的话</h1><p>根据实践经验来看，大部分Spark作业经过本次基础篇所讲解的开发调优与资源调优之后，一般都能以较高的性能运行了，足以满足我们的需求。但是在不同的生产环境和项目背景下，可能会遇到其他更加棘手的问题（比如各种数据倾斜），也可能会遇到更高的性能要求。为了应对这些挑战，需要使用更高级的技巧来处理这类问题。在后续的《Spark性能优化指南——高级篇》中，我们会详细讲解数据倾斜调优以及Shuffle调优。</p>
 
       
