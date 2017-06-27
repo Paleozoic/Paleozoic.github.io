@@ -3,6 +3,7 @@ title: Yarn基础：概念与原理
 date: 2017-05-14 17:25:16
 categories: [Hadoop,Yarn]
 tags: [Yarn]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 简单介绍Yarn里面的一些基础知识和原理实现。<!-- more -->
@@ -12,9 +13,9 @@ Yarn也是Master-Slaves的设计模式，Master是ResourceManager，Slaves便是
 ## ResourceManager
 负责集群资源统一管理和计算框架管理，主要包括调度与应用程序管理，RM是系统中将资源分配给各个应用的最终决策者
 - 调度器
-根据容量、队列等限制条件，将系统中的资源分配给各个正在运行的应用程序
+  根据容量、队列等限制条件，将系统中的资源分配给各个正在运行的应用程序
 - 应用程序管理器
-负责管理整个系统中的所有应用程序，包括应用程序提交，与调度器协商资源，启动并监控AppMaster运行状态
+  负责管理整个系统中的所有应用程序，包括应用程序提交，与调度器协商资源，启动并监控AppMaster运行状态
 
 ## NodeManager
 负责监控可用资源、报告故障情况和管理容器的生命周期。

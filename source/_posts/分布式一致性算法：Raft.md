@@ -3,6 +3,7 @@ title: 分布式一致性算法：Raft
 date: 2017-05-06 23:53:11
 categories: [分布式,一致性算法]
 tags: [分布式一致性算法,Raft]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 分布式一致性算法：Raft<!-- more -->
@@ -13,7 +14,7 @@ tags: [分布式一致性算法,Raft]
 - Follower：从节点
 - Candidate：候选人节点，Follower->Leader的中间态
 - Leader：主节点，在集群中有且只有1个合法Leader；如果存在多个Leader，则term最大的Leader是合法Leader。
-![Raft_ServerStates](/resources/img/distributed_systems/Raft_ServerStates.png)
+  ![Raft_ServerStates](/resources/img/distributed_systems/Raft_ServerStates.png)
 
 ## 选主
 - Heartbeat Interval：Leader向Follower发送心跳的间隔
@@ -58,12 +59,12 @@ log也应该是有序的（如何保证有序性不展开讲，不过如果log�
 * Leader将x=1的LogEntry复制至Follower
 * Follower响应leader，告知写入成功（这里遵循**NWR**规则）
 * Leader响应Client，告知些如此成功。
-![Raft_Write](/resources/img/distributed_systems/Raft_Write.png)
+  ![Raft_Write](/resources/img/distributed_systems/Raft_Write.png)
 - 如果网络分区将集群分为多个子集群，如何保证一致性？
 > 每个子集群都会有一个Leader，当网络恢复后，在整个集群之中，term最高的Leader为合法Leader。其他Leader产生的log会被回滚（因为无法获得大部分节点的log写入确认，所以所有的log都不能提交），然后同步唯一的合法Leader的log至整个集群。含有大部分节点的子集群依然正常提供服务，但是含有少部分节点的子集群永远无法提交事务，丧失部分可用性。
-此处就是典型的牺牲可用性来换取一致性。所以Raft是一个CP算法。
-**疑问：根据[Raft:Understandable Distributed Consensus](http://thesecretlivesofdata.com/raft/)介绍，网络分区分为大小集群，分区集群独立选主，但是提交log却按照整个进群的节点进行写入确认。还有如何保证网络分区时如何保证大的子集群的的term一定高于小的子集群？[待研究]**
-![Raft_NetworkPartition](/resources/img/distributed_systems/Raft_NetworkPartition.png)
+> 此处就是典型的牺牲可用性来换取一致性。所以Raft是一个CP算法。
+> **疑问：根据[Raft:Understandable Distributed Consensus](http://thesecretlivesofdata.com/raft/)介绍，网络分区分为大小集群，分区集群独立选主，但是提交log却按照整个进群的节点进行写入确认。还有如何保证网络分区时如何保证大的子集群的的term一定高于小的子集群？[待研究]**
+> ![Raft_NetworkPartition](/resources/img/distributed_systems/Raft_NetworkPartition.png)
 
 
 # Raft的CAP分析

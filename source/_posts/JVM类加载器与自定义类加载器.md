@@ -3,6 +3,7 @@ title: JVM类加载器与自定义类加载器
 date: 2017-05-07 18:07:13
 categories: [JVM,资料集]
 tags: [类加载器]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 JVM类加载器与自定义类加载器的目的。<!-- more -->
@@ -22,14 +23,14 @@ class文件被加载近内存后，JVM会在Java Heap创建1个`java.lang.Class`
 - 初始化：为类的静态变量赋予正确的初始值。
 - 使用：new出对象在程序中被使用。
 - 卸载：执行垃圾回收。
-如图所示：
-![类的生命周期](/resources/img/jvm/类的生命周期.png)
+  如图所示：
+  ![类的生命周期](/resources/img/jvm/类的生命周期.png)
 
 ## 类加载器
 - 启动类加载器(Bootstrap ClassLoader)：负责加载存放在JAVA_HOME/jre/lib下，或被`-Xbootclasspath`参数指定的路径中的，并且能被虚拟机识别的类库。
 - 扩展类加载器(Extension ClassLoader)：该加载器由`sun.misc.Launcher$ExtClassLoader`实现，负载加载存放在JAVA_HOME/jre/lib/ext下，或被`java.ext.dirs`系统变量指定的路径中的所有类库。
 - 应用程序类加载器(Application ClassLoader)：该类加载器由`sun.misc.Launcher$AppClassLoader`来实现，它负责加载用户类路径`ClassPath`所指定的类。
-![类加载器](/resources/img/jvm/类加载器.png)
+  ![类加载器](/resources/img/jvm/类加载器.png)
 
 ## 类加载机制
 - 全盘负责：当一个类加载器负责加载某个Class时，该Class所依赖的和引用的其他Class也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。
@@ -43,7 +44,7 @@ JVM规范推荐使用双亲委托的类加载机制，即使是重写类加载�
 - 两个类来自同一个Class文件
 - 两个类是由同一个虚拟机加载
 - 两个类是由同一个类加载器加载
-![双亲委派加载机制](/resources/img/jvm/双亲委派加载机制.png)
+  ![双亲委派加载机制](/resources/img/jvm/双亲委派加载机制.png)
 
 # Tomcat的类加载器
 - 为什么Tomcat需要重写类加载器？

@@ -3,6 +3,7 @@ title: 通过Dubbo学习RPC
 date: 2017-05-09 23:00:17
 categories: [RPC,Dubbo]
 tags: [RPC,Dubbo]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 RPC基础，通过Dubbo的设计学习RPC框架的基本组成。<!-- more -->
@@ -20,23 +21,23 @@ RPC基础，通过Dubbo的设计学习RPC框架的基本组成。<!-- more -->
 # 注册中心（服务注册与发现）
 
 # 序列化协议
-|协议|优点|缺点|数据格式|可读性|
-|--|--|--|--|--|
-|Kyro|||||
-|Avro|||||
-|Xstream|||||
-|Hessian|||||
-|Jackson|||||
-|JDK|||||
+| 协议      | 优点   | 缺点   | 数据格式 | 可读性  |
+| ------- | ---- | ---- | ---- | ---- |
+| Kyro    |      |      |      |      |
+| Avro    |      |      |      |      |
+| Xstream |      |      |      |      |
+| Hessian |      |      |      |      |
+| Jackson |      |      |      |      |
+| JDK     |      |      |      |      |
 
 # 网络传输
-|框架|JDK底层|传输协议|连接方式|优点|缺点|
-|--|--|--|--|--|--|
-|Netty|NIO|||||
-|Mina|NIO|||||
-|Grizzly|NIO|||||
-|Twisted||||||
-|REST类||||||
+| 框架      | JDK底层 | 传输协议 | 连接方式 | 优点   | 缺点   |
+| ------- | ----- | ---- | ---- | ---- | ---- |
+| Netty   | NIO   |      |      |      |      |
+| Mina    | NIO   |      |      |      |      |
+| Grizzly | NIO   |      |      |      |      |
+| Twisted |       |      |      |      |      |
+| REST类   |       |      |      |      |      |
 
 # 负载均衡
 ## 服务端负载均衡(nginx/zuul)
@@ -53,16 +54,16 @@ RPC基础，通过Dubbo的设计学习RPC框架的基本组成。<!-- more -->
 dubbo将对象序列化，包括header(codec)（序列化编码方式，可选）和body(serialization)（对象序列化后的内容，二进制或者字符串）。
 Client通过网络传输，将序列化内容发送给服务端。
 
-|协议|访问地址|
-|--|--|
-|dubbo协议|[dubbo协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-dubbo%3A%2F%2F)|
-|rmi协议|[rmi协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-rmi%3A%2F%2F)|
-|hessian协议|[hessian协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-hessian%3A%2F%2F)|
-|http协议|[http协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-http%3A%2F%2F)|
-|webservice协议|[webservice协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-webservice%3A%2F%2F)|
-|thrift协议|[thrift协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-thrift%3A%2F%2F)|
-|memcached协议|[memcached协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-memcached%3A%2F%2F)|
-|redis协议|[redis协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-redis%3A%2F%2F)|
+| 协议           | 访问地址                                     |
+| ------------ | ---------------------------------------- |
+| dubbo协议      | [dubbo协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-dubbo%3A%2F%2F) |
+| rmi协议        | [rmi协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-rmi%3A%2F%2F) |
+| hessian协议    | [hessian协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-hessian%3A%2F%2F) |
+| http协议       | [http协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-http%3A%2F%2F) |
+| webservice协议 | [webservice协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-webservice%3A%2F%2F) |
+| thrift协议     | [thrift协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-thrift%3A%2F%2F) |
+| memcached协议  | [memcached协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-memcached%3A%2F%2F) |
+| redis协议      | [redis协议](http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-redis%3A%2F%2F) |
 
 # Dubbo服务集群容错
 ## Failover 失败转移
@@ -424,8 +425,8 @@ protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation
 - replicaNumber：理解为哈希槽的数量，由hash.nodes指定，默认值是160
 - identityHashCode：哈希码，根据invokers生成
 - argumentIndex：参数索引数组，int[]类型。由hash.arguments指定，默认值是0。会根据该参数来确定选择那些输入参数作为key生成的依据。然后MD5之后做Hash。
-**综上，可以认为，同一个方法的调用中，如果参数的哈希值相同则会调用同一个实例。**
-[源码解析](http://blog.csdn.net/revivedsun/article/details/71022871)
+  **综上，可以认为，同一个方法的调用中，如果参数的哈希值相同则会调用同一个实例。**
+  [源码解析](http://blog.csdn.net/revivedsun/article/details/71022871)
 ```java
 protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
     String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();

@@ -3,6 +3,7 @@ title: Dubbo之基于“版本”的服务调度(路由规则)
 date: 2017-06-14 14:46:08
 categories: [RPC,Dubbo]
 tags: [RPC,Dubbo]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 通过扩展dubbo的路由规则，实现通过不同入参调用不同的服务实例。(注意：需修改dubbo源码)<!-- more -->

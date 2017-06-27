@@ -3,6 +3,7 @@ title: HDFS基础：概念与原理
 date: 2017-05-03 00:11:32
 categories: [Hadoop,HDFS]
 tags: [HDFS]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 简单介绍HDFS里面的一些基础知识和原理实现。<!-- more -->
@@ -15,7 +16,7 @@ tags: [HDFS]
 - 不支持：
  * 低延迟数据访问(Low-latency data access)：HDFS不适用于低延迟的数据访问，比如数百ms的响应时间。HDFS强调的是吞吐量，如果需要实时的数据访问，基于HDFS的HBase才是合适的技术。
  * 海量小文件(Lots of small files)：HDFS会将文件系统的元数据加载到NameNode的内存。NameNode的内存限制了文件存储的数量。每个文件的元数据大约占用150 bytes空间。
-  PS：在HDFS 2.x，已经支持NameNode分片扩展(NameNode Federation)，类似于Redis Cluster。
+     PS：在HDFS 2.x，已经支持NameNode分片扩展(NameNode Federation)，类似于Redis Cluster。
  * 多用户写入，文件任意修改(Multiple writers, arbitrary file modifications)：在HDFS文件只能被一个用户写入，并且只能是文件末尾追加。不支持多用户写入以及通过偏移量修改文件任意位置。
 
 # 基本概念
@@ -31,7 +32,7 @@ HDFS将集群当做一个整体，每个DataNode划分了很多的block（类比
 >为什么HDFS的block单位如此大？
 - 文件被切分时，块的数量少，HDFS访问定位（相当于“磁盘寻道”）、聚合（从各个block读取数据）都会较快。
 - bolck的大小设置由磁盘的传输速率决定。假设磁盘寻道时间是10ms，传输速度是100 MB/s。让寻道时间为传输时间的1%，那么传输时间是1s。
-所以块大小应为：传输速率*传输时间，即100MB/s*1s = 100M
+  所以块大小应为：传输速率*传输时间，即100MB/s*1s = 100M
 
 ## NameNode
 HDFS是典型的Master-Slave(Worker)模式，NameNode便是Master。
@@ -70,10 +71,10 @@ NameNode受限与内存，那么【分片】就很有必要了。
 - [ViewFs](http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/ViewFs.html)：用于管理HDFS的Namespaces（或者说Namespace Volumes）。
 
 > NameNode Federation是如何进行分片横向扩展的？是否类似于Redis Cluster的Hash分片？
-显然，由于划分了Namespace，通过Hash(filePath)的方式来分片，那么具有同样业务IO特性的文件有可能跨Namespace，性能降低。
-HDFS使用的方法是ViewFs,类似于Unix/Linux系统的**client-side mount table**。指定Namespace的Pathname Pattern（将Pathname Pattern挂载在某个Namespace），然后将具有相同Pathname Pattern的文件将会定位到指定的Namespace。
-下图表示将/data、/project、/user、/tmp 一共4个路径挂载到4个不同的命名空间。
-![ViewFs:client-side mount table](/resources/img/hdfs/viewfs_TypicalMountTable.png)
+> 显然，由于划分了Namespace，通过Hash(filePath)的方式来分片，那么具有同样业务IO特性的文件有可能跨Namespace，性能降低。
+> HDFS使用的方法是ViewFs,类似于Unix/Linux系统的**client-side mount table**。指定Namespace的Pathname Pattern（将Pathname Pattern挂载在某个Namespace），然后将具有相同Pathname Pattern的文件将会定位到指定的Namespace。
+> 下图表示将/data、/project、/user、/tmp 一共4个路径挂载到4个不同的命名空间。
+> ![ViewFs:client-side mount table](/resources/img/hdfs/viewfs_TypicalMountTable.png)
 
 ## DataNode
 DataNode是具体读写任务的执行节点：存储文件块，被客户端和NameNode调用。同时通过心跳周期性地向NameNode报告文件块的信息。
@@ -106,15 +107,15 @@ NameNode确认一定百分比（可配置）的block是副本安全后，NameNod
 
 # HDFS High Availability
 >JournalNodes
-一组用于NameNode Active和NameNode Standby通信的进程。通过JournalNodes实现HA，也就实现了HDFS的高可用。
-注意JournalNodes必须大于3，且最好是奇数，因为NameNode Active的editlog必须写入超过一半的JournalNodes才算写入成功（分布式一致性算法）。
+>一组用于NameNode Active和NameNode Standby通信的进程。通过JournalNodes实现HA，也就实现了HDFS的高可用。
+>注意JournalNodes必须大于3，且最好是奇数，因为NameNode Active的editlog必须写入超过一半的JournalNodes才算写入成功（分布式一致性算法）。
 
 高可用满足：
 - edit logs共享，NameNode Standby可以读取NameNode Active全部的edit logs，之后与NameNode Active保持edit logs同步。
 - DataNodes必须向NameNode Standby和NameNode Active同时发送block reports，因为block的映射信息存储于NameNode的内存而不是磁盘。
 - 客户端操作HDFS时，故障切换NameNode对于用户透明。
 - SecondaryNameNode的checkpoint工作由NameNode Standby取代，NameNode Standby会周期性地checkpoint NameNode Active的namespace。
-![HA](/resources/img/hdfs/HDFS高可靠性.png)
+  ![HA](/resources/img/hdfs/HDFS高可靠性.png)
 
 # Block Caching
 通常DataNode从磁盘读取block，但对于频繁访问的文件块，可以显式缓存在DataNode的**堆外内存**中。
@@ -129,8 +130,8 @@ checkpoint指的是SecondaryNameNode合并edit log的过程。
 - 3.SecondaryNameNode加载fsimage至内存，合并editlog。得到一个新的fsimage file（图中fsimage_19.ckpt）。
 - 4.SecondaryNameNode通过HTTP PUT将新的fsimage传输到NameNode，保存为一个临时.ckpt文件。
 - 5.NameNode重命名临时.ckpt文件使其生效。
-checkpoint的最终结果是：NameNode得到一个最新的fsimage和一个较小的新的editlog文件（checkpoint过程客户端对HDFS的写操作日志）
-![checkpoint](/resources/img/hdfs/checkpoint.png)
+  checkpoint的最终结果是：NameNode得到一个最新的fsimage和一个较小的新的editlog文件（checkpoint过程客户端对HDFS的写操作日志）
+  ![checkpoint](/resources/img/hdfs/checkpoint.png)
 
 # HDFS读流程
 - 1.Client调用FileSystem.open(filePath)
@@ -145,15 +146,15 @@ checkpoint的最终结果是：NameNode得到一个最新的fsimage和一个较�
 - 1.Client调用FileSystem.create(filePath)
 - 2.DistributedFileSystem通过RPC在NameNode创建一个新的空文件（即没有blocks的文件）
 - 3.create方法返回得到FSDataOutputStream，用于流式写入。FSDataOutputStream会将Client写入的数据分割成packets，组成一个`data queue`。`data queue`被`DataStreamer`消费，
-并请求NameNode通过副本策略选择合适的节点来存放数据副本。这些节点组成一个管道pipeline（图中展示的是3个副本的写入操作）。
+  并请求NameNode通过副本策略选择合适的节点来存放数据副本。这些节点组成一个管道pipeline（图中展示的是3个副本的写入操作）。
 - 4.`DataStreamer`将packets写入第一个节点，第一个节点将数据复制到第二个节点，依次类推。
 - 5.`DFSOutputStream`还维护了一个`ack queue`，`ack queue`里面存放的是未被ack的packets。1个packet被所有节点ack后，就会从`ack queue`里面移除。
 - 6.写入完毕，关闭输出流。
-![HDFS写流程](/resources/img/hdfs/write.png)
+  ![HDFS写流程](/resources/img/hdfs/write.png)
 
 > TODO:关于HDFS读写流程就图只能简单解读，如果需要更加深入的了解，可以通过HDFS原生的Client结合HDFS源码来细细研读。
-还可以结合SpringHadoop研究一下优秀的代码封装(TextFileReader和TextFileWriter)。
-HDFS相关jar是：
+> 还可以结合SpringHadoop研究一下优秀的代码封装(TextFileReader和TextFileWriter)。
+> HDFS相关jar是：
 ```xml
 <dependency>
   <groupId>org.springframework.data</groupId>

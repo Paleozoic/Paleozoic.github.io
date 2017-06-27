@@ -3,6 +3,7 @@ title: Storm基础：概念与原理
 date: 2017-04-27 22:40:42
 categories: [Hadoop,Storm]
 tags: [Storm]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 简单介绍Storm里面的一些基础知识和原理实现。<!-- more -->
@@ -35,14 +36,14 @@ streamId的作用是：在定义拓扑的时候，分组策略可以通过指定
  * 不可靠Spout：Spout一旦emit了元组，便不管该元组是否能被成功处理。
 - Spout中的主要方法是：
   * `nextTuple`：`nextTuple`负责向拓扑发射元组，如果没有元组，则需要直接返回，有时为了避免消耗过度的CPU资源，没有元组时可能`sleep`较短时间，比如1ms。
-需要特别注意，`nextTuple`是绝对不能是一个阻塞方法，因为Storm会调用同一个线程的所有spout的实现，如果阻塞了某个Spout线程，会影响Spout的并行处理速度。
+    需要特别注意，`nextTuple`是绝对不能是一个阻塞方法，因为Storm会调用同一个线程的所有spout的实现，如果阻塞了某个Spout线程，会影响Spout的并行处理速度。
   * `ack`和`fail`：在**可靠Spout**中，当emit Tuple失败或者成功时，会调用他们来告诉storm处理结果。下游Component处理上游Component emit 过来的Tuple，调用`OutputCollector.ack(input)`或者`OutputCollector.fail(input)`
   * `nextTuple`、`ack`和`fail`会在同一个线程被调用。PS：听说JStorm已经是异步调用`ack`和`fail`了。
 
 # Bolt
 几乎所有的Storm计算都是通过Bolt来完成的，包括：filtering过滤, functions函数, aggregations聚合, joins连接, talking to databases操作数据库等等。
 -  通过使用提供的TopologyContext或通过跟踪OutputCollector中的emit方法的输出（返回发送元组的任务ID），消费者的任务ID。
-- Bolt中的主要方法是：
+-  Bolt中的主要方法是：
   * `execute`：`execute`负责接收上游组件发射来的Tuple，然后将输入的Tuple转换成新的Tuple发射出去。调用方法：`OutputCollector.emit(newTuple)`。 `OutputCollector`是线程安全的，所以在 `execute`中可以使用多线程来异步处理Tuple来进行emit操作。`BasicBoltExecutor implements IRichBolt`使用装饰者模式（他们共同的接口是`IComponent`），对于实现了`IBasicBolt`的bolt会自动执行ack操作。
 
 # Stream grouping 流分组策略
@@ -55,7 +56,7 @@ streamId的作用是：在定义拓扑的时候，分组策略可以通过指定
 - None grouping(非分组)：不关心数据流是否被分组，目前相当于Shuffle grouping，不过Storm会把使用None grouping的这个bolt放到它订阅的Spout/Bolt所在的同一个线程里面去执行（如果可能的话）。
 - Direct grouping(直接分组)：上游Component指定下游Bolt的Task来接收Tuple。Direct grouping只能用于`direct streams`，通过调用`emitDirect`将Tuples发射到`direct streams`，并指定taskId。
 >一个上游Bolt（生产者）如何获得下游Bolt（消费者）的taskIds呢？<br>
-通过`TopologyContext`或者追踪`OutputCollector.emit`方法，Tuple发射成功后，会返回Tuples发送到的taskIds。
+>通过`TopologyContext`或者追踪`OutputCollector.emit`方法，Tuple发射成功后，会返回Tuples发送到的taskIds。
 
 - Local or shuffle grouping(本地或随机分组)：如果目标Bolt在同一个worker进程（指和生产者在同一个进程）有一个或多个Tasks，Tuples会被优先随机分发到进程内的Tasks（Local grouping）。否则边是shuffle grouping。
 - CustomStreamGrouping：通过实现`CustomStreamGrouping`接口来自定义分组策略。
@@ -86,8 +87,8 @@ Storm保证每个Spout Tuple会被完全处理。Storm通过追踪由每个Spout
 - 设置`Config.TOPOLOGY_ACKERS`为0（即`Config.setNumAckers(0)`），这样子Spout会在发射一个Tuple后自己立刻调用`ack`方法。
 - 使用`Unanchor`方式发射元组：比如使用`OutputCollector.emit`发射元组，而`BasicOutPutCollector.emit`则是`anchor`的方式。
 > `BasicOutPutCollector.emit`底层会自动构建Tuple，并通过调用`OutputCollector.emit`发射元组，所以是`anchor`的方式。
-而直接调用`OutputCollector.emit`，底层不会构建Tuple，所以是`Unanchor`方式。
-他们最底层的方法接口都是：`IOutputCollector.emit(String streamId,Collection<Tuple> anchors,List<Object> tuple)`
+> 而直接调用`OutputCollector.emit`，底层不会构建Tuple，所以是`Unanchor`方式。
+> 他们最底层的方法接口都是：`IOutputCollector.emit(String streamId,Collection<Tuple> anchors,List<Object> tuple)`
 
 # Task
 每个Task对应的是一个线程，数据流分组决定了上游Tasks的元组如何流动到下游Tasks中。
@@ -142,13 +143,13 @@ Nimbus、Supervisor与zookeeper关系如图：
 # Storm与MapReduce
 我写Spark的时候，MR类思想总感觉可以对应上Storm，遂搜寻有下表：[来源](http://www.aboutyun.com/thread-7394-1-1.html)
 
-||MapReduce|Storm|
-|-----|---------|-----|
-|系统角色|JobTracker|Nimbus|
-|系统角色|TaskTracker|Supervisor|
-|系统角色|Child|Worker|
-|应用名称|Job|Topology|
-|组件接口|Mapper/Reducer|Spout/Bolt|
+|      | MapReduce      | Storm      |
+| ---- | -------------- | ---------- |
+| 系统角色 | JobTracker     | Nimbus     |
+| 系统角色 | TaskTracker    | Supervisor |
+| 系统角色 | Child          | Worker     |
+| 应用名称 | Job            | Topology   |
+| 组件接口 | Mapper/Reducer | Spout/Bolt |
 
 # Storm消息保证等级
 对于消息在集群中传递，比如Kafka，JMS等消息机制，都会有类似的保证机制等级。

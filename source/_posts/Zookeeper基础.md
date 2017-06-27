@@ -3,6 +3,7 @@ title: Zookeeper基础
 date: 2017-05-06 20:19:22
 categories: [Hadoop,Zookeeper]
 tags: [Zookeeper]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 简单介绍Zookeeper的知识。<!-- more -->

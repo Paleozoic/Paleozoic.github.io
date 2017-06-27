@@ -3,6 +3,7 @@ title: Spark基础：概念与原理
 date: 2017-04-23 13:31:48
 categories: [Hadoop,Spark]
 tags: [Spark]
+typora-root-url: ..
 ---
 <Excerpt in index | 首页摘要>
 简单介绍Spark里面的一些基础知识和原理实现。<!-- more -->
@@ -14,7 +15,7 @@ Spark集群总体架构图如下：
   * [Standalone](http://spark.apache.org/docs/latest/spark-standalone.html) – Spark自己的集群管理器
   * [Apache Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html) – 基于Mesos
   * [Hadoop YARN](http://spark.apache.org/docs/latest/running-on-yarn.html) – 基于Yarn
-  这些集群管理器可以在应用间分配资源。SparkContext与Cluster Manager一旦连接，Spark需要在集群上的线程池子节点，也就是那些执行计算和存储应用数据的工作进程。然后，它将把你的应用代码（以JAR或者Python定义的文件并传送到SparkContext）发送到线程池。最后，SparkContext发送任务让线程池运行。
+    这些集群管理器可以在应用间分配资源。SparkContext与Cluster Manager一旦连接，Spark需要在集群上的线程池子节点，也就是那些执行计算和存储应用数据的工作进程。然后，它将把你的应用代码（以JAR或者Python定义的文件并传送到SparkContext）发送到线程池。最后，SparkContext发送任务让线程池运行。
 
 # Application
 指编写的Spark程序。
@@ -26,8 +27,8 @@ DAGScheduler和TaskScheduler都是属于Driver的。
 - DAGScheduler：负责生成Stage（DAG）和TaskSet，每个Stage就有一组TaskSet。
 - TaskScheduler：接收DAGScheduler的TaskSet并发送给Executor。
 > 疑问：为什么是有向无环图？
-（1）有向图表示RDD可追溯，失败可以重运行。
-（2）无环图表示RDD不可变，如果存在环，是否意味着RDD可变？
+> （1）有向图表示RDD可追溯，失败可以重运行。
+> （2）无环图表示RDD不可变，如果存在环，是否意味着RDD可变？
 
 # Job
 可以认为在Spark App中，每一个Spark的Action API就是一个Job。
@@ -52,25 +53,25 @@ Task是并行的，合理设置分区可以提高资源利用率。
 
 > 这些概念在[Spark官网介绍如下](http://spark.apache.org/docs/latest/cluster-overview.html#glossary)
 
-|Term|Meaning|
-|---|---|
-|`Application`|  User program built on Spark. Consists of a driver program and executors on the cluster. |
-|`Application jar`|A jar containing the user's Spark application. In some cases users will want to create an "uber jar" containing their application along with its dependencies. The user's jar should never include Hadoop or Spark libraries, however, these will be added at runtime. |
-|`Driver program`|The process running the main() function of the application and creating the SparkContext |
-|`Cluster manager`| An external service for acquiring resources on the cluster (e.g. standalone manager, Mesos, YARN)|
-|`Deploy mode`|Distinguishes where the driver process runs. In "cluster" mode, the framework launches the driver inside of the cluster. In "client" mode, the submitter launches the driver outside of the cluster. |
-|`Worker node`| Any node that can run application code in the cluster|
-|`Executor`|A process launched for an application on a worker node, that runs tasks and keeps data in memory or disk storage across them. Each application has its own executors. |
-|`Task`|A unit of work that will be sent to one executor |
-|`Job`|A parallel computation consisting of multiple tasks that gets spawned in response to a Spark action (e.g. save, collect); you'll see this term used in the driver's logs. |
-|`Stage`|Each job gets divided into smaller sets of tasks called stages that depend on each other (similar to the map and reduce stages in MapReduce); you'll see this term used in the driver's logs. |
+| Term              | Meaning                                  |
+| ----------------- | ---------------------------------------- |
+| `Application`     | User program built on Spark. Consists of a driver program and executors on the cluster. |
+| `Application jar` | A jar containing the user's Spark application. In some cases users will want to create an "uber jar" containing their application along with its dependencies. The user's jar should never include Hadoop or Spark libraries, however, these will be added at runtime. |
+| `Driver program`  | The process running the main() function of the application and creating the SparkContext |
+| `Cluster manager` | An external service for acquiring resources on the cluster (e.g. standalone manager, Mesos, YARN) |
+| `Deploy mode`     | Distinguishes where the driver process runs. In "cluster" mode, the framework launches the driver inside of the cluster. In "client" mode, the submitter launches the driver outside of the cluster. |
+| `Worker node`     | Any node that can run application code in the cluster |
+| `Executor`        | A process launched for an application on a worker node, that runs tasks and keeps data in memory or disk storage across them. Each application has its own executors. |
+| `Task`            | A unit of work that will be sent to one executor |
+| `Job`             | A parallel computation consisting of multiple tasks that gets spawned in response to a Spark action (e.g. save, collect); you'll see this term used in the driver's logs. |
+| `Stage`           | Each job gets divided into smaller sets of tasks called stages that depend on each other (similar to the map and reduce stages in MapReduce); you'll see this term used in the driver's logs. |
 
 # RDD
 **RDD是Spark并行计算的基础。**
 RDD是一个只读的并行、可伸缩的分布式数据结构。
 RDD由Partition组成。多个Partition可能被分配在不同的节点，但是1个Partition只能在一个节点（即对于一个分区来说，分区是不跨节点的）
 > 分区是一个很关键的概念，具体可参考JDK的HashMap(哈希表的每个hash位置可以理解为1个分区)以及ConcurrentHashMap（每个桶理解为1个分区）源码，
-类似的还有kafka的topic和Redis Cluster的slot概念。分区/分片，是弹性扩展数据结构的一个手段。
+> 类似的还有kafka的topic和Redis Cluster的slot概念。分区/分片，是弹性扩展数据结构的一个手段。
 
 在Spark的RDD设计上，所有的窄依赖在分区上进行管道式的计算，以达到并行计算的目的。
 如图：
@@ -83,38 +84,38 @@ RDD由Partition组成。多个Partition可能被分配在不同的节点，但�
 ![宽依赖与窄依赖](/resources/img/spark/宽依赖与窄依赖.png)
 
 > Spark为什么要区分宽依赖与窄依赖呢？
-（1）窄依赖支持在同一个节点中，以pipeline（管道）的形式执行多条命令。
-窄依赖计算是并行的、分区独立的（分区作为管道）。
-而宽依赖在计算过程中会发生Shuffle，是跨分区的计算。
-（2）从失败恢复的角度（容错机制）看：
-窄依赖只需要重新计算丢失分区的父分区，而且不同节点之间可以并行计算。
-宽依赖则需要重新计算子分区所依赖的所有父分区，并且产生冗余计算。
-如下图：假设Partition1'丢失，则需要重新计算Partition1和Partition2，从而冗余计算了Partition2'。
-![宽依赖容错恢复](/resources/img/spark/宽依赖容错恢复.png)
+> （1）窄依赖支持在同一个节点中，以pipeline（管道）的形式执行多条命令。
+> 窄依赖计算是并行的、分区独立的（分区作为管道）。
+> 而宽依赖在计算过程中会发生Shuffle，是跨分区的计算。
+> （2）从失败恢复的角度（容错机制）看：
+> 窄依赖只需要重新计算丢失分区的父分区，而且不同节点之间可以并行计算。
+> 宽依赖则需要重新计算子分区所依赖的所有父分区，并且产生冗余计算。
+> 如下图：假设Partition1'丢失，则需要重新计算Partition1和Partition2，从而冗余计算了Partition2'。
+> ![宽依赖容错恢复](/resources/img/spark/宽依赖容错恢复.png)
 
 ## [宽依赖发生Shuffle的性能影响](http://spark.apache.org/docs/latest/programming-guide.html#performance-impact)
 - （1）Shuffle由于产生**磁盘IO/网络IO/数据的序列化与反序列化**会严重影响RDD算子的性能，Spark的Map Tasks生产Shuffle的数据，Reduce Tasks读取Shuffle数据来进行聚合操作。
-注：Map Tasks和Reduce Tasks的命名法来自MapReduce，并不直接与Spark的Map和Reduce操作有关。
+  注：Map Tasks和Reduce Tasks的命名法来自MapReduce，并不直接与Spark的Map和Reduce操作有关。
 - （2）在Spark计算内部处理过程中，部分Map Tasks的计算结果会被缓存在内存里，直到内存不足才会被清理。然后，这部分数据会根据目标分区进行排序并写入单个文件。
-而Reduce Task会去读取相关的排序块（sorted blocks）。
+  而Reduce Task会去读取相关的排序块（sorted blocks）。
 - （3）某些Shuffle操作会消耗大量的堆内存，因为它们在tranffer数据之前或之后会通过基于内存的数据结构来处理记录。具体来说，reduceByKey和aggregateByKey在Map端上创建这些基于内存的数据结构，
-“ByKey”操作会在reduce端生成in-memory data structures。在内存不足的时候，Spark会将这些数据表溢写到磁盘，从而导致磁盘IO的额外开销和增加的垃圾回收。
+  “ByKey”操作会在reduce端生成in-memory data structures。在内存不足的时候，Spark会将这些数据表溢写到磁盘，从而导致磁盘IO的额外开销和增加的垃圾回收。
 - （4）Shuffle操作还会在磁盘上生成大量的中间文件。从Spark 1.3开始，这些文件将被保留，直到相应的RDD不再使用并被垃圾回收。这样的作用是如果需要重新计算Shuffled RDD，则不需要重新执行Shuffle过程。
-如果Spark App保留对这些RDD的引用或不频繁触发GC，那么垃圾收集可能会在很长一段时间之后发生。这意味着Spark作业的产生的中间文件会长时间占用大量的磁盘。
-在配置Spark上下文时，由`spark.local.dir`配置指定临时存储目录。
-[更多的Shuffle配置](http://spark.apache.org/docs/latest/configuration.html#shuffle-behavior)
+  如果Spark App保留对这些RDD的引用或不频繁触发GC，那么垃圾收集可能会在很长一段时间之后发生。这意味着Spark作业的产生的中间文件会长时间占用大量的磁盘。
+  在配置Spark上下文时，由`spark.local.dir`配置指定临时存储目录。
+  [更多的Shuffle配置](http://spark.apache.org/docs/latest/configuration.html#shuffle-behavior)
 
 
 ## [RDD的持久化](http://spark.apache.org/docs/latest/programming-guide.html#rdd-persistence)
-|Storage Level|Meaning|
-|---|---|
-|MEMORY_ONLY|**默认模式**，将RDD反序列化成Java对象存储在JVM内存，如果内存不足，某些分区不会被缓存，而是每次使用都重新计算。|
-|MEMORY_AND_DISK|区别于MEMORY_ONLY，内存不足会写入磁盘，每次使用都从磁盘读取。|
-|MEMORY_ONLY_SER |类似于MEMORY_ONLY，但存储对象的格式不一样，是将RDD序列化为字节数组（每个分区一个字节数组）。这通常比反序列化对象更具空间效率，特别是在使用快速序列化器如KryoSerializer的情况下，但却转化成CPU密集型作业（时间换空间）。|
-|MEMORY_AND_DISK_SER |类似于MEMORY_ONLY_SER，内存不足会写入磁盘，每次使用都从磁盘读取。|
-|DISK_ONLY|RDD的partitions只被写入磁盘|
-|MEMORY_ONLY_2, MEMORY_AND_DISK_2, etc.|和上面的设置类似，不过会复制每个分区到2个集群节点上。|
-|OFF_HEAP (experimental)	|类似于MEMORY_ONLY_SER，但将数据存储在**堆外内存**中。这需要启用堆外内存。|
+| Storage Level                          | Meaning                                  |
+| -------------------------------------- | ---------------------------------------- |
+| MEMORY_ONLY                            | **默认模式**，将RDD反序列化成Java对象存储在JVM内存，如果内存不足，某些分区不会被缓存，而是每次使用都重新计算。 |
+| MEMORY_AND_DISK                        | 区别于MEMORY_ONLY，内存不足会写入磁盘，每次使用都从磁盘读取。     |
+| MEMORY_ONLY_SER                        | 类似于MEMORY_ONLY，但存储对象的格式不一样，是将RDD序列化为字节数组（每个分区一个字节数组）。这通常比反序列化对象更具空间效率，特别是在使用快速序列化器如KryoSerializer的情况下，但却转化成CPU密集型作业（时间换空间）。 |
+| MEMORY_AND_DISK_SER                    | 类似于MEMORY_ONLY_SER，内存不足会写入磁盘，每次使用都从磁盘读取。 |
+| DISK_ONLY                              | RDD的partitions只被写入磁盘                     |
+| MEMORY_ONLY_2, MEMORY_AND_DISK_2, etc. | 和上面的设置类似，不过会复制每个分区到2个集群节点上。              |
+| OFF_HEAP (experimental)                | 类似于MEMORY_ONLY_SER，但将数据存储在**堆外内存**中。这需要启用堆外内存。 |
 
 ## [RDD持久化选择](http://spark.apache.org/docs/latest/programming-guide.html#which-storage-level-to-choose)
 - 如果内存足够，使用默认存储级别（MEMORY_ONLY），速度最快并充分利用了CPU（会消耗大量内存）。
@@ -241,7 +242,7 @@ export HADOOP_CONF_DIR=XXX
   --total-executor-cores 100 \
   http://path/to/examples.jar \
   1000
-```  
+```
 # [通过Java/Scala启动Spark作业](http://spark.apache.org/docs/latest/programming-guide.html#launching-spark-jobs-from-java--scala)
 The [org.apache.spark.launcher](http://spark.apache.org/docs/latest/api/java/index.html?org/apache/spark/launcher/package-summary.html) package provides classes for launching Spark jobs as child processes using a simple Java API.
 
