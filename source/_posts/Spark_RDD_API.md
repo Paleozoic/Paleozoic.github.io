@@ -15,9 +15,9 @@ RDD就像数据库里面的一个个表，SQL的计算便是RDD的API。比如wh
 写得多了，便是唯手熟尔。
 
 # 如何练习API
-开发的时候，想看看某个API的结果是否复合预期，毕竟Scala语法糖甜死人，会常常有所疑问。
+开发的时候，想看看某个API的结果是否符合预期，毕竟Scala语法糖甜死人，会常常有所疑问。
 此时就可以通过`spark-shell`调用API进行测试。
-比如测试leftOuterJoin，通过以下代码可以很直观地看到改API的实际操作结果：
+比如测试leftOuterJoin，通过以下代码可以很直观地看到该API的实际操作结果：
 ```scala
 var rdd1 = sc.makeRDD(Array(("A","1"),("B","2"),("C","3")),2)
 var rdd2 = sc.makeRDD(Array(("A","a"),("A","c"),("D","d")),2)
