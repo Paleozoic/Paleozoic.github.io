@@ -90,17 +90,35 @@
 
 
 
-<meta name="description" content="Docker基础：概念与原理，该blog记录于2016-10。">
+<meta name="description" content="Docker基础：概念与原理，该blog记录于2016-10。（资料来源于互联网，但是由于时间久远，部分资料引用源已经不知。）">
 <meta name="keywords" content="Docker">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Docker基础：概念与原理">
 <meta property="og:url" content="http://blog.maxplus1.com/2016/10/11/Docker基础：概念与原理/index.html">
 <meta property="og:site_name" content="Paleo's blog">
-<meta property="og:description" content="Docker基础：概念与原理，该blog记录于2016-10。">
-<meta property="og:updated_time" content="2017-06-08T12:45:41.575Z">
+<meta property="og:description" content="Docker基础：概念与原理，该blog记录于2016-10。（资料来源于互联网，但是由于时间久远，部分资料引用源已经不知。）">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/vm.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_flow.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/container.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/container-layers.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/image.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/container1.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/rw_file_system.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/rw_layer.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/image-layer.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/metaspace.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/read-layer.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_create.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_create1.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_start.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_run.png">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/docker_start_vs_run.png">
+<meta property="og:updated_time" content="2017-08-03T17:19:45.528Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Docker基础：概念与原理">
-<meta name="twitter:description" content="Docker基础：概念与原理，该blog记录于2016-10。">
+<meta name="twitter:description" content="Docker基础：概念与原理，该blog记录于2016-10。（资料来源于互联网，但是由于时间久远，部分资料引用源已经不知。）">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/docker/vm.png">
 
 
 
@@ -403,8 +421,131 @@
       
 
       
-        <p><excerpt in="" index="" |="" 首页摘要=""><br>Docker基础：概念与原理，该blog记录于2016-10。<a id="more"></a></excerpt></p>
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>Docker基础：概念与原理，该blog记录于2016-10。（资料来源于互联网，但是由于时间久远，部分资料引用源已经不知。）<a id="more"></a></excerpt></p>
 <the rest="" of="" contents="" |="" 余下全文="">
+
+<h1 id="Docker与VM"><a href="#Docker与VM" class="headerlink" title="Docker与VM"></a>Docker与VM</h1><p>Containers and virtual machines have similar resource isolation and allocation benefits – but a different architectural approach allows containers to be more portable and efficient.</p>
+<p><img src="/resources/img/docker/vm.png" alt="docker_vm"><img src="/resources/img/docker/docker.png" alt="docker_vm"></p>
+<ul>
+<li>VIRTUAL MACHINES</li>
+</ul>
+<blockquote>
+<p>Virtual machines include the application, the necessary binaries and libraries, and an entire guest operating system – all of which can amount to tens of GBs.</p>
+</blockquote>
+<ul>
+<li>CONTAINERS</li>
+</ul>
+<blockquote>
+<p>Containers include the application and all of its dependencies –but share the kernel with other containers, running as isolated processes in user space on the host operating system. Docker containers are not tied to any specific infrastructure: they run on any computer, on any infrastructure, and in any cloud.</p>
+</blockquote>
+<h1 id="docker的隔离（命名空间）"><a href="#docker的隔离（命名空间）" class="headerlink" title="docker的隔离（命名空间）"></a>docker的隔离（命名空间）</h1><p>Docker Engine uses namespaces such as the following on Linux:</p>
+<ul>
+<li><p>The pid namespace: Process isolation (PID: Process ID).</p>
+</li>
+<li><p>The net namespace: Managing network interfaces (NET: Networking).</p>
+</li>
+<li><p>The ipc namespace: Managing access to IPC resources (IPC: InterProcess Communication).</p>
+</li>
+<li><p>The mnt namespace: Managing filesystem mount points (MNT: Mount).</p>
+</li>
+<li><p>The uts namespace: Isolating kernel and version identifiers. (UTS: Unix Timesharing System).</p>
+</li>
+</ul>
+<h1 id="Docker组件"><a href="#Docker组件" class="headerlink" title="Docker组件"></a>Docker组件</h1><ul>
+<li><p>Docker Client 是用户界面，它支持用户与Docker Daemon之间通信。</p>
+</li>
+<li><p>Docker Daemon运行于主机上，处理服务请求。</p>
+</li>
+<li><p>Docker Index是中央registry，支持拥有公有与私有访问权限的Docker容器镜像的备份。</p>
+</li>
+</ul>
+<h1 id="Docker元素"><a href="#Docker元素" class="headerlink" title="Docker元素"></a>Docker元素</h1><ul>
+<li><p>Docker Containers负责应用程序的运行，包括操作系统、用户添加的文件以及元数据。</p>
+</li>
+<li><p>Docker Images是一个只读模板，用来运行Docker容器。</p>
+</li>
+<li><p>DockerFile是文件指令集，用来说明如何自动创建Docker镜像。</p>
+</li>
+</ul>
+<blockquote>
+<p>Docker使用以下操作系统的功能来提高容器技术效率：</p>
+</blockquote>
+<ul>
+<li><p>Namespaces 充当隔离的第一级。确保一个容器中运行一个进程而且不能看到或影响容器外的其它进程。</p>
+</li>
+<li><p>Control Groups是LXC的重要组成部分，具有资源核算与限制的关键功能。</p>
+</li>
+<li><p>UnionFS（文件系统）作为容器的构建块。为了支持Docker的轻量级以及速度快的特性，它创建了用户层。</p>
+</li>
+</ul>
+<p><img src="/resources/img/docker/docker_flow.png" alt="docker_flow"></p>
+<h1 id="联系"><a href="#联系" class="headerlink" title="联系"></a>联系</h1><h2 id="image与container"><a href="#image与container" class="headerlink" title="image与container"></a>image与container</h2><p><a href="http://blog.csdn.net/x931100537/article/details/49633107" target="_blank" rel="external">Docker的容器与镜像</a></p>
+<ul>
+<li><p>image：镜像，存储态，只读。</p>
+</li>
+<li><p>container：容器，运行时状态，读写。</p>
+</li>
+</ul>
+<p>container由image创建而来，可以理解为container是image的一个运行实例。</p>
+<p><img src="/resources/img/docker/container.png" alt="container"></p>
+<h3 id="注意：根据官网，这个图应该是："><a href="#注意：根据官网，这个图应该是：" class="headerlink" title="注意：根据官网，这个图应该是："></a>注意：根据官网，这个图应该是：</h3><p><a href="https://docs.docker.com/engine/userguide/storagedriver/images/container-layers.jpg" target="_blank" rel="external">https://docs.docker.com/engine/userguide/storagedriver/images/container-layers.jpg</a></p>
+<p><img src="/resources/img/docker/container-layers.png" alt="container-layers"></p>
+<p>Docker官方：An image is software you load into a container。</p>
+<p>所以理解应如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Read Layer+Read Layer... = Image layers = Image</div><div class="line"></div><div class="line">Image layers + RW Layer(Container Layer) = Container</div></pre></td></tr></table></figure>
+<blockquote>
+<p>PS：docker的设计思路类似于版本控制，</p>
+</blockquote>
+<p>image 对应 repository</p>
+<p>container 对应 working copy</p>
+<h2 id="Image-Definition"><a href="#Image-Definition" class="headerlink" title="Image Definition"></a>Image Definition</h2><p>镜像（Image）就是一堆只读层（read-only layer）的统一视角</p>
+<p><img src="/resources/img/docker/image.png" alt="image"></p>
+<blockquote>
+<p>图左是多个重叠的只读层。除了最下面一层，其它层都会有一个指针指向下一层。这些层是Docker内部的实现细节，并且能够在主机（译者注：运行Docker的机器）的文件系统上访问到。统一文件系统（union file system）技术能够将不同的层整合成一个文件系统，为这些层提供了一个统一的视角，这样就隐藏了多层的存在，在用户的角度（俯视图）看来，只存在一个文件系统。我们可以在图右看到这个视角的形式。</p>
+</blockquote>
+<h2 id="Container-Definition"><a href="#Container-Definition" class="headerlink" title="Container Definition"></a>Container Definition</h2><p>容器（container）的定义和镜像（image）几乎一模一样，也是一堆层的统一视角，唯一区别在于容器的最上面那一层是可读可写的。</p>
+<p><img src="/resources/img/docker/container1.png" alt="container1"></p>
+<p>要点：容器 = 镜像 + 可读层。并且容器的定义并没有提及是否要运行容器。</p>
+<h2 id="Running-Container-Definition"><a href="#Running-Container-Definition" class="headerlink" title="Running Container Definition"></a>Running Container Definition</h2><p> 一个运行态容器（running container）被定义为一个可读写的统一文件系统加上隔离的进程空间和包含其中的进程。</p>
+<p><img src="/resources/img/docker/rw_file_system.png" alt="rw_file_system"></p>
+<p>正是文件系统隔离技术使得Docker成为了一个前途无量的技术。一个容器中的进程可能会对文件进行修改、删除、创建，这些改变都将作用于可读写层（read-write layer）</p>
+<p><img src="/resources/img/docker/rw_layer.png" alt="rw_layer"></p>
+<h2 id="Image-Layer-Definition"><a href="#Image-Layer-Definition" class="headerlink" title="Image Layer Definition"></a>Image Layer Definition</h2><p>为了将零星的数据整合起来，我们提出了镜像层（image layer）这个概念。下面的这张图描述了一个镜像层，通过图片我们能够发现一个层并不仅仅包含文件系统的改变，它还能包含了其他重要信息。</p>
+<p><img src="/resources/img/docker/image-layer.png" alt="image-layer"></p>
+<p>元数据（metadata）就是关于这个层的额外信息，它不仅能够让Docker获取运行和构建时的信息，还包括父层的层次信息。需要注意，只读层和读写层都包含元数据。</p>
+<p><img src="/resources/img/docker/metaspace.png" alt="metaspace"></p>
+<p>除此之外，每一层都包括了一个指向父层的指针。如果一个层没有这个指针，说明它处于最底层。</p>
+<p><img src="/resources/img/docker/read-layer.png" alt="read-layer"></p>
+<h2 id="全局理解（Tying-It-All-Together）"><a href="#全局理解（Tying-It-All-Together）" class="headerlink" title="全局理解（Tying It All Together）"></a>全局理解（Tying It All Together）</h2><p>结合docker的命令来理解：</p>
+<p><strong><code>docker create &lt;image-id&gt;</code></strong></p>
+<p><img src="/resources/img/docker/docker_create.png" alt="docker_create"></p>
+<p>docker create 命令为指定的镜像（image）添加了一个可读层，构成了一个新的容器。注意，这个容器并没有运行。</p>
+<p><img src="/resources/img/docker/docker_create1.png" alt="docker_create1"></p>
+<p><strong><code>docker start &lt;container-id&gt;</code></strong></p>
+<p><img src="/resources/img/docker/docker_start.png" alt="docker_start"></p>
+<p>Docker start命令为容器文件系统创建了一个进程隔离空间。注意，每一个容器只能够有一个进程隔离空间。</p>
+<p><strong><code>docker run &lt;image-id&gt;</code></strong></p>
+<p><img src="/resources/img/docker/docker_run.png" alt="docker_run"></p>
+<p>docker start 和 docker run命令有什么区别? </p>
+<p><img src="/resources/img/docker/docker_start_vs_run.png" alt="docker_start_vs_run"></p>
+<p>显然，docker run = docker create + docker start</p>
+<blockquote>
+<p>PS：与Git对比，我认为docker run命令类似于git pull命令。git pull命令就是git fetch 和 git merge两个命令的组合，同样的，docker run就是docker create和docker start两个命令的组合。</p>
+</blockquote>
+<p>运行程序步骤：</p>
+<ul>
+<li><ol>
+<li>构建一个镜像</li>
+</ol>
+</li>
+<li><ol>
+<li>运行容器</li>
+</ol>
+</li>
+</ul>
+<p>用户通过Docker Client输入命令，发送信号至Docker Daemon，之后：</p>
+<p>（1）构建镜像：Docker Image是一个构建容器的只读模板，它包含了容器启动所需的所有信息，包括运行程序和配置数据。构建的镜像可以发送到Docker Index供人使用。（类似maven）</p>
+<p>（2）运行容器：</p>
 </the>
       
     </div>
@@ -508,8 +649,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/resources/img/head.jpg"
@@ -524,7 +674,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-count">40</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -535,7 +685,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-count">30</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -546,7 +696,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">43</span>
+                <span class="site-state-item-count">45</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -578,7 +728,7 @@
               </span>
             
               <span class="links-of-author-item">
-                <a href="mailto:qxloong@foxmail.com" target="_blank" title="Email">
+                <a href="mailto:xiaolong.qiu#foxmail.com" target="_blank" title="Email">
                   
                     <i class="fa fa-fw fa-commenting"></i>
                   
@@ -600,6 +750,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker与VM"><span class="nav-number">1.</span> <span class="nav-text">Docker与VM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker的隔离（命名空间）"><span class="nav-number">2.</span> <span class="nav-text">docker的隔离（命名空间）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker组件"><span class="nav-number">3.</span> <span class="nav-text">Docker组件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker元素"><span class="nav-number">4.</span> <span class="nav-text">Docker元素</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#联系"><span class="nav-number">5.</span> <span class="nav-text">联系</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#image与container"><span class="nav-number">5.1.</span> <span class="nav-text">image与container</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注意：根据官网，这个图应该是："><span class="nav-number">5.1.1.</span> <span class="nav-text">注意：根据官网，这个图应该是：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Image-Definition"><span class="nav-number">5.2.</span> <span class="nav-text">Image Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Container-Definition"><span class="nav-number">5.3.</span> <span class="nav-text">Container Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Running-Container-Definition"><span class="nav-number">5.4.</span> <span class="nav-text">Running Container Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Image-Layer-Definition"><span class="nav-number">5.5.</span> <span class="nav-text">Image Layer Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#全局理解（Tying-It-All-Together）"><span class="nav-number">5.6.</span> <span class="nav-text">全局理解（Tying It All Together）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

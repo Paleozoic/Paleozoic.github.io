@@ -4,6 +4,106 @@
 
     
   <url>
+    <loc>http://blog.maxplus1.com/2017/08/04/CoreOS%E5%88%9D%E5%B0%9D%E8%AF%95/</loc>
+    <lastmod>2017-08-09T13:54:08.238Z</lastmod>
+    <data>
+        <display>
+        <title>CoreOS初尝试</title>
+        <pubTime>2017-08-03T17:28:32.000Z</pubTime>
+        
+        <tag>CoreOS</tag>
+         
+         
+           
+             
+              <breadCrumb title="Docker" url="http://blog.maxplus1.com/categories/Docker/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.maxplus1.com/2017/07/17/%5B%E8%BD%AC%5DShell%E8%84%9A%E6%9C%AC%EF%BC%9A%E8%8A%82%E7%82%B9%E4%BA%92%E4%BF%A1%E5%B9%B6%E4%BF%AE%E6%94%B9%E4%B8%BB%E6%9C%BA%E5%90%8D/</loc>
+    <lastmod>2017-08-03T17:19:45.539Z</lastmod>
+    <data>
+        <display>
+        <title>【转】Shell脚本：节点互信并修改主机名</title>
+        <pubTime>2017-07-17T08:19:29.000Z</pubTime>
+        
+        <tag>Shell</tag>
+         
+         
+           
+             
+              <breadCrumb title="Shell" url="http://blog.maxplus1.com/categories/Shell/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.maxplus1.com/2017/07/12/Shell%E8%84%9A%E6%9C%AC%EF%BC%9Akill%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B/</loc>
+    <lastmod>2017-08-03T17:19:45.535Z</lastmod>
+    <data>
+        <display>
+        <title>Shell脚本：kill应用示例</title>
+        <pubTime>2017-07-12T02:07:41.000Z</pubTime>
+        
+        <tag>Shell</tag>
+         
+         
+           
+             
+              <breadCrumb title="Shell" url="http://blog.maxplus1.com/categories/Shell/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.maxplus1.com/2017/07/17/Docker%E7%8E%AF%E5%A2%83%E4%B9%8B%E4%B8%80%E9%94%AE%E6%90%AD%E5%BB%BA/</loc>
+    <lastmod>2017-08-03T17:19:45.531Z</lastmod>
+    <data>
+        <display>
+        <title>Docker环境之一键搭建</title>
+        <pubTime>2017-07-17T06:54:29.000Z</pubTime>
+        
+        <tag>Docker</tag>
+         
+         
+           
+             
+              <breadCrumb title="Docker" url="http://blog.maxplus1.com/categories/Docker/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.maxplus1.com/2016/10/11/Docker%E5%9F%BA%E7%A1%80%EF%BC%9A%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%8E%9F%E7%90%86/</loc>
+    <lastmod>2017-08-03T17:19:45.528Z</lastmod>
+    <data>
+        <display>
+        <title>Docker基础：概念与原理</title>
+        <pubTime>2016-10-11T08:45:23.000Z</pubTime>
+        
+        <tag>Docker</tag>
+         
+         
+           
+             
+              <breadCrumb title="Docker" url="http://blog.maxplus1.com/categories/Docker/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.maxplus1.com/2017/05/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%94%81/</loc>
     <lastmod>2017-07-10T13:02:53.074Z</lastmod>
     <data>
@@ -581,26 +681,6 @@
            
              
               <breadCrumb title="Spring Cloud" url="http://blog.maxplus1.com/categories/Spring-Cloud/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.maxplus1.com/2016/10/11/Docker%E5%9F%BA%E7%A1%80%EF%BC%9A%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%8E%9F%E7%90%86/</loc>
-    <lastmod>2017-06-08T12:45:41.575Z</lastmod>
-    <data>
-        <display>
-        <title>Docker基础：概念与原理</title>
-        <pubTime>2016-10-11T08:45:23.000Z</pubTime>
-        
-        <tag>Docker</tag>
-         
-         
-           
-             
-              <breadCrumb title="Docker" url="http://blog.maxplus1.com/categories/Docker/"/>
           
         </display>
     </data>
