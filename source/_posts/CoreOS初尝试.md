@@ -78,7 +78,7 @@ CoreOS初尝试<!-- more -->
   ```
 
 
-> 注意：以上命令在Hyper-V虚拟机并不能直接复制粘贴，然而，手敲的话估计敲断手指![keyboard](E:\github\hexo_blog\source\resources\img\docker\keyboard.gif)
+> 注意：以上命令在Hyper-V虚拟机并不能直接复制粘贴，然而，手敲的话估计敲断手指![keyboard](/resources/img/docker/keyboard.gif)
 >
 > 所以咱们将以上代码封装成一个脚本文件：coreos_ssh.sh，然后借用一个HTTP文件服务器，将coreos_ssh.sh放在HFS上。如图：
 >
