@@ -97,10 +97,12 @@
 <meta property="og:url" content="http://blog.maxplus1.com/2018/01/23/RancherOS+Rancher+Docker/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="RancherOS+Rancher+Docker实现分布式模拟环境，不过还是太耗费内存了，呵呵。">
-<meta property="og:updated_time" content="2018-02-06T12:44:35.081Z">
+<meta property="og:image" content="http://blog.maxplus1.com/resources/img/docker/ssh.png">
+<meta property="og:updated_time" content="2018-02-06T12:57:23.942Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RancherOS+Rancher+Docker">
 <meta name="twitter:description" content="RancherOS+Rancher+Docker实现分布式模拟环境，不过还是太耗费内存了，呵呵。">
+<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/docker/ssh.png">
 
 
 
@@ -426,7 +428,7 @@
 </li>
 </ul>
 </li>
-<li><p>SSH连接RancherOS<br><code>cloud-config.yml</code>里面的ssh-rsa是公钥，则通过ssh和私钥可以直接连接RancherOS，如下：</p>
+<li><p>SSH连接RancherOS<br><code>cloud-config.yml</code>里面的ssh-rsa是公钥，则通过ssh和私钥可以直接连接RancherOS，如下：<br><img src="/resources/img/docker/ssh.png" alt="keyboard"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh -i /path/to/private/key rancher@&lt;ip-address&gt;</div></pre></td></tr></table></figure>
 <p>当然，如果没有通过<code>cloud-config.yml</code>安装公钥，则可以通过用户名/密码登录RancherOS，用户名/密码是：<code>rancher/rancher</code>。安装完ssh key后，只能通过key登录。如图（XShell登录）：<br><code>ssh rancher@192.168.186.129</code></p>
 </li>
