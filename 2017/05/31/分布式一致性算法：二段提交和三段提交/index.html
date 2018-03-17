@@ -104,7 +104,7 @@
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png">
 <meta property="og:image" content="http://blog.maxplus1.com/resources/img/distributed_systems/3PC.png">
-<meta property="og:updated_time" content="2017-06-27T16:58:00.449Z">
+<meta property="og:updated_time" content="2018-02-28T13:11:47.891Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式一致性算法：二段提交和三段提交">
 <meta name="twitter:description" content="分布式一致性算法：二段提交和三段提交，常用于分布式系统的事务操作。">
@@ -437,11 +437,10 @@
 <li>准备阶段(Voting phase)：协调者询问参与者开启事务，参与者写入undo log和redo log，并告知协调者已就绪</li>
 <li>事务提交阶段(Commit phase)：协调者收到所有参与者的就绪确认，则向参与者发送提交事务请求。参与者commit事务并释放资源。并告知协调者事务已提交。<br><img src="/resources/img/distributed_systems/2PC.png" alt="2PC"></li>
 </ul>
-<h2 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h2><p>新的协调者也就无法告知其他参与者执行commit还是rollback了。</p>
-<ul>
+<h2 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h2><ul>
 <li>参与者宕机：协调者会告知所有参与者回滚事务，执行rollback。参与者如果恢复，对于未提交的事务也采取rollback操作。<br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis1.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis2.png" alt="2PC_ExceptionAnalysis"></li>
 <li>协调者宕机：协调者在提交阶段宕机，如果此前没有任何参与者收到协调者的commit or abort命令，则整个事务的状态不可知。只能等待协调者恢复后，重新发送命令告诉参与者。（如果引入协调者响应超时机制，超时后去询问其他参与者，参与者都未提交事务，则事务回滚；若有一个参与者提交了事务，则所有参与者提交事务。）</li>
-<li>协调者和参与者同时宕机：而参与者执行了rollback/commit操作，却来不及返回给协调者。此时即使选举了新的协调者，也不知道宕掉的参与者的事务状态。<br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis3.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png" alt="2PC_ExceptionAnalysis"></li>
+<li>协调者和参与者同时宕机：而参与者执行了rollback/commit操作，却来不及返回给协调者。此时即使选举了新的协调者，也不知道宕掉的参与者的事务状态。新的协调者也就无法告知其他参与者执行commit还是rollback了。<br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis3.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis4.png" alt="2PC_ExceptionAnalysis"><br><img src="/resources/img/distributed_systems/2PC_ExceptionAnalysis5.png" alt="2PC_ExceptionAnalysis"></li>
 </ul>
 <h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ul>
 <li>最终一致性：参与者宕机，等待恢复期间数据节点间的数据不一致。实现的是最终一致性。</li>
@@ -599,7 +598,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">41</span>
+                <span class="site-state-item-count">42</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -610,7 +609,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -621,7 +620,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">46</span>
+                <span class="site-state-item-count">48</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
