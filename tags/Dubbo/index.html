@@ -93,7 +93,7 @@
 <meta name="description" content="超然物外，天道酬勤。明德识礼，格物致知。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Paleo's blog">
-<meta property="og:url" content="http://blog.maxplus1.com/tags/dubbo/index.html">
+<meta property="og:url" content="http://blog.maxplus1.com/tags/Dubbo/index.html">
 <meta property="og:site_name" content="Paleo's blog">
 <meta property="og:description" content="超然物外，天道酬勤。明德识礼，格物致知。">
 <meta name="twitter:card" content="summary">
@@ -126,13 +126,13 @@
 
 
 
-  <link rel="canonical" href="http://blog.maxplus1.com/tags/dubbo/"/>
+  <link rel="canonical" href="http://blog.maxplus1.com/tags/Dubbo/"/>
 
 
 
 
 
-  <title>标签: dubbo | Paleo's blog</title>
+  <title>标签: Dubbo | Paleo's blog</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -307,7 +307,7 @@
 
   <div id="posts" class="posts-collapse">
     <div class="collection-title">
-      <h2>dubbo<small>标签</small>
+      <h2>Dubbo<small>标签</small>
       </h2>
     </div>
 
@@ -319,9 +319,9 @@
 
       <h3 class="post-title">
         
-            <a class="post-title-link" href="/2017/05/07/设计模式/" itemprop="url">
+            <a class="post-title-link" href="/2017/06/23/Dubbo之注册中心扩展：Eureka/" itemprop="url">
               
-                <span itemprop="name">设计模式</span>
+                <span itemprop="name">Dubbo之注册中心扩展：Eureka</span>
               
             </a>
         
@@ -329,9 +329,65 @@
 
       <div class="post-meta">
         <time class="post-time" itemprop="dateCreated"
-              datetime="2017-05-07T19:16:17+08:00"
-              content="2017-05-07" >
-          05-07
+              datetime="2017-06-23T16:15:11+08:00"
+              content="2017-06-23" >
+          06-23
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h3 class="post-title">
+        
+            <a class="post-title-link" href="/2017/06/14/Dubbo之基于“版本”的服务调度(路由规则)/" itemprop="url">
+              
+                <span itemprop="name">Dubbo之基于“版本”的服务调度(路由规则)</span>
+              
+            </a>
+        
+      </h3>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2017-06-14T14:46:08+08:00"
+              content="2017-06-14" >
+          06-14
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h3 class="post-title">
+        
+            <a class="post-title-link" href="/2017/05/09/通过Dubbo学习RPC/" itemprop="url">
+              
+                <span itemprop="name">通过Dubbo学习RPC</span>
+              
+            </a>
+        
+      </h3>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2017-05-09T23:00:17+08:00"
+              content="2017-05-09" >
+          05-09
         </time>
       </div>
 
@@ -478,9 +534,9 @@
         <div class="copyright" >
   
   &copy;  2016 - 
-  <span itemprop="copyrightYear">2018</span>
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
-    <a href="http://www.maxplus1.com/"><i class="fa fa-heart"></i></a>
+    <a href="http://www.1x1.space/"><i class="fa fa-heart"></i></a>
   </span>
   <span class="author" itemprop="copyrightHolder"><a href="http://paleozoic.coding.me/editor.md.local/MDEditor/index/full.html">Paleo</a></span>
 </div>
@@ -890,76 +946,6 @@
           } else {
             $('.search-icon').click(inputEventFunction);
             input.addEventListener('keypress', function (event) {
-              if (event.keyCode === 13) {
-                inputEventFunction();
-              }
-            });
-          }
-
-          // remove loading animation
-          $(".local-search-pop-overlay").remove();
-          $('body').css('overflow', '');
-
-          proceedsearch();
-        }
-      });
-    }
-
-    // handle and trigger popup window;
-    $('.popup-trigger').click(function(e) {
-      e.stopPropagation();
-      if (isfetched === false) {
-        searchFunc(path, 'local-search-input', 'local-search-result');
-      } else {
-        proceedsearch();
-      };
-    });
-
-    $('.popup-btn-close').click(onPopupClose);
-    $('.popup').click(function(e){
-      e.stopPropagation();
-    });
-    $(document).on('keyup', function (event) {
-      var shouldDismissSearchPopup = event.which === 27 &&
-        $('.search-popup').is(':visible');
-      if (shouldDismissSearchPopup) {
-        onPopupClose();
-      }
-    });
-  </script>
-
-
-
-
-
-  
-
-  
-<script>
-(function(){
-    var bp = document.createElement('script');
-    var curProtocol = window.location.protocol.split(':')[0];
-    if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-    }
-    else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-    }
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(bp, s);
-})();
-</script>
-
-
-  
-
-  
-
-  
-
-</body>
-</html>
-on (event) {
               if (event.keyCode === 13) {
                 inputEventFunction();
               }
