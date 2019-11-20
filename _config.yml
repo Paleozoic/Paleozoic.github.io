@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Paleo's blog
+title: 像素空间
 subtitle: 超然物外，天道酬勤。明德识礼，格物致知。
 description: 超然物外，天道酬勤。明德识礼，格物致知。
 author: Paleo
@@ -13,7 +13,7 @@ signature: 超然物外，天道酬勤。明德识礼，格物致知。 #开启S
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://blog.maxplus1.com
+url: http://blog.1x1.space
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
