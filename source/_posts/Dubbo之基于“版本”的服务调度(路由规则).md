@@ -74,7 +74,7 @@ dubbo通过group，interface，version，三者决定是不是同一个服务。
 
 - 配置所有实例共享，显然需要跨进程缓存：Redis、Zookeeper之类的。还可以利用watch实时更新（强一致性）
 - 更新配置时，调用所有节点的方法更新配置数据
-  * 比如每个消费者都提供一个更新缓存的服务（作为提供者），然后利用dubbo的BroadcastCluster[见Broadcast 广播调用](http://blog.maxplus1.com/2017/05/09/%E9%80%9A%E8%BF%87Dubbo%E5%AD%A6%E4%B9%A0RPC/)更新（强一致性）
+  * 比如每个消费者都提供一个更新缓存的服务（作为提供者），然后利用dubbo的BroadcastCluster[见Broadcast 广播调用](http://blog.1x1.space/2017/05/09/%E9%80%9A%E8%BF%87Dubbo%E5%AD%A6%E4%B9%A0RPC/)更新（强一致性）
   * 又比如通过Ecache，定时从数据库更新（最终一致性）
 
 ## dubbo容错调度

@@ -30,7 +30,7 @@ RancherOS+Rancher+Docker实现分布式模拟环境，不过还是太耗费内�
         - ssh-rsa BBB...ZZZ example2@rancher
       ```
     * 下载`cloud-config.yml`
-      参考[CoreOS初尝试](http://blog.maxplus1.com/2017/08/04/CoreOS%E5%88%9D%E5%B0%9D%E8%AF%95/)，通过[HTTP文件服务器HFS](http://rejetto.com/hfs/?f=dl)部署cloud-config.yml，
+      参考[CoreOS初尝试](http://blog.1x1.space/2017/08/04/CoreOS%E5%88%9D%E5%B0%9D%E8%AF%95/)，通过[HTTP文件服务器HFS](http://rejetto.com/hfs/?f=dl)部署cloud-config.yml，
     然后通过`wget http://192.168.2.101/cloud-config.yml`获取文件。
     * 使用`ROS INSTALL`安装
       `cloud-config.yml` `ros install`后会被加载到RancherOS的`/var/lib/rancher/conf/`，每次重启都解析`cloud-config.yml`的配置信息。
@@ -63,7 +63,7 @@ RancherOS+Rancher+Docker实现分布式模拟环境，不过还是太耗费内�
 # Rancher
 [Rancher Quick Start Guide](http://rancher.com/docs/rancher/latest/en/quick-start-guide/)
 - Docker Hub配置
-参考[CoreOS初尝试](http://blog.maxplus1.com/2017/08/04/CoreOS%E5%88%9D%E5%B0%9D%E8%AF%95/)里面的Docker Hub章节申请DaoCloud的镜像加速器。
+参考[CoreOS初尝试](http://blog.1x1.space/2017/08/04/CoreOS%E5%88%9D%E5%B0%9D%E8%AF%95/)里面的Docker Hub章节申请DaoCloud的镜像加速器。
 执行脚本如下：
 ```
 curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://xxxx.m.daocloud.io

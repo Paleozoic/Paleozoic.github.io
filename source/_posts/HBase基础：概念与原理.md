@@ -109,7 +109,7 @@ Active HMaster故障：Inactive HMaster会尝试成为Active HMaster。
 
 # Compaction
 
-在JVM中运行Java程序，随着Java程序的运行，越来越多的对象写入JVM，然后JVM需要根据实际情况（具体看：[Tomcat调优、JVM调优与垃圾回收](http://blog.maxplus1.com/2017/05/05/Tomcat%E8%B0%83%E4%BC%98%E3%80%81JVM%E8%B0%83%E4%BC%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/)）触发GC，释放内存，且GC也分为Minor和Major两个类型（主要是Young GC和Full GC，也有说Minor GC和Major GC的）。
+在JVM中运行Java程序，随着Java程序的运行，越来越多的对象写入JVM，然后JVM需要根据实际情况（具体看：[Tomcat调优、JVM调优与垃圾回收](http://blog.1x1.space/2017/05/05/Tomcat%E8%B0%83%E4%BC%98%E3%80%81JVM%E8%B0%83%E4%BC%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/)）触发GC，释放内存，且GC也分为Minor和Major两个类型（主要是Young GC和Full GC，也有说Minor GC和Major GC的）。
 
 HBase的Compaction类似于JVM的GC，分为Minor Compaction和Major Compaction。
 

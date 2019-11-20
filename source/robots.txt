@@ -11,5 +11,5 @@ Disallow: /fonts/
 Disallow: /vendors/
 Disallow: /fancybox/
 
-Sitemap: http://blog.maxplus1.com/sitemap.xml
-Sitemap: http://blog.maxplus1.com/baidusitemap.xml
+Sitemap: http://blog.1x1.space/sitemap.xml
+Sitemap: http://blog.1x1.space/baidusitemap.xml
