@@ -94,33 +94,33 @@
 <meta name="keywords" content="HBase">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HBase基础：概念与原理">
-<meta property="og:url" content="http://blog.maxplus1.com/2017/05/04/HBase基础：概念与原理/index.html">
-<meta property="og:site_name" content="Paleo's blog">
+<meta property="og:url" content="http://blog.1x1.space/2017/05/04/HBase基础：概念与原理/index.html">
+<meta property="og:site_name" content="像素空间">
 <meta property="og:description" content="简单介绍HBase里面的一些基础知识和原理实现。">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/表结构.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBase架构.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBase架构_1.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/RegionServers负载Region.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/RegionServers负载Region_1.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HMaster.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/zookeeper.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/How%20The%20Components%20Work%20Together.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/MinorCompaction.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/MajorCompaction.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseFirstReadOrWrite.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseMetaTable.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseTable.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseRegionServer.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseMemStore.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseReadWrite.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseWriteStep1.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseWriteStep2.png">
-<meta property="og:image" content="http://blog.maxplus1.com/resources/img/hbase/HBaseRegionFlush.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/表结构.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBase架构.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBase架构_1.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/RegionServers负载Region.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/RegionServers负载Region_1.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HMaster.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/zookeeper.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/How%20The%20Components%20Work%20Together.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/MinorCompaction.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/MajorCompaction.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseFirstReadOrWrite.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseMetaTable.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseTable.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseRegionServer.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseMemStore.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseReadWrite.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseWriteStep1.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseWriteStep2.png">
+<meta property="og:image" content="http://blog.1x1.space/resources/img/hbase/HBaseRegionFlush.png">
 <meta property="og:updated_time" content="2019-11-20T14:37:25.525Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HBase基础：概念与原理">
 <meta name="twitter:description" content="简单介绍HBase里面的一些基础知识和原理实现。">
-<meta name="twitter:image" content="http://blog.maxplus1.com/resources/img/hbase/表结构.png">
+<meta name="twitter:image" content="http://blog.1x1.space/resources/img/hbase/表结构.png">
 
 
 
@@ -148,13 +148,13 @@
 
 
 
-  <link rel="canonical" href="http://blog.maxplus1.com/2017/05/04/HBase基础：概念与原理/"/>
+  <link rel="canonical" href="http://blog.1x1.space/2017/05/04/HBase基础：概念与原理/"/>
 
 
 
 
 
-  <title>HBase基础：概念与原理 | Paleo's blog</title>
+  <title>HBase基础：概念与原理 | 像素空间</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -190,7 +190,7 @@
     <div class="custom-logo-site-title">
       <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Paleo's blog</span>
+        <span class="site-title">像素空间</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
@@ -337,7 +337,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://blog.maxplus1.com/2017/05/04/HBase基础：概念与原理/">
+    <link itemprop="mainEntityOfPage" href="http://blog.1x1.space/2017/05/04/HBase基础：概念与原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Paleo">
@@ -346,7 +346,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Paleo's blog">
+      <meta itemprop="name" content="像素空间">
     </span>
 
     
@@ -520,7 +520,7 @@
 <h2 id="ZooKeeper：协调者"><a href="#ZooKeeper：协调者" class="headerlink" title="ZooKeeper：协调者"></a>ZooKeeper：协调者</h2><p>ZooKeeper为HBase集群提供协调服务，它管理着HMaster和HRegionServer的状态(available/alive等)，并且会在它们宕机时通知给HMaster，从而HMaster可以实现HMaster之间的failover，或对宕机的HRegionServer中的HRegion集合的修复(将它们分配给其他的HRegionServer)。ZooKeeper集群本身使用分布式一致性协议(PAXOS协议)保证每个节点状态的一致性。<br><img src="/resources/img/hbase/zookeeper.png" alt="zookeeper"></p>
 <h2 id="How-The-Components-Work-Together"><a href="#How-The-Components-Work-Together" class="headerlink" title="How The Components Work Together"></a>How The Components Work Together</h2><p>RegionServers和Active HMaster通过Zookeeper的session相互联系。Zookeeper通过心跳维持临时ZNode(Ephemeral Node)的活动session。<br><img src="/resources/img/hbase/How The Components Work Together.png" alt="How The Components Work Together"><br>每个RegionServer都会创建一个临时ZNode，HMaster监视这些ZNodes来发现可用的RegionServer，同时也监控这些ZNode来判断RegionServer的健康状态。<br>HMasters也会竞争创建Ephemeral Node。Zookeeper选择第一个创建的HMaster作为Active HMaster。<br>Active HMaster会发送心跳给Zookeeper，而Inactive HMaster(非活动HMaster)会随时监听Active HMaster的故障。</p>
 <p>如果Active HMaster或者Region Server无法发送心跳，则Zookeeper维护的session就会过期，相应的Ephemeral Node也会被删除。Znode被删除会通知订阅者Active HMaster/Inactive HMaster。<br>Region Server故障：Active HMaster会尝试去恢复Region Server；<br>Active HMaster故障：Inactive HMaster会尝试成为Active HMaster。</p>
-<h1 id="Compaction"><a href="#Compaction" class="headerlink" title="Compaction"></a>Compaction</h1><p>在JVM中运行Java程序，随着Java程序的运行，越来越多的对象写入JVM，然后JVM需要根据实际情况（具体看：<a href="http://blog.1x1.space/2017/05/05/Tomcat%E8%B0%83%E4%BC%98%E3%80%81JVM%E8%B0%83%E4%BC%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" target="_blank" rel="external">Tomcat调优、JVM调优与垃圾回收</a>）触发GC，释放内存，且GC也分为Minor和Major两个类型（主要是Young GC和Full GC，也有说Minor GC和Major GC的）。</p>
+<h1 id="Compaction"><a href="#Compaction" class="headerlink" title="Compaction"></a>Compaction</h1><p>在JVM中运行Java程序，随着Java程序的运行，越来越多的对象写入JVM，然后JVM需要根据实际情况（具体看：<a href="http://blog.1x1.space/2017/05/05/Tomcat%E8%B0%83%E4%BC%98%E3%80%81JVM%E8%B0%83%E4%BC%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">Tomcat调优、JVM调优与垃圾回收</a>）触发GC，释放内存，且GC也分为Minor和Major两个类型（主要是Young GC和Full GC，也有说Minor GC和Major GC的）。</p>
 <p>HBase的Compaction类似于JVM的GC，分为Minor Compaction和Major Compaction。</p>
 <p>参考本文的HBase Region Flush章节，可以了解到MemStore的文件达到阈值后会flush到磁盘，表现形式是一个HFile文件。</p>
 <p>随着程序的运行，HFile必然会越来越多。从而导致读数据时磁盘IO次数过多（寻址时间），影响效率。</p>
