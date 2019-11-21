@@ -47,3 +47,19 @@ hexo d -g
 # 本地启动
 hexo server
 ```
+
+# SEO
+## 网站验证
+### 文件验证
+source目录下的
+baidu_verify_xxxx.html
+googlexxx.html
+是用于百度和谷歌进行网站归属验证，从两者官方下载后放到source目录，deploy后需要到git修改。
+（因为deoloy后文件会被编译嵌套其他html，所以应该还原）
+之后需要添加ignore文件，后续部署忽略掉，防止覆盖。
+### CNAME验证
+直接添加DNS解析
+### 标签验证
+修改主题文件的index.ejs，添加meta验证标签。
+以上的具体使用参考搜索引擎官网。
+
